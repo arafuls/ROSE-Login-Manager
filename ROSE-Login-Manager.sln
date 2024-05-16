@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROSE-Login-Manager", "WPF-ROSE-Online-Login-Manager\ROSE-Login-Manager.csproj", "{8DE20C98-E577-414D-84DD-7BC44D347576}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{78EB0CA7-A6A4-4315-823C-58411815E048}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8DE20C98-E577-414D-84DD-7BC44D347576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DE20C98-E577-414D-84DD-7BC44D347576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DE20C98-E577-414D-84DD-7BC44D347576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DE20C98-E577-414D-84DD-7BC44D347576}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {74D7AC2B-1E6C-44EC-96CE-7C6C337F3B14}
+	EndGlobalSection
+EndGlobal

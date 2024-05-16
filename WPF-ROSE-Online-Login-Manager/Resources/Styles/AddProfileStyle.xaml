@@ -1,0 +1,79 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Common Brushes -->
+    <SolidColorBrush x:Key="BackgroundBrush"    Color="#2c313c"/>
+    <SolidColorBrush x:Key="AccentBrush"        Color="#343b48"/>
+    <SolidColorBrush x:Key="HighlightBrush"     Color="#1a95d4"/>
+
+    
+    
+    <!-- Base TextBox Style -->
+    <Style x:Key="BaseProfileControlStyle" TargetType="FrameworkElement">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Margin" Value="0 2"/>
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu IsEnabled="False" Visibility="Hidden"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- TextBox Style -->
+    <Style x:Key="ProfileTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource BaseProfileControlStyle}"/>
+
+    <!-- PasswordBox Style -->
+    <Style x:Key="ProfilePasswordBoxStyle" TargetType="PasswordBox" BasedOn="{StaticResource BaseProfileControlStyle}"/>
+
+
+
+    <!-- Base TextBlock Style -->
+    <Style x:Key="BaseProfileLabelStyle" TargetType="TextBlock">
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="2,0,0,0"/>
+        <Setter Property="Foreground" Value="DarkGray"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+
+    <!-- Profile Name TextBlock Style -->
+    <Style x:Key="ProfileNameLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseProfileLabelStyle}">
+        <Setter Property="Text" Value="My Vendor Account"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Text, ElementName=ProfileNameTextBox}" Value="">
+                <Setter Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Profile Email TextBlock Style -->
+    <Style x:Key="ProfileEmailLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseProfileLabelStyle}">
+        <Setter Property="Text" Value="rose.account@domain.com"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Text, ElementName=ProfileEmailTextBox}" Value="">
+                <Setter Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Profile Password TextBlock Style -->
+    <Style x:Key="ProfilePasswordLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseProfileLabelStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Text, ElementName=ProfileEmailTextBox}" Value="">
+                <Setter Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    
+    
+    <!-- Button Style -->
+    <Style x:Key="ProfileButton_Style" TargetType="Button">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Width" Value="90"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Margin" Value="10"/>
+    </Style>
+</ResourceDictionary>

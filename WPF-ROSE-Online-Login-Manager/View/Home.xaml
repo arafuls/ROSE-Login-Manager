@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="ROSE_Online_Login_Manager.View.Home"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:view="clr-namespace:ROSE_Online_Login_Manager.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1025"
+             Style="{StaticResource View_Style}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="390"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Border BorderBrush="{StaticResource Accent}" 
+                BorderThickness="1"
+                Margin="20">
+            <ScrollViewer Name="ProfileScrollViewer"
+                          Margin="0 10 10 10"
+                          Style="{StaticResource ScrollViewerStyle}">
+                <StackPanel Name="ProfileStackPanel">
+                    
+                </StackPanel>
+            </ScrollViewer>
+        </Border> 
+        
+    </Grid>
+</UserControl>

@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="ROSE_Online_Login_Manager.View.Profiles"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:ROSE_Online_Login_Manager.ViewModel"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1025"
+             Style="{StaticResource View_Style}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition />
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0 0 30 0" Height="32">
+            <Button Command="{Binding AddProfileCommand}" Style="{StaticResource AddProfileButtonStyle}"/>
+        </StackPanel>
+
+        <DataGrid x:Name="ProfilesDataGrid" Grid.Row="1" 
+                  ItemsSource="{Binding UserProfilesCollection}"
+                  Style="{StaticResource DataGrid_Style}" 
+                  CellStyle="{StaticResource DataGridCell_Style}"
+                  RowStyle="{StaticResource DataGridRow_Style}" 
+                  RowHeaderStyle="{StaticResource DataGridRowHeader_Style}"
+                  ColumnHeaderStyle="{StaticResource DataGridColHeader_Style}"
+                  SelectedItem="{Binding SelectedProfile, Mode=TwoWay}">
+            <!-- Data Grid Columns -->
+            <DataGrid.Columns>
+                <!-- Status -->
+                <DataGridTextColumn Header="Status" Width="80" 
+                                    HeaderStyle="{StaticResource DataGridColHeaderCenter_Style}" 
+                                    CellStyle="{StaticResource DataGridCellCenter_Style}"
+                                    ElementStyle="{StaticResource UppercaseTextBlockStyle}"/>
+                <!-- Profile Name -->
+                <DataGridTextColumn Header="Profile" Binding="{Binding ProfileName}" 
+                                    CellStyle="{StaticResource DataGridCell_Style}"
+                                    MinWidth="125"/>
+                <!-- Profile Email -->
+                <DataGridTextColumn Header="Email" Binding="{Binding ProfileEmail}" 
+                                    CellStyle="{StaticResource DataGridCell_Style}"
+                                    Width="*" />
+                <!-- Operators -->
+                <DataGridTemplateColumn Header="" Width="50">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                        Command="{Binding DataContext.EditProfileCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
+                                    <Image Source="../Resources/Images/icon_edit.png"/>
+                                </Button>
+                                <Button BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                        Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
+                                    <Image Source="../Resources/Images/icon_delete.png"/>
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

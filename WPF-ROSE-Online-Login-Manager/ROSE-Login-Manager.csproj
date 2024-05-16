@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>ROSE_Online_Login_Manager</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\Images\Rose_Online_Favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Images\chevron_down.png" />
+    <None Remove="Resources\Images\chevron_up.png" />
+    <None Remove="Resources\Images\icon_adduser.png" />
+    <None Remove="Resources\Images\icon_delete.png" />
+    <None Remove="Resources\Images\icon_edit.png" />
+    <None Remove="Resources\Images\icon_home.png" />
+    <None Remove="Resources\Images\icon_off.png" />
+    <None Remove="Resources\Images\icon_on.png" />
+    <None Remove="Resources\Images\icon_plus.png" />
+    <None Remove="Resources\Images\icon_profile.png" />
+    <None Remove="Resources\Images\Rose_Online_Favicon.ico" />
+    <None Remove="Resources\Images\Rose_Online_Favicon.png" />
+    <None Remove="Resources\Images\Rose_Online_Logo_Small.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Images\Rose_Online_Favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.4" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\chevron_down.png" />
+    <Resource Include="Resources\Images\chevron_up.png" />
+    <Resource Include="Resources\Images\icon_adduser.png" />
+    <Resource Include="Resources\Images\icon_delete.png" />
+    <Resource Include="Resources\Images\icon_edit.png" />
+    <Resource Include="Resources\Images\icon_home.png" />
+    <Resource Include="Resources\Images\icon_plus.png" />
+    <Resource Include="Resources\Images\icon_profile.png" />
+    <Resource Include="Resources\Images\Rose_Online_Favicon.png" />
+    <Resource Include="Resources\Images\Rose_Online_Logo_Small.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ViewModel\NavigationViewModel.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+</Project>
