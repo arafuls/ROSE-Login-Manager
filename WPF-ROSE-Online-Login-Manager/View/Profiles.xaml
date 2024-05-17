@@ -48,11 +48,11 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Button BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                         Command="{Binding DataContext.EditProfileCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
-                                    <Image Source="../Resources/Images/icon_edit.png"/>
+                                    <Image Source="../Resources/Images/pencil.png"/>
                                 </Button>
                                 <Button BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                         Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
-                                    <Image Source="../Resources/Images/icon_delete.png"/>
+                                    <Image Source="../Resources/Images/trash-can.png"/>
                                 </Button>
                             </StackPanel>
                         </DataTemplate>

@@ -26,7 +26,7 @@
         <Image Name="ProfileAvatar" 
                Stretch="Uniform"
                Margin="5"
-               Source="../Resources/Images/icon_profile.png" 
+               Source="../Resources/Images/account.png" 
                VerticalAlignment="Center" 
                HorizontalAlignment="Center"/>
 

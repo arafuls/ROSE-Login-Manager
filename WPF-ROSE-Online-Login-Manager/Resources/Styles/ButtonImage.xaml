@@ -23,7 +23,7 @@
                 <ControlTemplate TargetType="Button">
                     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
-                            <Image x:Name="AddProfileIcon" Source="../Images/icon_adduser.png" Height="32"/>
+                            <Image x:Name="AddProfileIcon" Source="../Images/account-multiple-plus.png" Height="32"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>

@@ -32,7 +32,7 @@
                                         Command="{Binding HomeCommand}"
                                         IsChecked="True">
                         <Grid>
-                            <Image Source="Resources/Images/icon_home.png"
+                            <Image Source="Resources/Images/home.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </Menu:NavMenuButton>
@@ -41,7 +41,7 @@
                     <Menu:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding ProfilesCommand}">
                         <Grid>
-                            <Image Source="Resources/Images/icon_profile.png"
+                            <Image Source="Resources/Images/account-multiple.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </Menu:NavMenuButton>
