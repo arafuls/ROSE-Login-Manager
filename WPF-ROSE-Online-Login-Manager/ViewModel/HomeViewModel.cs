@@ -14,6 +14,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
     internal class HomeViewModel : ObservableObject
     {
         private readonly DatabaseManager db;
+        private readonly IDialogService _dialogService;
 
 
 
@@ -40,6 +41,15 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// </summary>
         public HomeViewModel()
         {
+
+        }
+
+
+
+        public HomeViewModel(IDialogService dialogService)
+        {
+            _dialogService = dialogService;
+
             db       = new DatabaseManager();
             Profiles = new ObservableCollection<UserProfileModel>(db.GetAllProfiles());
         }
@@ -55,8 +65,11 @@ namespace ROSE_Online_Login_Manager.ViewModel
             if (GlobalVariables.RoseDir == null || GlobalVariables.RoseDir == string.Empty)
             {
                 // Display an error message if the ROSE Online directory is not set
-                // MessageBox.Show("You must set the ROSE Online directory in the Settings tab in order to launch.", "ROSE Online Login Manager",
-                //     MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                _dialogService.ShowMessageBox(
+                    message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
+                    title:   "ROSE Online Login Manager",
+                    button:  MessageBoxButton.OK,
+                    icon:    MessageBoxImage.Error);
                 return;
             }
 
