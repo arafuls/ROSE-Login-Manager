@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Management;
+﻿using System.Management;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+
+
 
 namespace ROSE_Online_Login_Manager.Resources.Util
 {
@@ -16,9 +14,9 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         /// <returns>The HWID of the system as a byte[].</returns>
         public static byte[] GetHWID()
         {
-            string cpuId = GetProcessorID();
+            string cpuId         = GetProcessorID();
             string motherboardId = GetMotherboardID();
-            string diskId = GetDiskID();
+            string diskId        = GetDiskID();
 
             // Concatenate and hash the hardware IDs to generate the HWID
             string combinedIds = cpuId + motherboardId + diskId;
@@ -35,11 +33,13 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         {
             using ManagementObjectSearcher searcher = new("SELECT ProcessorId FROM Win32_Processor");
             using ManagementObjectCollection collection = searcher.Get();
+
             StringBuilder result = new();
             foreach (ManagementBaseObject obj in collection)
             {
                 result.Append(obj["ProcessorId"]);
             }
+
             return result.ToString();
         }
 
@@ -53,11 +53,13 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         {
             using ManagementObjectSearcher searcher = new("SELECT SerialNumber FROM Win32_BaseBoard");
             using ManagementObjectCollection collection = searcher.Get();
+
             StringBuilder result = new();
             foreach (ManagementBaseObject obj in collection)
             {
                 result.Append(obj["SerialNumber"]);
             }
+
             return result.ToString();
         }
 
@@ -72,10 +74,12 @@ namespace ROSE_Online_Login_Manager.Resources.Util
             using ManagementObjectSearcher searcher = new("SELECT SerialNumber FROM Win32_DiskDrive WHERE MediaType='Fixed hard disk media'");
             using ManagementObjectCollection collection = searcher.Get();
             StringBuilder result = new();
+
             foreach (ManagementBaseObject obj in collection)
             {
                 result.Append(obj["SerialNumber"]);
             }
+
             return result.ToString();
         }
 
