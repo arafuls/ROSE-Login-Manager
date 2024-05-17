@@ -1,5 +1,4 @@
-﻿using ROSE_Online_Login_Manager.Resources.Util;
-using ROSE_Online_Login_Manager.ViewModel;
+﻿using ROSE_Online_Login_Manager.ViewModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,7 +33,7 @@ namespace ROSE_Online_Login_Manager.View
         /// <param name="e">Event data.</param>
         private void Home_Loaded(object sender, RoutedEventArgs e)
         {
-            DataContext = new HomeViewModel(new DialogService());
+            DataContext = new HomeViewModel();
 
             UpdateProfileCards();
             SubscribeToPropertyChanged();

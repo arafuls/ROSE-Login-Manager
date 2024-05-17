@@ -14,9 +14,6 @@ namespace ROSE_Online_Login_Manager.View
 
 
 
-        /// <summary>
-        ///     Default Constructor
-        /// </summary>
         public ProfileCard()
         {
             InitializeComponent();
@@ -24,11 +21,6 @@ namespace ROSE_Online_Login_Manager.View
 
 
 
-        /// <summary>
-        ///     Handles the click event of the profile launch button.
-        /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">The event data.</param>
         private void ProfileLaunch_Click(object sender, RoutedEventArgs e)
         {
             if (sender != null && ProfileLaunchEvent != null)
