@@ -6,65 +6,56 @@ using SQLitePCL;
 namespace ROSE_Online_Login_Manager.ViewModel
 {
     /// <summary>
-    /// View model responsible for managing navigation between different views.
+    ///     View model responsible for managing navigation between different views.
     /// </summary>
     internal class NavigationViewModel : ObservableObject
     {
         #region Accessors
-
         private object _currentView = new();
         private readonly Dictionary<string, object> _viewCache;
 
+
+
         /// <summary>
-        /// The currently displayed view.
+        ///     Gets or sets the current view to be displayed in the application.
         /// </summary>
         public object CurrentView
         {
             get { return _currentView; }
             set { _currentView = value; OnPropertyChanged(); }
         }
-
         #endregion
 
 
 
         #region ICommand
-
-        // ICommand properties for navigation commands
-
-        /// <summary>
-        /// Command to navigate to the home view.
-        /// </summary>
         public ICommand HomeCommand { get; set; }
-
-        /// <summary>
-        /// Command to navigate to the profiles view.
-        /// </summary>
         public ICommand ProfilesCommand { get; set; }
 
-        // ICommand methods for navigation commands
+
 
         /// <summary>
-        /// Method to navigate to the home view.
+        ///     Method to navigate to the home view.
         /// </summary>
         /// <param name="obj">Unused parameter.</param>
         private void Home(object obj) => NavigateToView<HomeViewModel>();
 
+
+
         /// <summary>
-        /// Method to navigate to the profiles view.
+        ///     Method to navigate to the profiles view.
         /// </summary>
         /// <param name="obj">Unused parameter.</param>
         private void Profiles(object obj)
         {
             NavigateToView<ProfilesViewModel>();
         }
-
         #endregion
 
 
 
         /// <summary>
-        /// Constructor for NavigationViewModel.
+        ///     Constructor for NavigationViewModel.
         /// </summary>
         public NavigationViewModel()
         {
@@ -85,7 +76,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         /// <summary>
-        /// Navigate to the specified view model type.
+        ///     Navigate to the specified view model type.
         /// </summary>
         private void NavigateToView<T>() where T : class
         {

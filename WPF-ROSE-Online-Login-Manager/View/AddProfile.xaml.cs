@@ -5,16 +5,23 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
+
+
 namespace ROSE_Online_Login_Manager.View
 {
     /// <summary>
-    /// Interaction logic for AddProfile.xaml
+    ///     Interaction logic for AddProfile.xaml
     /// </summary>
     public partial class AddProfile : Window
     {
+        private bool passwordBoxLoaded = false;
+
+
+
         public AddProfile()
         {
             InitializeComponent();
+
             // Set window properties
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.Height = 300;
@@ -22,28 +29,38 @@ namespace ROSE_Online_Login_Manager.View
 
             // Register to receive password reset messages
             WeakReferenceMessenger.Default.Register(this, new MessageHandler<object, string>(HandleMessage));
+
+            // Subscribe to the Loaded event of the PasswordBox
+            ProfilePasswordTextBox.Loaded += ProfilePasswordTextBox_Loaded;
         }
 
 
 
         /// <summary>
-        /// Handles the password reset message.
+        ///     Handles the password reset message.
         /// </summary>
         /// <param name="sender">The message sender.</param>
         /// <param name="message">The message content.</param>
         private void HandleMessage(object sender, string message)
         {
-            if (message == "ResetPasswordField")
+            if (message == "ResetPasswordField" && passwordBoxLoaded)
             {
-                // Clear the password box
                 ProfilePasswordTextBox.Clear();
             }
         }
 
 
 
+        private void ProfilePasswordTextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Set the flag to indicate that the PasswordBox is loaded
+            passwordBoxLoaded = true;
+        }
+
+
+
         /// <summary>
-        /// Handles the password changed event for the profile password text box.
+        ///     Handles the password changed event for the profile password text box.
         /// </summary>
         /// <param name="sender">The sender of the event.</param>
         /// <param name="e">The routed event arguments.</param>
@@ -51,22 +68,15 @@ namespace ROSE_Online_Login_Manager.View
         {
             if (sender is PasswordBox passwordBox)
             {
-                // Convert the password to a SecureString
-                SecureString securePassword = new();
-                foreach (char c in passwordBox.Password)
-                {
-                    securePassword.AppendChar(c);
-                }
-
                 // Update the ProfilePassword property in the view model
-                ((AddProfileViewModel)DataContext).ProfilePassword = securePassword;
+                ((AddProfileViewModel)DataContext).ProfilePassword = passwordBox.SecurePassword.Copy();
             }
         }
 
 
 
         /// <summary>
-        /// Handles the preview key down event for the profile password text box.
+        ///     Handles the preview key down event for the profile password text box.
         /// </summary>
         /// <param name="sender">The sender of the event.</param>
         /// <param name="e">The key event arguments.</param>
@@ -75,23 +85,21 @@ namespace ROSE_Online_Login_Manager.View
             // Check if the entered character is whitespace or non-ASCII
             if (e.Key == Key.Space || !IsAscii(e.Key))
             {
-                // Cancel the input event
-                e.Handled = true;
+                e.Handled = true;   // Cancel the input event
                 return;
             }
 
             // Check if the key combination for paste (Ctrl + V) is pressed
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.V)
             {
-                // Cancel the paste operation
-                e.Handled = true;
+                e.Handled = true;   // Cancel the paste operation
             }
         }
 
 
 
         /// <summary>
-        /// Checks if the key represents an ASCII character.
+        ///     Checks if the key represents an ASCII character.
         /// </summary>
         /// <param name="key">The key to check.</param>
         /// <returns>True if the key represents an ASCII character, otherwise false.</returns>

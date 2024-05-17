@@ -10,7 +10,7 @@ using ROSE_Online_Login_Manager.View;
 namespace ROSE_Online_Login_Manager.ViewModel
 {
     /// <summary>
-    /// View model responsible for managing user profiles.
+    ///     View model responsible for managing user profiles.
     /// </summary>
     internal class ProfilesViewModel : ObservableObject
     {
@@ -43,23 +43,18 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         private readonly DatabaseManager db;
-
         #endregion
 
 
 
         #region Commands
-        // ICommand Fields
-
         public ICommand AddProfileCommand { get; set; }
         public ICommand DeleteProfileCommand { get; set; }
 
 
 
-        // ICommand Methods
-
         /// <summary>
-        /// Method to add a new user profile.
+        ///     Method to add a new user profile.
         /// </summary>
         /// <param name="obj">Unused parameter.</param>
         private void AddProfile(object obj)
@@ -77,7 +72,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         /// <summary>
-        /// Method to delete the selected user profile.
+        ///     Method to delete the selected user profile.
         /// </summary>
         /// <param name="obj">Unused parameter.</param>
         private void DeleteProfile(object obj)
@@ -87,6 +82,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             {
                 // Delete the selected profile from the database
                 db.DeleteProfile(SelectedProfile);
+
                 // Reload all profiles from the database
                 LoadAllProfilesFromDatabase();
             }
@@ -96,7 +92,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         /// <summary>
-        /// Default constructor for ProfilesViewModel.
+        ///     Default constructor.
         /// </summary>
         public ProfilesViewModel()
         {
@@ -110,14 +106,13 @@ namespace ROSE_Online_Login_Manager.ViewModel
             AddProfileCommand = new RelayCommand(AddProfile);
             DeleteProfileCommand = new RelayCommand(DeleteProfile);
 
-            // Load all profiles from the database
             LoadAllProfilesFromDatabase();
         }
 
 
 
         /// <summary>
-        /// Method called when a new profile is added.
+        ///     Method called when a new profile is added.
         /// </summary>
         /// <param name="message">The ProfileAddedMessage containing the new profile.</param>
         private void OnProfileAdded(object sender, ProfileAddedMessage message)
@@ -136,7 +131,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         /// <summary>
-        /// Load all user profiles from the database into the OberserableCollection list.
+        ///     Load all user profiles from the database into the OberserableCollection list.
         /// </summary>
         private void LoadAllProfilesFromDatabase()
         {

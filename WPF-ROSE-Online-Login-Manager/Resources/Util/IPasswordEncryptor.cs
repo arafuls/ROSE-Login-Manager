@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Windows;
+using System.Windows.Documents;
 
 
 
@@ -30,23 +31,27 @@ namespace ROSE_Online_Login_Manager.Resources.Util
     internal class AESEncryptor : IPasswordEncryptor
     {
         /// <summary>
-        ///     Encrypts a <see cref="SecureString"/> using AES encryption with a user-defined or generated IV.
+        ///     Encrypts the specified password using the AES algorithm.
         /// </summary>
-        /// <param name="password">The <see cref="SecureString"/> to encrypt.</param>
-        /// <returns>The ciphertext representing the encrypted <see cref="SecureString"/> as a byte[].</returns>
+        /// <param name="password">The password to encrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used in encryption.</param>
+        /// <returns>The encrypted bytes representing the password.</returns>
         public byte[] Encrypt(SecureString password, byte[] iv)
         {
             byte[] encrypted;
 
+            // Create a new instance of the AES algorithm.
             using (Aes aes = Aes.Create())
             {
                 // Create an encryptor to perform the stream transform.
                 ICryptoTransform encryptor = aes.CreateEncryptor(HWIDGenerator.GetHWID(), iv);
 
+                // Encrypt the password.
                 using MemoryStream memoryStream = new();
                 using CryptoStream cryptoStream = new(memoryStream, encryptor, CryptoStreamMode.Write);
                 using (StreamWriter streamWriter = new(cryptoStream))
                 {
+                    // Convert SecureString to string and write it to the stream.
                     streamWriter.Write(SecureStringExtensions.ConvertSecureStringToString(password));
                 }
                 encrypted = memoryStream.ToArray();
@@ -57,18 +62,25 @@ namespace ROSE_Online_Login_Manager.Resources.Util
 
 
 
+        /// <summary>
+        ///     Decrypts the specified cipher text using the AES algorithm.
+        /// </summary>
+        /// <param name="cipherText">The cipher text to decrypt.</param>
+        /// <returns>The decrypted plain text string.</returns>
         public static string Decrypt(byte[] cipherText)
         {
             string plaintext = string.Empty;
 
+            // Create a new instance of the AES algorithm.
             using (Aes aes = Aes.Create())
             {
                 // Create a decryptor to perform the stream transform.
                 ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), aes.IV);
 
-                using MemoryStream ms = new(cipherText);
-                using CryptoStream cs = new(ms, decryptor, CryptoStreamMode.Read);
-                using StreamReader reader = new(cs);
+                // Decrypt the cipher text.
+                using MemoryStream memoryStream = new(cipherText);
+                using CryptoStream cryptoStream = new(memoryStream, decryptor, CryptoStreamMode.Read);
+                using StreamReader reader = new(cryptoStream);
                 plaintext = reader.ReadToEnd();
             }
 
