@@ -31,6 +31,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         #region ICommand
         public ICommand HomeCommand { get; set; }
         public ICommand ProfilesCommand { get; set; }
+        public ICommand SettingsCommand { get; set; }
 
 
 
@@ -50,6 +51,17 @@ namespace ROSE_Online_Login_Manager.ViewModel
         {
             NavigateToView<ProfilesViewModel>();
         }
+
+
+
+        /// <summary>
+        ///     Method to navigate to the settings view.
+        /// </summary>
+        /// <param name="obj">Unused parameter.</param>
+        private void Settings(object obj)
+        {
+            NavigateToView<SettingsViewModel>();
+        }
         #endregion
 
 
@@ -68,6 +80,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             // Initialize Relay Commands
             HomeCommand = new RelayCommand(Home);
             ProfilesCommand = new RelayCommand(Profiles);
+            SettingsCommand = new RelayCommand(Settings);
 
             // Set the initial view to the home view
             NavigateToView<HomeViewModel>();

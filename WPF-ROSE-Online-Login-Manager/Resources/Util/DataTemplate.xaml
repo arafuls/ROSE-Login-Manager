@@ -13,4 +13,8 @@
     <DataTemplate DataType="{x:Type ViewModel:AddProfileViewModel}">
         <View:AddProfile/>
     </DataTemplate>
+
+    <DataTemplate DataType="{x:Type ViewModel:SettingsViewModel}">
+        <View:Settings/>
+    </DataTemplate>
 </ResourceDictionary>

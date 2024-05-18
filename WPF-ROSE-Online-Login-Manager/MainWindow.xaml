@@ -45,6 +45,15 @@
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </Menu:NavMenuButton>
+
+                    <!-- Settings View Button -->
+                    <Menu:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
+                                        Command="{Binding SettingsCommand}">
+                        <Grid>
+                            <Image Source="Resources/Images/cog.png"
+                                   Style="{StaticResource ButtonImage_Style}"/>
+                        </Grid>
+                    </Menu:NavMenuButton>
                 </StackPanel>
             </Grid>
 
