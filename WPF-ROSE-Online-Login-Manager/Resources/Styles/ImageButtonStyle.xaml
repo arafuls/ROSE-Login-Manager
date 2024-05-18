@@ -16,19 +16,25 @@
                 Value="5"/>
     </Style>
 
-    <!-- Image Button Style -->
-    <Style x:Key="AddProfileButtonStyle" TargetType="Button">
+    
+    
+    <Style x:Key="CustomImageButtonStyle" TargetType="Button">
+        <!-- Hide Background and Border -->
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        
+        <!-- Shrink Image OnPress Effect -->
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
-                            <Image x:Name="AddProfileIcon" Source="../Images/account-multiple-plus.png" Height="32"/>
+                            <Image Source="{TemplateBinding Content}" Height="32"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property ="IsPressed" Value ="True">
+                        <Trigger Property="IsPressed" Value="True">
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
@@ -40,4 +46,5 @@
             </Setter.Value>
         </Setter>
     </Style>
+
 </ResourceDictionary>

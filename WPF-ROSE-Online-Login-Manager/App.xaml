@@ -7,8 +7,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Generic Styling -->
-                <ResourceDictionary Source="Resources/Styles/ButtonImage.xaml"/>
-                <ResourceDictionary Source="Resources/Styles/ButtonText.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ImageButtonStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ScrollbarStyle.xaml"/>
                 
                 <!-- View Styling -->

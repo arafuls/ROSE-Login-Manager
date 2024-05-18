@@ -15,7 +15,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0 0 30 0" Height="32">
-            <Button Command="{Binding AddProfileCommand}" Style="{StaticResource AddProfileButtonStyle}"/>
+            <Button Command="{Binding AddProfileCommand}" Style="{StaticResource CustomImageButtonStyle}">
+                <Image Source="../Resources/Images/account-multiple-plus.png"/>
+            </Button>
         </StackPanel>
 
         <DataGrid x:Name="ProfilesDataGrid" Grid.Row="1" 
@@ -46,11 +48,11 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                <Button Style="{StaticResource CustomImageButtonStyle}"
                                         Command="{Binding DataContext.EditProfileCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
                                     <Image Source="../Resources/Images/pencil.png"/>
                                 </Button>
-                                <Button BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                                <Button Style="{StaticResource CustomImageButtonStyle}"
                                         Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
                                     <Image Source="../Resources/Images/trash-can.png"/>
                                 </Button>

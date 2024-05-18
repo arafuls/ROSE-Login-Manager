@@ -13,10 +13,6 @@ namespace ROSE_Online_Login_Manager.View
     /// </summary>
     public partial class AddProfile : Window
     {
-        private bool passwordBoxLoaded = false;
-
-
-
         public AddProfile()
         {
             InitializeComponent();
@@ -28,9 +24,6 @@ namespace ROSE_Online_Login_Manager.View
 
             // Register to receive password reset messages
             WeakReferenceMessenger.Default.Register(this, new MessageHandler<object, string>(HandleMessage));
-
-            // Subscribe to the Loaded event of the PasswordBox
-            ProfilePasswordTextBox.Loaded += ProfilePasswordTextBox_Loaded;
         }
 
 
@@ -42,18 +35,10 @@ namespace ROSE_Online_Login_Manager.View
         /// <param name="message">The message content.</param>
         private void HandleMessage(object sender, string message)
         {
-            if (message == "ResetPasswordField" && passwordBoxLoaded)
+            if (message == "ResetPasswordField" && ProfilePasswordTextBox.IsLoaded)
             {
                 ProfilePasswordTextBox.Clear();
             }
-        }
-
-
-
-        private void ProfilePasswordTextBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Set the flag to indicate that the PasswordBox is loaded
-            passwordBoxLoaded = true;
         }
 
 

@@ -16,6 +16,7 @@
     <None Remove="Resources\Images\account.png" />
     <None Remove="Resources\Images\cog.png" />
     <None Remove="Resources\Images\home.png" />
+    <None Remove="Resources\Images\magnify.png" />
     <None Remove="Resources\Images\pencil.png" />
     <None Remove="Resources\Images\Rose_Online_Favicon.ico" />
     <None Remove="Resources\Images\Rose_Online_Favicon.png" />
@@ -41,6 +42,7 @@
     <Resource Include="Resources\Images\account.png" />
     <Resource Include="Resources\Images\cog.png" />
     <Resource Include="Resources\Images\home.png" />
+    <Resource Include="Resources\Images\magnify.png" />
     <Resource Include="Resources\Images\pencil.png" />
     <Resource Include="Resources\Images\Rose_Online_Favicon.png" />
     <Resource Include="Resources\Images\Rose_Online_Logo_Small.png" />
