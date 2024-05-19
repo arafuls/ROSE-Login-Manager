@@ -7,6 +7,8 @@ using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
 using ROSE_Online_Login_Manager.View;
 
+
+
 namespace ROSE_Online_Login_Manager.ViewModel
 {
     /// <summary>

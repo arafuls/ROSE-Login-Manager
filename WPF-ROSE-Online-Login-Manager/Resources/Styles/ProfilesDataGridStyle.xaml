@@ -20,7 +20,7 @@
     <!-- Data Grid -->
     <Style x:Key="DataGrid_Style" TargetType="{x:Type DataGrid}">
         <Setter Property="Foreground" Value="{StaticResource DataGridForegroundBrush}"/>
-        <Setter Property="Background" Value="{StaticResource DataGridBackgroundBrush}"/>
+        <Setter Property="Background" Value="{StaticResource DataGridHeaderBackgroundBrush}"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="CanUserReorderColumns" Value="False"/>
@@ -40,8 +40,15 @@
         <Setter Property="HorizontalGridLinesBrush" Value="#2c313c"/>
         <Setter Property="VerticalGridLinesBrush" Value="#2c313c"/>
         <Setter Property="SelectedItem" Value="{Binding SelectedItem, Mode=TwoWay}"/>
+        <Style.Resources>
+            <Style TargetType="{x:Type ScrollBar}">
+                <Setter Property="Width" Value="6" />
+                <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+            </Style>
+        </Style.Resources>
     </Style>
-    
+
     <!-- Cell -->
     <Style x:Key="DataGridCell_Style" TargetType="{x:Type DataGridCell}">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>

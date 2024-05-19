@@ -3,8 +3,6 @@ using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Security.Principal;
 using System.Windows;
 
 
@@ -46,6 +44,10 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="HomeViewModel"/> class.
+        /// </summary>
+        /// <param name="dialogService">The dialog service for displaying dialogs.</param>
         public HomeViewModel(IDialogService dialogService)
         {
             _dialogService = dialogService;
@@ -62,9 +64,9 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <param name="email">The email associated with the user profile.</param>
         public void LaunchProfile(string email)
         {
-            if (GlobalVariables.RoseDir == null || GlobalVariables.RoseDir == string.Empty)
+            if (GlobalVariables.Instance.RoseGameFolder == null || 
+                GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
-                // Display an error message if the ROSE Online directory is not set
                 _dialogService.ShowMessageBox(
                     message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
                     title:   "ROSE Online Login Manager",
@@ -95,7 +97,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <param name="password">The password associated with the user profile.</param>
         private static void LoginThread(string email, string password)
         {
-            string exePath = GlobalVariables.RoseDir + "TRose.exe";
+            string exePath = GlobalVariables.Instance.RoseGameFolder + "TRose.exe";
             string arguments = $"--login --server connect.roseonlinegame.com --username {email} --password {password}";
 
             // TODO: Decrypt password here for use

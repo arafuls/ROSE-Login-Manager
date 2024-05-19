@@ -7,10 +7,14 @@ namespace ROSE_Online_Login_Manager.Resources.Util
     /// <summary>
     ///     A basic implementation of ICommand for use with WPF applications.
     /// </summary>
-    public class RelayCommand : ICommand
+    /// <remarks>
+    ///     Initializes a new instance of the RelayCommand class.
+    /// </remarks>
+    /// <param name="execute">The action to execute when the command is invoked.</param>
+    /// <param name="canExecute">The function that determines whether the command can execute in its current state.</param>
+    public class RelayCommand(Action<object> execute, Func<object, bool>? canExecute = null) : ICommand
     {
-        private readonly Action<object> _execute;
-        private readonly Func<object, bool>? _canExecute;
+        private readonly Action<object> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
 
 
 
@@ -22,24 +26,11 @@ namespace ROSE_Online_Login_Manager.Resources.Util
 
 
         /// <summary>
-        ///     Initializes a new instance of the RelayCommand class.
-        /// </summary>
-        /// <param name="execute">The action to execute when the command is invoked.</param>
-        /// <param name="canExecute">The function that determines whether the command can execute in its current state.</param>
-        public RelayCommand(Action<object> execute, Func<object, bool>? canExecute = null)
-        {
-            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            _canExecute = canExecute;
-        }
-
-
-
-        /// <summary>
         ///     Defines the method that determines whether the command can execute in its current state.
         /// </summary>
         /// <param name="parameter">Data used by the command. If the command does not require data to be passed, this object can be set to null.</param>
         /// <returns>true if this command can be executed; otherwise, false.</returns>
-        public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter ?? throw new ArgumentNullException(nameof(parameter)));
+        public bool CanExecute(object? parameter) => canExecute == null || canExecute(parameter ?? throw new ArgumentNullException(nameof(parameter)));
 
 
 

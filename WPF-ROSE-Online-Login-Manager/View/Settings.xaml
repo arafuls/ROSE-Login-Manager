@@ -9,29 +9,24 @@
              Style="{StaticResource View_Style}">
     <Grid>
         <Border Margin="10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Left Column -->
-                <StackPanel Grid.Column="0" Margin="10">
-                    <Label Content="ROSE Online Folder Location" 
-                           Foreground="WhiteSmoke"
-                           FontSize="14" 
-                           Margin="0 0 0 0"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBox Grid.Column="0" Width="300" Margin="5 0"/>
-                        <Button Style="{StaticResource CustomImageButtonStyle}" Background="Transparent" BorderThickness="0" Height="18" Width="18">
-                            <Image Source="../Resources/Images/magnify.png"/>
-                        </Button>
-                    </StackPanel>
+            <StackPanel Margin="10">
+                <!-- ROSE Online Folder Location -->
+                <Label Content="ROSE Online Folder Location" 
+           Foreground="WhiteSmoke"
+           FontSize="14" 
+           Padding="0"
+           Margin="5 0 5 0"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="300" Margin="5 0"
+                 Text="{Binding RoseGameFolderPath, Mode=TwoWay}"/>
+                    <Button Command="{Binding GameFolderSearchCommand}" 
+                Style="{StaticResource CustomImageButtonStyle}" 
+                Height="18" Width="18">
+                        <Image Source="../Resources/Images/magnify.png"/>
+                    </Button>
                 </StackPanel>
-                
-                
-                
-            </Grid>
+
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>
