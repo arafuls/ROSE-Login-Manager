@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.IO;
 
 
 
@@ -9,31 +10,11 @@ namespace ROSE_Online_Login_Manager.Model
     /// </summary>
     public class GlobalVariables : INotifyPropertyChanged
     {
-        /// <summary>
-        ///     Gets the singleton instance of the GlobalVariables class.
-        /// </summary>
-        private static GlobalVariables _instance; 
-        public static GlobalVariables Instance
-        {
-            get
-            {   
-                _instance ??= new GlobalVariables();    // Create the instance if it doesn't exist yet
-                return _instance;
-            }
-        }
+        public event EventHandler RoseGameFolderChanged;
 
 
 
-        /// <summary>
-        ///     Private constructor to prevent external instantiation
-        /// </summary>
-        private GlobalVariables()
-        {
-            
-        }
-
-
-
+        #region Accessors
         /// <summary>
         ///     Gets or sets the directory path of the ROSE Online game folder.
         /// </summary>
@@ -47,8 +28,46 @@ namespace ROSE_Online_Login_Manager.Model
                 {
                     _roseGameFolder = value;
                     OnPropertyChanged(nameof(RoseGameFolder));
+                    RoseGameFolderChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
+        }
+
+
+
+        /// <summary>
+        ///     Gets the application path.
+        /// </summary>
+        private readonly string _appPath;
+        public string AppPath
+        {
+            get { return _appPath; }
+        }
+
+
+
+        /// <summary>
+        ///     Gets the singleton instance of the GlobalVariables class.
+        /// </summary>
+        private static GlobalVariables _instance;
+        public static GlobalVariables Instance
+        {
+            get
+            {
+                _instance ??= new GlobalVariables();    // Create the instance if it doesn't exist yet
+                return _instance;
+            }
+        }
+        #endregion
+
+
+
+        /// <summary>
+        ///     Private constructor to prevent external instantiation
+        /// </summary>
+        private GlobalVariables()
+        {
+            _appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager");
         }
 
 

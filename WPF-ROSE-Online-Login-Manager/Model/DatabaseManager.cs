@@ -9,7 +9,7 @@ using System.Windows;
 namespace ROSE_Online_Login_Manager.Resources.Util
 {
     /// <summary>
-    /// Manages interactions with the SQLite database.
+    ///     Manages interactions with the SQLite database.
     /// </summary>
     internal class DatabaseManager : IDisposable
     {
@@ -32,7 +32,7 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         /// </summary>
         public DatabaseManager()
         {
-            _appFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager");
+            _appFolderPath = GlobalVariables.Instance.AppPath;
             _dbFilePath = Path.Combine(_appFolderPath, DB_FILENAME);
             _db = new SqliteConnection($"Data Source={_dbFilePath}");
             InitializeAppFolder();

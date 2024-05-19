@@ -39,6 +39,8 @@ namespace ROSE_Online_Login_Manager
 
             // Continue with application initialization
             base.OnStartup(e);
+
+            ROSE_Online_Login_Manager.Model.ConfigurationManager.Instance.LoadConfig();
         }
 
 
