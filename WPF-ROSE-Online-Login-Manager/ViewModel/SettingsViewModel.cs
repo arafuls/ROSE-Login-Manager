@@ -52,6 +52,28 @@ namespace ROSE_Online_Login_Manager.ViewModel
             {
                 _roseGameFolderPathDisplay = TruncatePath(value);
                 OnPropertyChanged(nameof(RoseGameFolderPathDisplay));
+
+                if (Directory.Exists(value))
+                {
+                    IsPathValidImage = true;
+                }
+                else
+                {
+                    IsPathValidImage = false;
+                }
+            }
+        }
+
+
+
+        private bool _isPathValidImage;
+        public bool IsPathValidImage
+        {
+            get { return _isPathValidImage; }
+            set
+            {
+                _isPathValidImage = value;
+                OnPropertyChanged(nameof(IsPathValidImage));
             }
         }
 
