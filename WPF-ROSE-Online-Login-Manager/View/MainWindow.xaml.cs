@@ -2,7 +2,7 @@
 
 
 
-namespace ROSE_Online_Login_Manager
+namespace ROSE_Online_Login_Manager.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

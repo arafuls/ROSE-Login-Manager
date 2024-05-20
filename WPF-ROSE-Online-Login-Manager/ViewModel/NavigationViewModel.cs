@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ROSE_Online_Login_Manager.Resources.Util;
 using SQLitePCL;
 
+
+
 namespace ROSE_Online_Login_Manager.ViewModel
 {
     /// <summary>
@@ -89,8 +91,9 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         /// <summary>
-        ///     Navigate to the specified view model type.
+        ///     Navigates to the view of the specified type and initializes it if not cached.
         /// </summary>
+        /// <typeparam name="T">The type of the view model representing the view.</typeparam>
         private void NavigateToView<T>() where T : class
         {
             var typeName = typeof(T).Name;

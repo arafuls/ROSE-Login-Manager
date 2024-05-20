@@ -2,6 +2,7 @@
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 
@@ -109,11 +110,20 @@ namespace ROSE_Online_Login_Manager.ViewModel
             };
 
             try
-            {   // Start the ROSE Online client process
+            {
+                // Start the ROSE Online client process
                 Process.Start(startInfo);
             }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 2) // ERROR_FILE_NOT_FOUND
+            {
+                // Display a custom error message for file not found
+                MessageBox.Show("The ROSE Online client executable could not be found.\n\n" +
+                                "Confirm that the ROSE Online client is installed correctly and that the ROSE Online Folder Location is set correctly.",
+                                "File Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             catch (Exception ex)
-            {   // Display an error message if an exception occurs during process start
+            {
+                // Display a generic error message for other exceptions
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

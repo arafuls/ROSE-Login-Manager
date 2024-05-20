@@ -1,4 +1,4 @@
-﻿<Window x:Class="ROSE_Online_Login_Manager.MainWindow"
+﻿<Window x:Class="ROSE_Online_Login_Manager.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -32,7 +32,7 @@
                                         Command="{Binding HomeCommand}"
                                         IsChecked="True">
                         <Grid>
-                            <Image Source="Resources/Images/home.png"
+                            <Image Source="../Resources/Images/home.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </Menu:NavMenuButton>
@@ -41,7 +41,7 @@
                     <Menu:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding ProfilesCommand}">
                         <Grid>
-                            <Image Source="Resources/Images/account-multiple.png"
+                            <Image Source="../Resources/Images/account-multiple.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </Menu:NavMenuButton>
@@ -50,7 +50,7 @@
                     <Menu:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding SettingsCommand}">
                         <Grid>
-                            <Image Source="Resources/Images/cog.png"
+                            <Image Source="../Resources/Images/cog.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </Menu:NavMenuButton>
