@@ -4,7 +4,9 @@ using ROSE_Online_Login_Manager.Resources.Util;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using System.Windows;
+using System.Windows.Documents;
 
 
 
@@ -77,13 +79,14 @@ namespace ROSE_Online_Login_Manager.ViewModel
             }
 
             // Find the user profile with the specified email
-            var profile = Profiles.FirstOrDefault(p => p.ProfileEmail == email);
+            UserProfileModel? profile = Profiles.FirstOrDefault(p => p.ProfileEmail == email);
 
             if (profile != null)
             {   // Start a new thread to handle launching the ROSE Online client with the user's credentials
                 Thread thread = new(() => LoginThread(
                     profile.ProfileEmail,
-                    profile.ProfilePassword
+                    profile.ProfilePassword,
+                    profile.ProfileIV
                 ));
                 thread.Start();
             }
@@ -96,35 +99,47 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// </summary>
         /// <param name="email">The email associated with the user profile.</param>
         /// <param name="password">The password associated with the user profile.</param>
-        private static void LoginThread(string email, string password)
+        /// <param name="iv">The initialization vector associated with the user profile to be used for decryption.</param>
+        private void LoginThread(string email, string password, string iv)
         {
-            string exePath = GlobalVariables.Instance.RoseGameFolder + "\\TRose.exe";
-            string arguments = $"--login --server connect.roseonlinegame.com --username {email} --password {password}";
+            string decryptedPassword = AESEncryptor.Decrypt(Convert.FromBase64String(password), Convert.FromBase64String(iv));
+            string arguments = $"--login --server connect.roseonlinegame.com --username {email} --password {decryptedPassword}";
 
-            // TODO: Decrypt password here for use
-
-            ProcessStartInfo startInfo = new(exePath)
+            ProcessStartInfo startInfo = new()
             {
+                FileName = GlobalVariables.Instance.FindFile("TRose.exe"),
+                WorkingDirectory = GlobalVariables.Instance.RoseGameFolder,
                 Arguments = arguments,
                 WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
             };
 
+            decryptedPassword = string.Empty;
+            arguments = string.Empty;
+
             try
-            {
-                // Start the ROSE Online client process
+            {   // Start the ROSE Online client process
                 Process.Start(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2) // ERROR_FILE_NOT_FOUND
             {
-                // Display a custom error message for file not found
-                MessageBox.Show("The ROSE Online client executable could not be found.\n\n" +
+                _dialogService.ShowMessageBox(
+                    title: "ROSE Online Login Manager - File Not Found",
+                    message: "The ROSE Online client executable, TRose.exe, could not be found.\n\n" +
                                 "Confirm that the ROSE Online client is installed correctly and that the ROSE Online Folder Location is set correctly.",
-                                "File Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
             catch (Exception ex)
+            {   // Display a generic error message for other exceptions
+                _dialogService.ShowMessageBox(
+                    title: "ROSE Online Login Manager - An Error Occurred",
+                    message: ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
+            finally
             {
-                // Display a generic error message for other exceptions
-                MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                startInfo.Arguments = string.Empty;
             }
         }
     }

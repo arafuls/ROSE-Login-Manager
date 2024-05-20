@@ -81,5 +81,43 @@ namespace ROSE_Online_Login_Manager.Model
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
+
+        /// <summary>
+        ///     Searches for the specified file in common locations, including the current directory and standard program folders.
+        /// </summary>
+        /// <param name="fileName">The name of the file to search for.</param>
+        /// <returns>
+        ///     The full path to the file if found; otherwise, <see langword="null"/>.
+        /// </returns>
+        public string FindFile(string fileName)
+        {
+            // Search for the file in common locations
+            string[] paths =
+            {
+                Environment.CurrentDirectory,
+                @"C:\Program Files\",
+                @"C:\Program Files (x86)\",
+            };
+
+            if (!string.IsNullOrEmpty(RoseGameFolder))
+            {
+                paths = paths.Append(RoseGameFolder).ToArray();
+            }
+
+
+            foreach (string path in paths)
+            {
+                string fullPath = Path.Combine(path, fileName);
+                if (File.Exists(fullPath))
+                {
+                    RoseGameFolder ??= Path.GetDirectoryName(fullPath);
+                    return fullPath; // Return full path if file is found
+                }
+            }
+
+            return null; // Return null if file is not found
+        }
     }
 }

@@ -41,6 +41,9 @@ namespace ROSE_Online_Login_Manager.Resources.Util
             // Create a new instance of the AES algorithm.
             using (Aes aes = Aes.Create())
             {
+                // Ensure that the block size matches the IV size (16 bytes).
+                aes.BlockSize = 128;
+
                 // Create an encryptor to perform the stream transform.
                 ICryptoTransform encryptor = aes.CreateEncryptor(HWIDGenerator.GetHWID(), iv);
 
@@ -64,16 +67,20 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         ///     Decrypts the specified cipher text using the AES algorithm.
         /// </summary>
         /// <param name="cipherText">The cipher text to decrypt.</param>
+        /// <param name="iv">The initialization vector (IV) used in the decryption process.</param>
         /// <returns>The decrypted plain text string.</returns>
-        public static string Decrypt(byte[] cipherText)
+        public static string Decrypt(byte[] cipherText, byte[] iv)
         {
             string plaintext = string.Empty;
 
             // Create a new instance of the AES algorithm.
             using (Aes aes = Aes.Create())
             {
+                // Ensure that the block size matches the IV size (16 bytes).
+                aes.BlockSize = 128;
+
                 // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), aes.IV);
+                ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), iv);
 
                 // Decrypt the cipher text.
                 using MemoryStream memoryStream = new(cipherText);

@@ -200,13 +200,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 ProfilePassword = encryptedPassword,
                 ProfileIV = Convert.ToBase64String(iv)
             };
-            /*
-             
-            MessageBox.Show(
-                "IV: " + Convert.ToBase64String(iv) + '\n' +
-                "Encrytped: " + encryptedPassword);
-            
-             */
+
             return newProfileModel;
         }
 

@@ -246,6 +246,33 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         {
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
+
+
+
+        /// <summary>
+        /// Retrieves the ProfileIV from the database based on the provided email.
+        /// </summary>
+        /// <param name="email">The email associated with the profile.</param>
+        /// <returns>The ProfileIV corresponding to the provided email. Returns an empty string if the email is not found.</returns>
+        public string GetProfileIVByEmail(string email)
+        {
+            string query = "SELECT ProfileIV FROM Profiles WHERE ProfileEmail = @Email";
+            string profileIV = string.Empty;
+
+            _db.Open();
+            using (SqliteCommand command = _db.CreateCommand())
+            {
+                command.CommandText = query;
+                command.Parameters.AddWithValue("@Email", email);
+
+                // Execute the query to fetch the ProfileI
+                object? result = command.ExecuteScalar();
+                profileIV = result?.ToString() ?? string.Empty;
+            }
+            _db.Close();
+
+            return profileIV;
+        }
         #endregion
     }
 }
