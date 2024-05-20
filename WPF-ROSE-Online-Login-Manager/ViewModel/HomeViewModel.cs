@@ -4,9 +4,7 @@ using ROSE_Online_Login_Manager.Resources.Util;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Text;
 using System.Windows;
-using System.Windows.Documents;
 
 
 
