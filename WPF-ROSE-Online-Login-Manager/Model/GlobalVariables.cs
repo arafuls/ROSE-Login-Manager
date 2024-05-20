@@ -95,15 +95,15 @@ namespace ROSE_Online_Login_Manager.Model
         {
             // Search for the file in common locations
             string[] paths =
-            {
+            [
                 Environment.CurrentDirectory,
                 @"C:\Program Files\",
                 @"C:\Program Files (x86)\",
-            };
+            ];
 
             if (!string.IsNullOrEmpty(RoseGameFolder))
             {
-                paths = paths.Append(RoseGameFolder).ToArray();
+                paths = [.. paths, RoseGameFolder];
             }
 
 
