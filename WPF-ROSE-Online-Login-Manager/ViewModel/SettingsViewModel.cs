@@ -29,32 +29,12 @@ namespace ROSE_Online_Login_Manager.ViewModel
             get { return _roseGameFolderPath; }
             set
             {
+                _roseGameFolderPath = value;
+
                 if (!string.IsNullOrEmpty(value) && Directory.Exists(value))
                 {
-                    _roseGameFolderPath = value;
                     OnPropertyChanged(nameof(RoseGameFolderPath));
                     GlobalVariables.Instance.RoseGameFolder = value;
-                    RoseGameFolderPathDisplay = value;
-                }
-            }
-        }
-
-
-
-        /// <summary>
-        ///     Gets or sets the truncated directory path of the ROSE Online game folder for display.
-        /// </summary>
-        private string? _roseGameFolderPathDisplay;
-        public string? RoseGameFolderPathDisplay
-        {
-            get { return _roseGameFolderPathDisplay; }
-            set
-            {
-                _roseGameFolderPathDisplay = TruncatePath(value);
-                OnPropertyChanged(nameof(RoseGameFolderPathDisplay));
-
-                if (Directory.Exists(value))
-                {
                     IsPathValidImage = true;
                 }
                 else
@@ -66,6 +46,10 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
 
+        /// <summary>
+        ///     Gets or sets a value indicating whether the path is valid
+        /// </summary>
+        /// <remarks> The bool returned is used to determine which image to use in the view.</remarks>
         private bool _isPathValidImage;
         public bool IsPathValidImage
         {
@@ -95,7 +79,8 @@ namespace ROSE_Online_Login_Manager.ViewModel
             GameFolderSearchCommand = new RelayCommand(GameFolderSearch);
 
             // Initialize Rose Game Path Textbox Text
-            RoseGameFolderPathDisplay = GlobalVariables.Instance.RoseGameFolder;
+            //RoseGameFolderPathDisplay = GlobalVariables.Instance.RoseGameFolder;
+            RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
         }
 
 

@@ -98,7 +98,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <param name="password">The password associated with the user profile.</param>
         private static void LoginThread(string email, string password)
         {
-            string exePath = GlobalVariables.Instance.RoseGameFolder + "TRose.exe";
+            string exePath = GlobalVariables.Instance.RoseGameFolder + "\\TRose.exe";
             string arguments = $"--login --server connect.roseonlinegame.com --username {email} --password {password}";
 
             // TODO: Decrypt password here for use

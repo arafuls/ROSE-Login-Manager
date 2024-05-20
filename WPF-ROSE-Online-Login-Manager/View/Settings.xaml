@@ -27,7 +27,7 @@
                             </Style>
                         </Image.Style>
                     </Image>
-                    <TextBox Text="{Binding RoseGameFolderPathDisplay, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding RoseGameFolderPath, UpdateSourceTrigger=PropertyChanged}"
                              Width="300" Margin="5 0"/>
                     <Button Command="{Binding GameFolderSearchCommand}" 
                             Style="{StaticResource CustomImageButtonStyle}" 
