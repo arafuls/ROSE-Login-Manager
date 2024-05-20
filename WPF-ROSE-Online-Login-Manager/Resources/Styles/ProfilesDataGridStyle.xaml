@@ -29,7 +29,7 @@
         <Setter Property="CanUserAddRows" Value="False"/>
         <Setter Property="CanUserDeleteRows" Value="False"/>
         <Setter Property="IsReadOnly" Value="True"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="BorderBrush" Value="{StaticResource DataGridHeaderBackgroundBrush}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Margin" Value="20 5" />
