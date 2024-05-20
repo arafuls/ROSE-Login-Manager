@@ -115,12 +115,28 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
         /// <summary>
-        ///     Initiates the process of creating a new user profile.
+        ///     Creates a new user profile and resets the input fields for the next profile creation.
         /// </summary>
         /// <param name="obj">Unused parameter.</param>
         private void CreateProfile(object obj)
         {
             CreateNewProfile();
+            ResetNewProfileFields();
+        }
+
+
+
+        /// <summary>
+        ///     Resets the input fields for creating a new user profile.
+        /// </summary>
+        private void ResetNewProfileFields()
+        {
+            // Reset the view's data field for next profile
+            ProfileName = string.Empty;
+            ProfileEmail = string.Empty;
+
+            // PasswordBox does not support TwoWay binding so send a message to reset
+            WeakReferenceMessenger.Default.Send("ResetPasswordField");
         }
         #endregion
 
@@ -152,18 +168,11 @@ namespace ROSE_Online_Login_Manager.ViewModel
         ///     Sends a message to the ProfilesViewModel about the new profile, and resets view's data fields.
         /// </summary>
         /// <param name="userProfileModel">The new UserProfileModel to send in the message.</param>
-        private void NewUserProfileModelMessage(UserProfileModel userProfileModel)
+        private static void NewUserProfileModelMessage(UserProfileModel userProfileModel)
         {
             // Inform the ProfilesViewModel about the new profile
             var message = new ProfileAddedMessage { NewProfile = userProfileModel };
             WeakReferenceMessenger.Default.Send(message);
-
-            // Reset the view's data field for next profile
-            ProfileName = string.Empty;
-            ProfileEmail = string.Empty;
-
-            // PasswordBox does not support TwoWay binding so send a message to reset
-            WeakReferenceMessenger.Default.Send("ResetPasswordField");
         }
 
 
@@ -191,13 +200,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 ProfilePassword = encryptedPassword,
                 ProfileIV = Convert.ToBase64String(iv)
             };
-            /*
-             
-            MessageBox.Show(
-                "IV: " + Convert.ToBase64String(iv) + '\n' +
-                "Encrytped: " + encryptedPassword);
-            
-             */
+
             return newProfileModel;
         }
 

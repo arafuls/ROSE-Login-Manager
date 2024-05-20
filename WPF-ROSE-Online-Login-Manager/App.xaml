@@ -2,13 +2,12 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:ROSE_Online_Login_Manager"
-             StartupUri="MainWindow.xaml">
+             StartupUri="View/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Generic Styling -->
-                <ResourceDictionary Source="Resources/Styles/ButtonImage.xaml"/>
-                <ResourceDictionary Source="Resources/Styles/ButtonText.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ImageButtonStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ScrollbarStyle.xaml"/>
                 
                 <!-- View Styling -->

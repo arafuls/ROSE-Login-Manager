@@ -5,11 +5,11 @@
 namespace ROSE_Online_Login_Manager.View
 {
     /// <summary>
-    ///     Interaction logic for Profiles.xaml
+    ///     Interaction logic for Settings.xaml
     /// </summary>
-    public partial class Profiles : UserControl
+    public partial class Settings : UserControl
     {
-        public Profiles()
+        public Settings()
         {
             InitializeComponent();
         }

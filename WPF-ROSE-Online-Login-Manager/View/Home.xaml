@@ -17,11 +17,13 @@
                 BorderThickness="1"
                 Margin="20">
             <ScrollViewer Name="ProfileScrollViewer"
-                          Margin="0 10 10 10"
+                          Margin="10 10 10 10"
                           Style="{StaticResource ScrollViewerStyle}">
-                <StackPanel Name="ProfileStackPanel">
-                    
-                </StackPanel>
+                <DockPanel>
+                    <StackPanel Name="ProfileStackPanel">
+
+                    </StackPanel>
+                </DockPanel>
             </ScrollViewer>
         </Border> 
         

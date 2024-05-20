@@ -1,9 +1,12 @@
-﻿using System.Security;
+﻿
 
 
 
 namespace ROSE_Online_Login_Manager.Model
 {
+    /// <summary>
+    ///     Represents a user profile model containing information such as status, name, email, password, and initialization vector.
+    /// </summary>
     public class UserProfileModel
     {
         public bool?           ProfileStatus    { get; set; }
@@ -12,10 +15,11 @@ namespace ROSE_Online_Login_Manager.Model
         public required string ProfilePassword  { get; set; }
         public required string ProfileIV        { get; set; }
 
-        public UserProfileModel()
-        {
-            
-        }
 
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="UserProfileModel"/> class.
+        /// </summary>
+        public UserProfileModel() { }
     }
 }
