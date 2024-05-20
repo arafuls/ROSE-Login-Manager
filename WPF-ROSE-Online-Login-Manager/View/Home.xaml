@@ -6,8 +6,7 @@
              xmlns:WebView2="clr-namespace:ROSE_Online_Login_Manager.View"
 
              mc:Ignorable="d" 
-             d:DesignHeight="650" d:DesignWidth="1025"
-             Style="{StaticResource View_Style}">
+             d:DesignHeight="650" d:DesignWidth="1025">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="350"/>
