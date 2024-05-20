@@ -113,15 +113,12 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
             };
 
-            decryptedPassword = string.Empty;
-            arguments = string.Empty;
-
             try
             {   // Start the ROSE Online client process
                 Process.Start(startInfo);
             }
-            catch (Win32Exception ex) when (ex.NativeErrorCode == 2) // ERROR_FILE_NOT_FOUND
-            {
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
+            {   // ERROR_FILE_NOT_FOUND
                 _dialogService.ShowMessageBox(
                     title: "ROSE Online Login Manager - File Not Found",
                     message: "The ROSE Online client executable, TRose.exe, could not be found.\n\n" +
@@ -139,6 +136,14 @@ namespace ROSE_Online_Login_Manager.ViewModel
             }
             finally
             {
+                // Clear sensitive information from memory to prevent exposure
+                // Note: These variables contain sensitive data and must be cleared before exiting the method.
+                // IDE0059 warning is ignored as the assignments are necessary for security reasons.
+#pragma warning disable IDE0059
+                decryptedPassword = string.Empty;
+                arguments = string.Empty;
+#pragma warning restore IDE0059
+
                 startInfo.Arguments = string.Empty;
             }
         }
