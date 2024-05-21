@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
 using System.Collections.ObjectModel;

@@ -1,4 +1,4 @@
-﻿using ROSE_Online_Login_Manager.Resources.Util;
+using ROSE_Online_Login_Manager.Resources.Util;
 using System.IO;
 using System.Windows;
 using System.Xml;

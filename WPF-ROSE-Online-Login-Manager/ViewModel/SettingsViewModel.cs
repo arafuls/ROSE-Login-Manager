@@ -5,7 +5,6 @@ using ROSE_Online_Login_Manager.Resources.Util;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
-using System.Windows;
 using System.Windows.Input;
 
 
@@ -116,7 +115,6 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 GlobalVariables.Instance.RoseGameFolder = openFolderDialog.FolderName;
             }
         }
-
 
 
 
