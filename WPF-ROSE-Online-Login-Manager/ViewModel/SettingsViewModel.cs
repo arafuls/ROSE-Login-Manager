@@ -35,12 +35,9 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 {
                     OnPropertyChanged(nameof(RoseGameFolderPath));
                     GlobalVariables.Instance.RoseGameFolder = value;
-                    IsPathValidImage = true;
                 }
-                else
-                {
-                    IsPathValidImage = false;
-                }
+
+                IsPathValidImage = ContainsRoseExec(value);
             }
         }
 
@@ -116,6 +113,49 @@ namespace ROSE_Online_Login_Manager.ViewModel
             if (openFolderDialog.ShowDialog() == true)
             {
                 GlobalVariables.Instance.RoseGameFolder = openFolderDialog.FolderName;
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Checks if the specified directory contains the file "TRose.exe".
+        /// </summary>
+        /// <param name="directoryPath">The path of the directory to search.</param>
+        /// <returns>True if "TRose.exe" is found in the directory, otherwise false.</returns>
+        private bool ContainsRoseExec(string directoryPath)
+        {
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(directoryPath))
+                {
+                    return false;
+                }
+
+                // Get all files in the directory
+                string[] files = Directory.GetFiles(directoryPath);
+
+                // Check if any file matches "TRose.exe"
+                foreach (string file in files)
+                {
+                    if (Path.GetFileName(file).Equals("TRose.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                // TRose.exe not found in the directory
+                return false;
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - An Error Occurred",
+                    message: ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return false;
             }
         }
 

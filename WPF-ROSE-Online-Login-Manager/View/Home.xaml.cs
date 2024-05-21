@@ -20,6 +20,9 @@ namespace ROSE_Online_Login_Manager.View
         public Home()
         {
             InitializeComponent();
+
+            DataContext = new HomeViewModel();
+
             Loaded += Home_Loaded;
 
             profileCards = [];
@@ -34,8 +37,6 @@ namespace ROSE_Online_Login_Manager.View
         /// <param name="e">Event data.</param>
         private void Home_Loaded(object sender, RoutedEventArgs e)
         {
-            DataContext = new HomeViewModel(new DialogService());
-
             UpdateProfileCards();
             SubscribeToPropertyChanged();
         }

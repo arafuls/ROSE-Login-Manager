@@ -1,4 +1,5 @@
-﻿using System.IO;
+using ROSE_Online_Login_Manager.Resources.Util;
+using System.IO;
 using System.Windows;
 using System.Xml;
 
@@ -13,6 +14,7 @@ namespace ROSE_Online_Login_Manager.Model
     {
         private readonly GlobalVariables _globalVariables;
         private readonly string _configFile;
+        private readonly XmlDocument _doc;
 
 
 
@@ -35,10 +37,11 @@ namespace ROSE_Online_Login_Manager.Model
         {
             _globalVariables = GlobalVariables.Instance;
             _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager") + "\\config.xml";
+            _doc = new XmlDocument();
 
             if (File.Exists(_configFile))
             {
-                LoadConfig();
+                _doc.Load(_configFile);
             }
             else
             {
@@ -71,25 +74,21 @@ namespace ROSE_Online_Login_Manager.Model
         {
             try
             {
-                XmlDocument doc = new();
-                doc.Load(_configFile);
-
                 // Get the RoseGameFolder element from the XML document
-                XmlNode? roseGameFolderNode = doc.SelectSingleNode("//Configuration/RoseGameFolder");
+                XmlNode roseGameFolderNode = _doc.SelectSingleNode("//Configuration/RoseGameFolder");
                 if (roseGameFolderNode != null)
                 {
                     // Set the RoseGameFolderPath property from the XML node value
-                    GlobalVariables.Instance.RoseGameFolder = roseGameFolderNode.InnerText;
-                }
-                else
-                {
-                    // If RoseGameFolder element does not exist, show a message or handle it accordingly
-                    MessageBox.Show("RoseGameFolder element not found in the configuration file.");
+                    _globalVariables.RoseGameFolder = roseGameFolderNode.InnerText;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading configuration file: " + ex.Message);
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - ConfigurationManager::LoadConfig",
+                    message: "Error loading configuration file: " + ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
         }
 
@@ -102,14 +101,18 @@ namespace ROSE_Online_Login_Manager.Model
         {
             try
             {
-                XmlDocument doc = new();
-                XmlElement root = doc.CreateElement("Configuration");
-                doc.AppendChild(root);
-                doc.Save(_configFile);
+                XmlElement root = _doc.CreateElement("Configuration");
+                _doc.AppendChild(root);
+
+                _doc.Save(_configFile);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error creating configuration file: " + ex.Message);
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - ConfigurationManager::CreateConfig",
+                    message: "Error creating configuration file: " + ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
         }
 
@@ -134,22 +137,36 @@ namespace ROSE_Online_Login_Manager.Model
         {
             try
             {
-                XmlDocument doc = new();
-                XmlElement root = doc.CreateElement("Configuration");
-                doc.AppendChild(root);
+                // Get or create the root element
+                XmlElement rootElement = _doc.DocumentElement;
+                if (rootElement == null)
+                {
+                    rootElement = _doc.CreateElement("Configuration");
+                    _doc.AppendChild(rootElement);
+                }
 
-                // Create the RoseGameFolder element and set its value
-                XmlElement roseGameFolderElement = doc.CreateElement("RoseGameFolder");
+                // Get or create the RoseGameFolder element
+                XmlElement roseGameFolderElement = rootElement.SelectSingleNode("RoseGameFolder") as XmlElement;
+                if (roseGameFolderElement == null)
+                {
+                    roseGameFolderElement = _doc.CreateElement("RoseGameFolder");
+                    rootElement.AppendChild(roseGameFolderElement);
+                }
+
+                // Set the RoseGameFolder element value
                 string roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder ?? "";
                 roseGameFolderElement.InnerText = roseGameFolderPath;
-                root.AppendChild(roseGameFolderElement);
 
                 // Save the XML document to file
-                doc.Save(_configFile);
+                _doc.Save(_configFile);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saving configuration file: " + ex.Message);
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - ConfigurationManager::SaveRoseGameFolderPath",
+                    message: "Error saving configuration file: " + ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
         }
 

@@ -8,7 +8,7 @@
     <Grid Name="ProfileCardGrid" 
           Background="Gray"
           Margin="0 5"
-          Width="300" Height="50">
+          Width="290" Height="50">
         <Grid.RowDefinitions>
             <RowDefinition/>
         </Grid.RowDefinitions>
@@ -17,10 +17,6 @@
             <ColumnDefinition Width="50" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
-        <Border BorderBrush="{StaticResource Accent}" 
-                BorderThickness="1"
-                Grid.ColumnSpan="2"/>
 
         <!-- Profile Avatar -->
         <Image Name="ProfileAvatar" 
@@ -70,6 +66,7 @@
             <Button Name="ProfileLaunch" 
                     Grid.RowSpan="2" Grid.Column="2" 
                     Width="65" Height="25" 
+                    Margin="0 0 10 0"
                     Content="Launch" Click="ProfileLaunch_Click" />
         </Grid>
     </Grid>

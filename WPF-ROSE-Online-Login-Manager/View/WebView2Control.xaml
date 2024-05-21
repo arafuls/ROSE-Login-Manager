@@ -1,0 +1,6 @@
+﻿<UserControl x:Class="ROSE_Online_Login_Manager.View.WebView2Control"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+    <wv2:WebView2 x:Name="webView" Width="780" Height="530"/>
+</UserControl>

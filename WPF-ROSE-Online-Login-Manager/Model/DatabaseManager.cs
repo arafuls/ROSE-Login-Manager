@@ -265,7 +265,7 @@ namespace ROSE_Online_Login_Manager.Resources.Util
                 command.CommandText = query;
                 command.Parameters.AddWithValue("@Email", email);
 
-                // Execute the query to fetch the ProfileI
+                // Execute the query to fetch the ProfileIV
                 object? result = command.ExecuteScalar();
                 profileIV = result?.ToString() ?? string.Empty;
             }

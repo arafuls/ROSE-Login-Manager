@@ -147,13 +147,8 @@
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="OverridesDefaultStyle" Value="true"/>
         <Style.Triggers>
-            <Trigger Property="Orientation" Value="Horizontal">
-                <Setter Property="Width" Value="Auto"/>
-                <Setter Property="Height" Value="18" />
-                <Setter Property="Template" Value="{StaticResource HorizontalScrollBar}" />
-            </Trigger>
             <Trigger Property="Orientation" Value="Vertical">
-                <Setter Property="Width" Value="18"/>
+                <Setter Property="Width" Value="19"/>
                 <Setter Property="Height" Value="Auto" />
                 <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
             </Trigger>
@@ -168,7 +163,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="19"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -181,16 +176,12 @@
                                    Maximum="{TemplateBinding ScrollableHeight}" 
                                    ViewportSize="{TemplateBinding ViewportHeight}" 
                                    Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
-                        <ScrollBar Name="PART_HorizontalScrollBar" 
-                                   Grid.Row="1" Grid.Column="0" 
-                                   Orientation="Horizontal" 
-                                   Value="{TemplateBinding HorizontalOffset}" 
-                                   Maximum="{TemplateBinding ScrollableWidth}" 
-                                   ViewportSize="{TemplateBinding ViewportWidth}" 
-                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="Margin" Value="0 10 0 10"/>
+        <Setter Property="Padding" Value="0 0 20 0"/>
+        <Setter Property="Width" Value="310"/>
     </Style>
 </ResourceDictionary>
