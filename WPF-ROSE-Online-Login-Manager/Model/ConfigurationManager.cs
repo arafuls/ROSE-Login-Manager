@@ -75,7 +75,7 @@ namespace ROSE_Online_Login_Manager.Model
             try
             {
                 // Get the RoseGameFolder element from the XML document
-                XmlNode roseGameFolderNode = _doc.SelectSingleNode("//Configuration/RoseGameFolder");
+                XmlNode? roseGameFolderNode = _doc.SelectSingleNode("//Configuration/RoseGameFolder");
                 if (roseGameFolderNode != null)
                 {
                     // Set the RoseGameFolderPath property from the XML node value
@@ -138,7 +138,7 @@ namespace ROSE_Online_Login_Manager.Model
             try
             {
                 // Get or create the root element
-                XmlElement rootElement = _doc.DocumentElement;
+                XmlElement? rootElement = _doc.DocumentElement;
                 if (rootElement == null)
                 {
                     rootElement = _doc.CreateElement("Configuration");
@@ -146,8 +146,7 @@ namespace ROSE_Online_Login_Manager.Model
                 }
 
                 // Get or create the RoseGameFolder element
-                XmlElement roseGameFolderElement = rootElement.SelectSingleNode("RoseGameFolder") as XmlElement;
-                if (roseGameFolderElement == null)
+                if (rootElement.SelectSingleNode("RoseGameFolder") is not XmlElement roseGameFolderElement)
                 {
                     roseGameFolderElement = _doc.CreateElement("RoseGameFolder");
                     rootElement.AppendChild(roseGameFolderElement);

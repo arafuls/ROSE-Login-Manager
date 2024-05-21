@@ -5,6 +5,7 @@ using ROSE_Online_Login_Manager.Resources.Util;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Windows;
 using System.Windows.Input;
 
 
@@ -123,7 +124,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// </summary>
         /// <param name="directoryPath">The path of the directory to search.</param>
         /// <returns>True if "TRose.exe" is found in the directory, otherwise false.</returns>
-        private bool ContainsRoseExec(string directoryPath)
+        private static bool ContainsRoseExec(string directoryPath)
         {
             try
             {
