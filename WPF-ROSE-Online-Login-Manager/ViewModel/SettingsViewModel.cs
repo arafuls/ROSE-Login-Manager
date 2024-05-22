@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
@@ -20,7 +21,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         private readonly GlobalVariables _globalVariables;
 
 
-
+        #region Accessors
         /// <summary>
         ///     Gets or sets the directory path of the ROSE Online game folder.
         /// </summary>
@@ -32,10 +33,10 @@ namespace ROSE_Online_Login_Manager.ViewModel
             {
                 _roseGameFolderPath = value;
 
-                if (!string.IsNullOrEmpty(value) && Directory.Exists(value))
+                if (Directory.Exists(value))
                 {
-                    OnPropertyChanged(nameof(RoseGameFolderPath));
                     GlobalVariables.Instance.RoseGameFolder = value;
+                    OnPropertyChanged(nameof(RoseGameFolderPath));
                 }
 
                 IsPathValidImage = ContainsRoseExec(value);
@@ -61,7 +62,52 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
 
+        /// <summary>
+        ///     Gets or sets a value indicating whether the DisplayEmailCheckbox is checked.
+        /// </summary>
+        private bool _displayEmailChecked;
+        public bool DisplayEmailChecked
+        {
+            get => _displayEmailChecked;
+            set
+            {
+                SetProperty(ref _displayEmailChecked, value);
+                ConfigurationManager.Instance.SaveConfigSetting("DisplayEmail", value);
+
+                if (!value && MaskEmailChecked)
+                {
+                    MaskEmailChecked = false;
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether the MaskEmailCheckbox is checked.
+        /// </summary>
+        private bool _maskEmailChecked;
+        public bool MaskEmailChecked
+        {
+            get => _maskEmailChecked;
+            set
+            {
+                SetProperty(ref _maskEmailChecked, value);
+                ConfigurationManager.Instance.SaveConfigSetting("MaskEmail",value);
+
+                if (value && !DisplayEmailChecked)
+                {
+                    DisplayEmailChecked = true;
+                }
+            }
+        }
+        #endregion
+
+
+
         public ICommand GameFolderSearchCommand { get; private set; }
+        public ICommand DisplayEmailCheckedCommand { get; private set; }
+        public ICommand MaskEmailCheckedCommand { get; private set; }
 
 
 
@@ -75,14 +121,27 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
             // Initialize ICommand Relays
             GameFolderSearchCommand = new RelayCommand(GameFolderSearch);
+            DisplayEmailCheckedCommand = new RelayCommand(OnDisplayEmailChecked);
+            MaskEmailCheckedCommand = new RelayCommand(OnMaskEmailChecked);
 
-            // Initialize Rose Game Path Textbox Text
-            //RoseGameFolderPathDisplay = GlobalVariables.Instance.RoseGameFolder;
-            RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
+            InitializeSettingsVariables();
         }
 
 
 
+        /// <summary>
+        ///     Initializes the settings variables from the global vars.
+        /// </summary>
+        private void InitializeSettingsVariables()
+        {
+            RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
+            DisplayEmailChecked = GlobalVariables.Instance.DisplayEmail;
+            MaskEmailChecked = GlobalVariables.Instance.MaskEmail;
+        }
+
+
+
+        #region Event Handlers
         /// <summary>
         ///     Handles the PropertyChanged event of the GlobalVariables class.
         /// </summary>
@@ -96,6 +155,29 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
             }
         }
+
+
+
+        /// <summary>
+        ///     Handles the logic when the DisplayEmailCheckbox is checked.
+        /// </summary>
+        /// <param name="obj">Unused parameter.</param>
+        private void OnDisplayEmailChecked(object obj)
+        {
+            //MaskEmailEnabled = DisplayEmailChecked;
+        }
+
+
+
+        /// <summary>
+        ///     Handles the logic when the DisplayEmailCheckbox is checked.
+        /// </summary>
+        /// <param name="obj">Unused parameter.</param>
+        private void OnMaskEmailChecked(object obj)
+        {
+            //MaskEmailEnabled = DisplayEmailChecked;
+        }
+        #endregion
 
 
 
@@ -152,7 +234,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - An Error Occurred",
+                    title: "ROSE Online Login Manager - SettingsViewModel::ContainsRoseExec",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

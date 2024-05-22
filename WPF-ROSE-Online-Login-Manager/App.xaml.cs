@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using ROSE_Online_Login_Manager.Resources.Util;
+using System.Configuration;
 using System.Data;
 using System.Windows;
 
@@ -27,11 +28,11 @@ namespace ROSE_Online_Login_Manager
             // If the mutex already exists, exit the application
             if (!createdNew)
             {
-                MessageBox.Show(
-                    "Another instance of the application is already running.", 
-                    "Error", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - App::OnStartup",
+                    message: "Another instance of the application is already running.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Information);
                 _mutex.Dispose();
                 _mutex = null;
                 Environment.Exit(1);

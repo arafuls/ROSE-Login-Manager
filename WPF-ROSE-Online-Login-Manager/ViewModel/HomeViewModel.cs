@@ -56,7 +56,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - Error",
+                    title: "ROSE Online Login Manager - HomeViewModel::LaunchProfile",
                     message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -105,7 +105,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - File Not Found",
+                    title: "ROSE Online Login Manager - HomeViewModel::LoginThread",
                     message: "The ROSE Online client executable, TRose.exe, could not be found.\n\n" +
                              "Confirm that the ROSE Online client is installed correctly and that the ROSE Online Folder Location is set correctly.",
                     button: MessageBoxButton.OK,
@@ -114,7 +114,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             catch (Exception ex)
             {   // Display a generic error message for other exceptions
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - An Error Occurred",
+                    title: "ROSE Online Login Manager - HomeViewModel::LoginThread",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

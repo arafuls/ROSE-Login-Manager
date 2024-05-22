@@ -10,11 +10,7 @@ namespace ROSE_Online_Login_Manager.Model
     /// </summary>
     public class GlobalVariables : INotifyPropertyChanged
     {
-        public event EventHandler RoseGameFolderChanged;
-
-
-
-        #region Accessors
+       #region Accessors
         /// <summary>
         ///     Gets or sets the directory path of the ROSE Online game folder.
         /// </summary>
@@ -28,7 +24,45 @@ namespace ROSE_Online_Login_Manager.Model
                 {
                     _roseGameFolder = value;
                     OnPropertyChanged(nameof(RoseGameFolder));
-                    RoseGameFolderChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether the "Display Email" option is enabled.
+        /// </summary>
+        private bool _displayEmail;
+        public bool DisplayEmail
+        {
+            get { return _displayEmail; }
+            set
+            {
+                if (_displayEmail != value)
+                {
+                    _displayEmail = value;
+                    OnPropertyChanged(nameof(DisplayEmail));
+                    //RoseGameFolderChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether the "Mask Email" option is enabled.
+        /// </summary>
+        private bool _maskEmail;
+        public bool MaskEmail
+        {
+            get { return _maskEmail; }
+            set
+            {
+                if (_maskEmail != value)
+                {
+                    _maskEmail = value;
+                    OnPropertyChanged(nameof(DisplayEmail));
                 }
             }
         }

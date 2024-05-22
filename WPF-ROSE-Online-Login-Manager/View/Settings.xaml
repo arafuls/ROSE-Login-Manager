@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
+             xmlns:local="clr-namespace:ROSE_Online_Login_Manager.ViewModel" d:DataContext="{d:DesignInstance Type=local:SettingsViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025"
              Style="{StaticResource View_Style}">
@@ -34,6 +35,21 @@
                             Height="18" Width="18">
                         <Image Source="../Resources/Images/magnify.png"/>
                     </Button>
+                </StackPanel>
+
+                <!-- Display Email Settings -->
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left"
+                            Margin="28 10 0 0"  Width="300">
+                    
+                    <!-- Root Checkbox -->
+                    <CheckBox Content="Display Emails" 
+                              IsChecked="{Binding DisplayEmailChecked}" 
+                              Margin="0,0,0,5" Foreground="WhiteSmoke"/>
+
+                    <!-- Child Checkboxes -->
+                    <CheckBox Content="Mask Emails" 
+                              IsChecked="{Binding MaskEmailChecked}"
+                              Margin="20,0,0,5" Foreground="WhiteSmoke"/>
                 </StackPanel>
 
             </StackPanel>
