@@ -1,7 +1,6 @@
 ﻿<Application x:Class="ROSE_Online_Login_Manager.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ROSE_Online_Login_Manager"
              StartupUri="View/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -18,7 +17,7 @@
                 <ResourceDictionary Source="Resources/Styles/ViewStyle.xaml"/>
                 
                 <!-- Data Template Styling -->
-                <ResourceDictionary Source="Resources/Util/DataTemplate.xaml"/>
+                <ResourceDictionary Source="View/DataTemplate.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

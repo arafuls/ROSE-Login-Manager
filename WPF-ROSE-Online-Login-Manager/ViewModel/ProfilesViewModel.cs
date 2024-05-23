@@ -5,6 +5,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
+using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using ROSE_Online_Login_Manager.View;
 
 
@@ -16,8 +18,11 @@ namespace ROSE_Online_Login_Manager.ViewModel
     /// </summary>
     internal class ProfilesViewModel : ObservableObject
     {
-        #region Data Fields
+        private readonly DatabaseManager _db;
 
+
+
+        #region Accessors
         private ObservableCollection<UserProfileModel> _userProfilesCollection = [];
         public ObservableCollection<UserProfileModel> UserProfilesCollection
         {
@@ -41,10 +46,6 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 OnPropertyChanged(nameof(SelectedProfile));
             }
         }
-
-
-
-        private readonly DatabaseManager db;
         #endregion
 
 
@@ -83,7 +84,8 @@ namespace ROSE_Online_Login_Manager.ViewModel
             if (SelectedProfile != null)
             {
                 // Delete the selected profile from the database
-                db.DeleteProfile(SelectedProfile);
+                _db.DeleteProfile(SelectedProfile);
+                WeakReferenceMessenger.Default.Send(new ProfileDeletedUpdateMessage(SelectedProfile));
 
                 // Reload all profiles from the database
                 LoadAllProfilesFromDatabase();
@@ -102,7 +104,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             WeakReferenceMessenger.Default.Register<ProfilesViewModel, ProfileAddedMessage>(this, OnProfileAdded);
 
             // Initialize the database manager
-            db = new DatabaseManager();
+            _db = new DatabaseManager();
 
             // Initialize ICommand Relays
             AddProfileCommand = new RelayCommand(AddProfile);
@@ -123,9 +125,10 @@ namespace ROSE_Online_Login_Manager.ViewModel
             if (newProfile != null)
             {
                 // Insert the new profile into the database and add it to the collection if successful
-                if (db.InsertProfileIntoDatabase(newProfile))
+                if (_db.InsertProfileIntoDatabase(newProfile))
                 {
                     UserProfilesCollection.Add(newProfile);
+                    WeakReferenceMessenger.Default.Send(new ProfileAddedUpdateMessage(newProfile));
                 }
             }
         }
@@ -137,7 +140,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// </summary>
         private void LoadAllProfilesFromDatabase()
         {
-            UserProfilesCollection = db.GetAllProfiles();
+            UserProfilesCollection = _db.GetAllProfiles();
         }
     }
 }

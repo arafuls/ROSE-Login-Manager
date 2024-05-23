@@ -1,4 +1,6 @@
-using ROSE_Online_Login_Manager.Resources.Util;
+using CommunityToolkit.Mvvm.Messaging;
+using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using System.IO;
 using System.Windows;
 using System.Xml;
@@ -12,21 +14,16 @@ namespace ROSE_Online_Login_Manager.Model
     /// </summary>
     class ConfigurationManager : IDisposable
     {
-        private readonly GlobalVariables _globalVariables;
         private readonly string _configFile;
         private readonly XmlDocument _doc;
 
 
 
-        #region Singleton
-        private static readonly ConfigurationManager instance = new();
-
-
-
         /// <summary>
-        ///     Static constructor to initialize the singleton instance of ConfigurationManager.
+        ///     Gets the singleton instance of the ConfigurationManager class.
         /// </summary>
-        static ConfigurationManager() { }
+        private static readonly Lazy<ConfigurationManager> lazyInstance = new(() => new ConfigurationManager());
+        public static ConfigurationManager Instance => lazyInstance.Value;
 
 
 
@@ -35,51 +32,36 @@ namespace ROSE_Online_Login_Manager.Model
         /// </summary>
         private ConfigurationManager()
         {
-            _globalVariables = GlobalVariables.Instance;
             _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager") + "\\config.xml";
             _doc = new XmlDocument();
 
             if (File.Exists(_configFile))
             {
-                _doc.Load(_configFile);
+                LoadConfig();
             }
             else
             {
                 CreateConfig();
             }
-
-            _globalVariables.RoseGameFolderChanged += HandleRoseGameFolderChanged;
         }
 
 
 
         /// <summary>
-        ///     Gets the singleton instance of ConfigurationManager.
-        /// </summary>
-        public static ConfigurationManager Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
-        #endregion
-
-
-
-        /// <summary>
-        ///     Loads configuration settings from an existing file.
+        ///     Loads configuration settings from the XML file.
         /// </summary>
         public void LoadConfig()
         {
             try
             {
-                // Get the RoseGameFolder element from the XML document
-                XmlNode? roseGameFolderNode = _doc.SelectSingleNode("//Configuration/RoseGameFolder");
-                if (roseGameFolderNode != null)
-                {
-                    // Set the RoseGameFolderPath property from the XML node value
-                    _globalVariables.RoseGameFolder = roseGameFolderNode.InnerText;
+                _doc.Load(_configFile);
+
+                XmlNode? generalSettingsNode = _doc.SelectSingleNode("//Configuration/GeneralSettings");
+                if (generalSettingsNode != null)
+                {   
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder")));
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail"))));
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("MaskEmail", bool.Parse(GetConfigSetting("MaskEmail"))));
                 }
             }
             catch (Exception ex)
@@ -95,7 +77,7 @@ namespace ROSE_Online_Login_Manager.Model
 
 
         /// <summary>
-        ///     Creates a new configuration file if it does not exist.
+        ///     Creates a new configuration file with default settings.
         /// </summary>
         private void CreateConfig()
         {
@@ -103,6 +85,13 @@ namespace ROSE_Online_Login_Manager.Model
             {
                 XmlElement root = _doc.CreateElement("Configuration");
                 _doc.AppendChild(root);
+
+                XmlElement generalSettings = _doc.CreateElement("GeneralSettings");
+                root.AppendChild(generalSettings);
+
+                SaveConfigSetting("RoseGameFolder", "");
+                SaveConfigSetting("DisplayEmail", "False");
+                SaveConfigSetting("MaskEmail", "False");
 
                 _doc.Save(_configFile);
             }
@@ -119,54 +108,92 @@ namespace ROSE_Online_Login_Manager.Model
 
 
         /// <summary>
-        ///     Handles the event raised when the RoseGameFolder path in GlobalVariables changes.
+        ///     Saves a configuration setting with the specified key and value.
         /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">Event arguments.</param>
-        private void HandleRoseGameFolderChanged(object sender, EventArgs e)
+        /// <param name="key">The key of the setting.</param>
+        /// <param name="value">The value of the setting.</param>
+        private void SaveSetting(string key, string value)
         {
-            SaveRoseGameFolderPath();
+            try
+            {
+                XmlNode? root = _doc.SelectSingleNode("//Configuration/GeneralSettings");
+                if (root != null)
+                {
+                    XmlNode? existingSetting = root.SelectSingleNode(key);
+                    if (existingSetting != null)
+                    {
+                        if (existingSetting.InnerText == value) { return; }
+
+                        // If the setting exists, update its value.
+                        existingSetting.InnerText = value;
+                    }
+                    else
+                    {
+                        // If the setting does not exist, create a new setting element.
+                        XmlElement element = _doc.CreateElement(key);
+                        element.InnerText = value;
+                        root.AppendChild(element);
+                    }
+                    _doc.Save(_configFile);
+
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>(key, value));
+                }
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - ConfigurationManager::SaveSetting",
+                    message: "Error saving setting: " + ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
         }
 
 
 
         /// <summary>
-        ///     Saves the RoseGameFolder string to the configuration file.
+        ///     Saves a configuration setting with the specified key and boolean value.
         /// </summary>
-        public void SaveRoseGameFolderPath()
+        /// <param name="key">The key of the setting.</param>
+        /// <param name="value">The boolean value of the setting.</param>
+        public void SaveConfigSetting(string key, bool value)
         {
-            try
+            SaveSetting(key, value.ToString());
+        }
+
+
+
+        /// <summary>
+        ///     Saves a configuration setting with the specified key and string value.
+        /// </summary>
+        /// <param name="key">The key of the setting.</param>
+        /// <param name="value">The string value of the setting.</param>
+        public void SaveConfigSetting(string key, string value)
+        {
+            SaveSetting(key, value);
+        }
+
+
+
+        /// <summary>
+        ///     Retrieves the value of a configuration setting specified by the key.
+        /// </summary>
+        /// <param name="key">The key of the configuration setting to retrieve.</param>
+        /// <returns>
+        ///     The value of the configuration setting if found; otherwise, returns null.
+        /// </returns>
+        public string GetConfigSetting(string key)
+        {
+            XmlNode? root = _doc.SelectSingleNode("//Configuration/GeneralSettings");
+            if (root != null)
             {
-                // Get or create the root element
-                XmlElement? rootElement = _doc.DocumentElement;
-                if (rootElement == null)
+                XmlNode? settingNode = root.SelectSingleNode(key);
+                if (settingNode != null)
                 {
-                    rootElement = _doc.CreateElement("Configuration");
-                    _doc.AppendChild(rootElement);
+                    return settingNode.InnerText;
                 }
-
-                // Get or create the RoseGameFolder element
-                if (rootElement.SelectSingleNode("RoseGameFolder") is not XmlElement roseGameFolderElement)
-                {
-                    roseGameFolderElement = _doc.CreateElement("RoseGameFolder");
-                    rootElement.AppendChild(roseGameFolderElement);
-                }
-
-                // Set the RoseGameFolder element value
-                string roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder ?? "";
-                roseGameFolderElement.InnerText = roseGameFolderPath;
-
-                // Save the XML document to file
-                _doc.Save(_configFile);
             }
-            catch (Exception ex)
-            {
-                new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - ConfigurationManager::SaveRoseGameFolderPath",
-                    message: "Error saving configuration file: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
-            }
+            return null;
         }
 
 
@@ -176,7 +203,7 @@ namespace ROSE_Online_Login_Manager.Model
         /// </summary>
         public void Dispose()
         {
-            throw new NotImplementedException();
+            // No resources to dispose
         }
     }
 }

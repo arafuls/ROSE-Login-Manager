@@ -2,7 +2,7 @@
 
 
 
-namespace ROSE_Online_Login_Manager.Resources.Util
+namespace ROSE_Online_Login_Manager.Services
 {
     /// <summary>
     ///     A basic implementation of ICommand for use with WPF applications.

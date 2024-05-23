@@ -1,8 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
 using ROSE_Online_Login_Manager.Model;
-using ROSE_Online_Login_Manager.Resources.Util;
-using System.ComponentModel;
+using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -17,10 +18,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
     /// </summary>
     internal class SettingsViewModel : ObservableObject
     {
-        private readonly GlobalVariables _globalVariables;
-
-
-
+        #region Accessors
         /// <summary>
         ///     Gets or sets the directory path of the ROSE Online game folder.
         /// </summary>
@@ -32,13 +30,13 @@ namespace ROSE_Online_Login_Manager.ViewModel
             {
                 _roseGameFolderPath = value;
 
-                if (!string.IsNullOrEmpty(value) && Directory.Exists(value))
+                if (Directory.Exists(value))
                 {
-                    OnPropertyChanged(nameof(RoseGameFolderPath));
-                    GlobalVariables.Instance.RoseGameFolder = value;
+                    ConfigurationManager.Instance.SaveConfigSetting("RoseGameFolder", value);
                 }
 
                 IsPathValidImage = ContainsRoseExec(value);
+                OnPropertyChanged(nameof(RoseGameFolderPath));
             }
         }
 
@@ -61,7 +59,59 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
 
+        /// <summary>
+        ///     Gets or sets a value indicating whether the DisplayEmailCheckbox is checked.
+        /// </summary>
+        private bool _displayEmailChecked;
+        public bool DisplayEmailChecked
+        {
+            get => _displayEmailChecked;
+            set
+            {
+                if (_displayEmailChecked == value) { return; }
+
+                SetProperty(ref _displayEmailChecked, value);
+                ConfigurationManager.Instance.SaveConfigSetting("DisplayEmail", value);
+
+
+                if (!value && MaskEmailChecked)
+                {
+                    MaskEmailChecked = false;
+                }
+
+                WeakReferenceMessenger.Default.Send(new DisplayEmailCheckedMessage(value));
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether the MaskEmailCheckbox is checked.
+        /// </summary>
+        private bool _maskEmailChecked;
+        public bool MaskEmailChecked
+        {
+            get => _maskEmailChecked;
+            set
+            {
+                SetProperty(ref _maskEmailChecked, value);
+                ConfigurationManager.Instance.SaveConfigSetting("MaskEmail",value);
+
+                if (value && !DisplayEmailChecked)
+                {
+                    DisplayEmailChecked = true;
+                }
+
+                WeakReferenceMessenger.Default.Send(new MaskEmailCheckedMessage(value));
+            }
+        }
+        #endregion
+
+
+
         public ICommand GameFolderSearchCommand { get; private set; }
+        public ICommand DisplayEmailCheckedCommand { get; private set; }
+        public ICommand MaskEmailCheckedCommand { get; private set; }
 
 
 
@@ -70,31 +120,22 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// </summary>
         public SettingsViewModel()
         {
-            _globalVariables = GlobalVariables.Instance;
-            _globalVariables.PropertyChanged += OnGlobalVariablesPropertyChanged;
-
             // Initialize ICommand Relays
             GameFolderSearchCommand = new RelayCommand(GameFolderSearch);
 
-            // Initialize Rose Game Path Textbox Text
-            //RoseGameFolderPathDisplay = GlobalVariables.Instance.RoseGameFolder;
-            RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
+            InitializeSettingsVariables();
         }
 
 
 
         /// <summary>
-        ///     Handles the PropertyChanged event of the GlobalVariables class.
+        ///     Initializes the settings variables from the global vars.
         /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">The event data.</param>
-        private void OnGlobalVariablesPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void InitializeSettingsVariables()
         {
-            // Update RoseGameFolderPath when GlobalVariables.RoseGameFolder changes
-            if (e.PropertyName == nameof(GlobalVariables.Instance.RoseGameFolder))
-            {
-                RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
-            }
+            RoseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
+            DisplayEmailChecked = GlobalVariables.Instance.DisplayEmail;
+            MaskEmailChecked = GlobalVariables.Instance.MaskEmail;
         }
 
 
@@ -113,7 +154,13 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
             if (openFolderDialog.ShowDialog() == true)
             {
-                GlobalVariables.Instance.RoseGameFolder = openFolderDialog.FolderName;
+                ConfigurationManager.Instance.SaveConfigSetting("RoseGameFolder", openFolderDialog.FolderName);
+
+                // If path changed (is valid dir), then update local var
+                if (GlobalVariables.Instance.RoseGameFolder == openFolderDialog.FolderName)
+                {
+                    RoseGameFolderPath = openFolderDialog.FolderName;
+                }
             }
         }
 
@@ -152,7 +199,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - An Error Occurred",
+                    title: "ROSE Online Login Manager - SettingsViewModel::ContainsRoseExec",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

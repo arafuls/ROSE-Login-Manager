@@ -5,9 +5,9 @@ using System.Security.Cryptography;
 
 
 
-namespace ROSE_Online_Login_Manager.Resources.Util
+namespace ROSE_Online_Login_Manager.Services
 {
-    
+
     internal interface IPasswordEncryptor
     {
         /// <summary>
@@ -113,7 +113,7 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         {
             ArgumentNullException.ThrowIfNull(secureString);
 
-            IntPtr valuePtr = IntPtr.Zero;
+            nint valuePtr = nint.Zero;
             try
             {
                 valuePtr = Marshal.SecureStringToGlobalAllocUnicode(secureString);
@@ -121,7 +121,7 @@ namespace ROSE_Online_Login_Manager.Resources.Util
             }
             finally
             {
-                if (valuePtr != IntPtr.Zero)
+                if (valuePtr != nint.Zero)
                 {
                     Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
                 }

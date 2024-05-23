@@ -1,6 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
+using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,18 +15,34 @@ namespace ROSE_Online_Login_Manager.ViewModel
 {
     internal class HomeViewModel : ObservableObject
     {
-        private readonly DatabaseManager db;
+        private readonly DatabaseManager _db;
 
 
 
         #region Accessors
+        /// <summary>
+        ///     Gets or sets the collection of profile card view models.
+        /// </summary>
+        private ObservableCollection<ProfileCardViewModel> _profileCards;
+        public ObservableCollection<ProfileCardViewModel> ProfileCards
+        {
+            get => _profileCards;
+            set
+            {
+                _profileCards = value;
+                OnPropertyChanged(nameof(ProfileCards));
+            }
+        }
+
+
+
         /// <summary>
         ///     Gets or sets the collection of user profiles.
         /// </summary>
         private ObservableCollection<UserProfileModel> _profiles;
         public ObservableCollection<UserProfileModel> Profiles
         {
-            get { return _profiles; }
+            get => _profiles;
             set
             {
                 _profiles = value;
@@ -37,12 +56,66 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <summary>
         ///     Initializes a new instance of the <see cref="HomeViewModel"/> class.
         /// </summary>
-        /// <param name="dialogService">The dialog service for displaying dialogs.</param>
         public HomeViewModel()
         {
-            db = new DatabaseManager();
-            Profiles = new ObservableCollection<UserProfileModel>(db.GetAllProfiles());
+            _db = new DatabaseManager();
+
+            WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, (recipient, message) => LaunchProfile(message.ProfileEmail));
+            WeakReferenceMessenger.Default.Register<ProfileAddedUpdateMessage>(this, HandleProfileAddedUpdate);
+            WeakReferenceMessenger.Default.Register<ProfileDeletedUpdateMessage>(this, HandleProfileDeletedUpdate);
+
+            LoadProfileData();
         }
+
+
+
+        #region Message Handlers
+        /// <summary>
+        ///     Loads the user profiles and initializes the corresponding profile card view models.
+        /// </summary>
+        private void LoadProfileData()
+        {
+            ProfileCards = [];
+
+            bool display = GlobalVariables.Instance.DisplayEmail;
+            bool mask = GlobalVariables.Instance.MaskEmail;
+
+            Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
+            foreach (UserProfileModel profile in Profiles)
+            {
+                ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Handles the update message triggered by the addition of a new user profile, updating the UI accordingly.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The message containing the details of the newly added profile.</param>
+        private void HandleProfileAddedUpdate(object recipient, ProfileAddedUpdateMessage message)
+        {
+            UserProfileModel profile = message.Profile;
+            bool display = GlobalVariables.Instance.DisplayEmail;
+            bool mask = GlobalVariables.Instance.MaskEmail;
+
+            ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
+        }
+
+
+
+        /// <summary>
+        ///     Handles the update message triggered by the deletion of a user profile, removing the corresponding profile card from the UI.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The message containing the details of the profile to be deleted.</param>
+        private void HandleProfileDeletedUpdate(object recipient, ProfileDeletedUpdateMessage message)
+        {
+            UserProfileModel profile = message.Profile;
+            ProfileCards.Remove(ProfileCards.FirstOrDefault(card => card.ProfileEmail == profile.ProfileEmail));
+        }
+        #endregion
 
 
 
@@ -56,7 +129,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - Error",
+                    title: "ROSE Online Login Manager - HomeViewModel::LaunchProfile",
                     message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -85,7 +158,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <param name="email">The email associated with the user profile.</param>
         /// <param name="password">The password associated with the user profile.</param>
         /// <param name="iv">The initialization vector associated with the user profile to be used for decryption.</param>
-        private void LoginThread(string email, string password, string iv)
+        private static void LoginThread(string email, string password, string iv)
         {
             string decryptedPassword = AESEncryptor.Decrypt(Convert.FromBase64String(password), Convert.FromBase64String(iv));
             string arguments = $"--login --server connect.roseonlinegame.com --username {email} --password {decryptedPassword}";
@@ -105,7 +178,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - File Not Found",
+                    title: "ROSE Online Login Manager - HomeViewModel::LoginThread",
                     message: "The ROSE Online client executable, TRose.exe, could not be found.\n\n" +
                              "Confirm that the ROSE Online client is installed correctly and that the ROSE Online Folder Location is set correctly.",
                     button: MessageBoxButton.OK,
@@ -114,7 +187,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             catch (Exception ex)
             {   // Display a generic error message for other exceptions
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - An Error Occurred",
+                    title: "ROSE Online Login Manager - HomeViewModel::LoginThread",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
