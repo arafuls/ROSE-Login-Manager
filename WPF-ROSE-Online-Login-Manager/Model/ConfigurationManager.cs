@@ -1,13 +1,11 @@
-using ROSE_Online_Login_Manager.Resources.Util;
-using System.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using System.IO;
 using System.Windows;
 using System.Xml;
 
-/* 
- * TODO: 
- *   - Attempt to find RoseGameFolder on start up if not set in config.xml
- */
+
 
 namespace ROSE_Online_Login_Manager.Model
 {
@@ -16,20 +14,16 @@ namespace ROSE_Online_Login_Manager.Model
     /// </summary>
     class ConfigurationManager : IDisposable
     {
-        private readonly GlobalVariables _globalVariables;
         private readonly string _configFile;
         private readonly XmlDocument _doc;
 
 
 
-        private static readonly ConfigurationManager instance = new();
-
-
-
         /// <summary>
-        ///     Static constructor to initialize the singleton instance of ConfigurationManager.
+        ///     Gets the singleton instance of the ConfigurationManager class.
         /// </summary>
-        static ConfigurationManager() { }
+        private static readonly Lazy<ConfigurationManager> lazyInstance = new(() => new ConfigurationManager());
+        public static ConfigurationManager Instance => lazyInstance.Value;
 
 
 
@@ -38,7 +32,6 @@ namespace ROSE_Online_Login_Manager.Model
         /// </summary>
         private ConfigurationManager()
         {
-            _globalVariables = GlobalVariables.Instance;
             _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager") + "\\config.xml";
             _doc = new XmlDocument();
 
@@ -50,16 +43,7 @@ namespace ROSE_Online_Login_Manager.Model
             {
                 CreateConfig();
             }
-
-            _globalVariables.PropertyChanged += HandleGlobalVariablesChanged;
         }
-
-
-
-        /// <summary>
-        ///     Gets the singleton instance of ConfigurationManager.
-        /// </summary>
-        public static ConfigurationManager Instance => instance;
 
 
 
@@ -75,9 +59,9 @@ namespace ROSE_Online_Login_Manager.Model
                 XmlNode? generalSettingsNode = _doc.SelectSingleNode("//Configuration/GeneralSettings");
                 if (generalSettingsNode != null)
                 {   
-                    _globalVariables.RoseGameFolder = GetConfigSetting("RoseGameFolder");
-                    _globalVariables.DisplayEmail   = bool.Parse(GetConfigSetting("DisplayEmail"));
-                    _globalVariables.MaskEmail      = bool.Parse(GetConfigSetting("MaskEmail"));
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder")));
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail"))));
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("MaskEmail", bool.Parse(GetConfigSetting("MaskEmail"))));
                 }
             }
             catch (Exception ex)
@@ -124,18 +108,6 @@ namespace ROSE_Online_Login_Manager.Model
 
 
         /// <summary>
-        ///     Handles the event triggered when global variables are changed by saving them.
-        /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">The event data.</param>
-        private void HandleGlobalVariablesChanged(object sender, PropertyChangedEventArgs e)
-        {
-            SaveSetting(e.PropertyName, _globalVariables.GetType().GetProperty(e.PropertyName)?.GetValue(_globalVariables, null)?.ToString() ?? "");
-        }
-
-
-
-        /// <summary>
         ///     Saves a configuration setting with the specified key and value.
         /// </summary>
         /// <param name="key">The key of the setting.</param>
@@ -150,6 +122,8 @@ namespace ROSE_Online_Login_Manager.Model
                     XmlNode? existingSetting = root.SelectSingleNode(key);
                     if (existingSetting != null)
                     {
+                        if (existingSetting.InnerText == value) { return; }
+
                         // If the setting exists, update its value.
                         existingSetting.InnerText = value;
                     }
@@ -161,6 +135,8 @@ namespace ROSE_Online_Login_Manager.Model
                         root.AppendChild(element);
                     }
                     _doc.Save(_configFile);
+
+                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>(key, value));
                 }
             }
             catch (Exception ex)

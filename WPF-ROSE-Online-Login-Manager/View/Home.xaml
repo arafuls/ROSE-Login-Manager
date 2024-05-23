@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:WebView2="clr-namespace:ROSE_Online_Login_Manager.View"
-
+             xmlns:local="clr-namespace:ROSE_Online_Login_Manager.View"
+             xmlns:model="clr-namespace:ROSE_Online_Login_Manager.Model"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025">
     <Grid>
@@ -15,14 +15,22 @@
 
         <!-- Left Panel-->
         <Border Margin="10 25 5 25">
-            <ScrollViewer Name="ProfileScrollViewer" Style="{StaticResource ScrollViewerStyle}">
-                <StackPanel Name="ProfileStackPanel"/>
+            <!-- List of Profile Cards -->
+            <ScrollViewer Name="ProfileScrollViewer" 
+                          Style="{StaticResource ScrollViewerStyle}">
+                <ItemsControl ItemsSource="{Binding ProfileCards}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:ProfileCard/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
         </Border>
 
         <!-- Right Panel -->
         <Border Grid.Column="1" Margin="5 10 5 10">
-            <WebView2:WebView2Control x:Name="webView" SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+            <local:WebView2Control x:Name="webView" SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
         </Border>
     </Grid>
 </UserControl>

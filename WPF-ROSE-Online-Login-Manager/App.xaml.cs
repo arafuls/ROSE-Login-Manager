@@ -1,7 +1,8 @@
-﻿using ROSE_Online_Login_Manager.Resources.Util;
-using System.Configuration;
-using System.Data;
+﻿using ROSE_Online_Login_Manager.Model;
+using ROSE_Online_Login_Manager.Services;
 using System.Windows;
+
+
 
 namespace ROSE_Online_Login_Manager
 {
@@ -41,7 +42,9 @@ namespace ROSE_Online_Login_Manager
             // Continue with application initialization
             base.OnStartup(e);
 
-            ROSE_Online_Login_Manager.Model.ConfigurationManager.Instance.LoadConfig();
+            // Instantiate Singletons
+            _ = GlobalVariables.Instance;
+            _ = ConfigurationManager.Instance;
         }
 
 

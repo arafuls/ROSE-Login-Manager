@@ -57,17 +57,29 @@
                 <!-- Profile Email -->
                 <TextBlock Name="ProfileEmailTextBlock" 
                            Grid.Row="1" Grid.ColumnSpan="2"
-                           Text="{Binding ProfileEmail}"
+                           Text="{Binding CosmeticEmail}"
                            TextTrimming="CharacterEllipsis" 
-                           FontSize="12" Foreground="Black"/>
+                           FontSize="12" Foreground="Black">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CosmeticEmail}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
 
             <!-- Launch Profile -->
             <Button Name="ProfileLaunch" 
                     Grid.RowSpan="2" Grid.Column="2" 
+                    Command="{Binding LaunchProfileCommand}" 
                     Width="65" Height="25" 
                     Margin="0 0 10 0"
-                    Content="Launch" Click="ProfileLaunch_Click" />
+                    Content="Launch"/>
         </Grid>
     </Grid>
 </UserControl>

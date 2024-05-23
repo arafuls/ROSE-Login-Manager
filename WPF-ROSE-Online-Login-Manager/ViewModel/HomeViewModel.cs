@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
+using ROSE_Online_Login_Manager.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,18 +14,34 @@ namespace ROSE_Online_Login_Manager.ViewModel
 {
     internal class HomeViewModel : ObservableObject
     {
-        private readonly DatabaseManager db;
+        private readonly DatabaseManager _db;
 
 
 
         #region Accessors
+        /// <summary>
+        ///     Gets or sets the collection of profile card view models.
+        /// </summary>
+        private ObservableCollection<ProfileCardViewModel> _profileCards;
+        public ObservableCollection<ProfileCardViewModel> ProfileCards
+        {
+            get => _profileCards;
+            set
+            {
+                _profileCards = value;
+                OnPropertyChanged(nameof(ProfileCards));
+            }
+        }
+
+
+
         /// <summary>
         ///     Gets or sets the collection of user profiles.
         /// </summary>
         private ObservableCollection<UserProfileModel> _profiles;
         public ObservableCollection<UserProfileModel> Profiles
         {
-            get { return _profiles; }
+            get => _profiles;
             set
             {
                 _profiles = value;
@@ -37,11 +55,32 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <summary>
         ///     Initializes a new instance of the <see cref="HomeViewModel"/> class.
         /// </summary>
-        /// <param name="dialogService">The dialog service for displaying dialogs.</param>
         public HomeViewModel()
         {
-            db = new DatabaseManager();
-            Profiles = new ObservableCollection<UserProfileModel>(db.GetAllProfiles());
+            _db = new DatabaseManager();
+
+            WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, (recipient, message) => LaunchProfile(message.ProfileEmail));
+
+            LoadProfileData();
+        }
+
+
+
+        /// <summary>
+        ///     Loads the user profiles and initializes the corresponding profile card view models.
+        /// </summary>
+        private void LoadProfileData()
+        {
+            ProfileCards = [];
+
+            bool display = GlobalVariables.Instance.DisplayEmail;
+            bool mask = GlobalVariables.Instance.MaskEmail;
+
+            Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
+            foreach (UserProfileModel profile in Profiles)
+            {
+                ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
+            }
         }
 
 
@@ -85,7 +124,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <param name="email">The email associated with the user profile.</param>
         /// <param name="password">The password associated with the user profile.</param>
         /// <param name="iv">The initialization vector associated with the user profile to be used for decryption.</param>
-        private void LoginThread(string email, string password, string iv)
+        private static void LoginThread(string email, string password, string iv)
         {
             string decryptedPassword = AESEncryptor.Decrypt(Convert.FromBase64String(password), Convert.FromBase64String(iv));
             string arguments = $"--login --server connect.roseonlinegame.com --username {email} --password {decryptedPassword}";

@@ -1,5 +1,9 @@
-﻿using System.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using System.IO;
+using System.Windows;
 
 
 
@@ -8,9 +12,9 @@ namespace ROSE_Online_Login_Manager.Model
     /// <summary>
     ///     Represents a singleton class for storing global variables or application-wide state.
     /// </summary>
-    public class GlobalVariables : INotifyPropertyChanged
+    public class GlobalVariables : ObservableObject
     {
-       #region Accessors
+        #region Accessors
         /// <summary>
         ///     Gets or sets the directory path of the ROSE Online game folder.
         /// </summary>
@@ -23,7 +27,6 @@ namespace ROSE_Online_Login_Manager.Model
                 if (_roseGameFolder != value)
                 {
                     _roseGameFolder = value;
-                    OnPropertyChanged(nameof(RoseGameFolder));
                 }
             }
         }
@@ -42,8 +45,6 @@ namespace ROSE_Online_Login_Manager.Model
                 if (_displayEmail != value)
                 {
                     _displayEmail = value;
-                    OnPropertyChanged(nameof(DisplayEmail));
-                    //RoseGameFolderChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -62,7 +63,6 @@ namespace ROSE_Online_Login_Manager.Model
                 if (_maskEmail != value)
                 {
                     _maskEmail = value;
-                    OnPropertyChanged(nameof(DisplayEmail));
                 }
             }
         }
@@ -77,22 +77,15 @@ namespace ROSE_Online_Login_Manager.Model
         {
             get { return _appPath; }
         }
+        #endregion
 
 
 
         /// <summary>
         ///     Gets the singleton instance of the GlobalVariables class.
         /// </summary>
-        private static GlobalVariables _instance;
-        public static GlobalVariables Instance
-        {
-            get
-            {
-                _instance ??= new GlobalVariables();    // Create the instance if it doesn't exist yet
-                return _instance;
-            }
-        }
-        #endregion
+        private static readonly Lazy<GlobalVariables> lazyInstance = new(() => new GlobalVariables());
+        public static GlobalVariables Instance => lazyInstance.Value;
 
 
 
@@ -102,19 +95,39 @@ namespace ROSE_Online_Login_Manager.Model
         private GlobalVariables()
         {
             _appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager");
+
+            WeakReferenceMessenger.Default.Register<SettingChangedMessage<string>>(this, HandleSettingChanged);
+            WeakReferenceMessenger.Default.Register<SettingChangedMessage<bool>>(this, HandleSettingChanged);
         }
 
 
 
         /// <summary>
-        ///     Raises the PropertyChanged event to notify subscribers of a property change.
+        ///     Handles the change of a setting by updating the corresponding property in the recipient object.
         /// </summary>
-        /// <param name="propertyName">The name of the property that changed.</param>
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
+        /// <typeparam name="T">The type of the setting value.</typeparam>
+        /// <param name="recipient">The object that will receive the updated setting.</param>
+        /// <param name="message">The message containing information about the changed setting.</param>
+        private void HandleSettingChanged<T>(object recipient, SettingChangedMessage<T> message)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            // Check if the property exists in GlobalVariables
+            System.Reflection.PropertyInfo? property = GetType().GetProperty(message.Key);
+            if (property != null)
+            {
+                // Convert the value to the property's type and set the property value
+                object? convertedValue = Convert.ChangeType(message.Value, property.PropertyType);
+                property.SetValue(this, convertedValue);
+            }
+            else
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - GlobalVariables::HandleSettingChanged",
+                    message: "Unknown setting changed.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
         }
+
 
 
 

@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ROSE_Online_Login_Manager.Resources.Util;
+using ROSE_Online_Login_Manager.Services;
 using SQLitePCL;
 
 

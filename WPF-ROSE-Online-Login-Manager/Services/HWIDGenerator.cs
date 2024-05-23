@@ -4,7 +4,7 @@ using System.Text;
 
 
 
-namespace ROSE_Online_Login_Manager.Resources.Util
+namespace ROSE_Online_Login_Manager.Services
 {
     internal class HWIDGenerator
     {
@@ -14,9 +14,9 @@ namespace ROSE_Online_Login_Manager.Resources.Util
         /// <returns>The HWID of the system as a byte[].</returns>
         public static byte[] GetHWID()
         {
-            string cpuId         = GetProcessorID();
+            string cpuId = GetProcessorID();
             string motherboardId = GetMotherboardID();
-            string diskId        = GetDiskID();
+            string diskId = GetDiskID();
 
             // Concatenate and hash the hardware IDs to generate the HWID
             string combinedIds = cpuId + motherboardId + diskId;

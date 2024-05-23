@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
+using ROSE_Online_Login_Manager.Services;
 using System.Security;
 using System.Security.Cryptography;
 using System.Windows;
@@ -12,7 +13,7 @@ using System.Windows.Input;
 namespace ROSE_Online_Login_Manager.ViewModel
 {
     /// <summary>
-    /// Message class to carry the information about a newly added profile.
+    ///     Message class to carry the information about a newly added profile.
     /// </summary>
     public class ProfileAddedMessage
     {
@@ -22,7 +23,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
     /// <summary>
-    /// View model for adding a new user profile.
+    ///     View model for adding a new user profile.
     /// </summary>
     internal class AddProfileViewModel : ObservableObject
     {
@@ -78,15 +79,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
 
 
 
-        #region ICommand
-        /// <summary>
-        /// Command to add a new profile.
-        /// </summary>
         public ICommand AddProfileCommand { get; }
-
-        /// <summary>
-        /// Command to create a new profile.
-        /// </summary>
         public ICommand CreateProfileCommand { get; }
 
 
@@ -137,7 +130,6 @@ namespace ROSE_Online_Login_Manager.ViewModel
             // PasswordBox does not support TwoWay binding so send a message to reset
             WeakReferenceMessenger.Default.Send("ResetPasswordField");
         }
-        #endregion
 
 
 
