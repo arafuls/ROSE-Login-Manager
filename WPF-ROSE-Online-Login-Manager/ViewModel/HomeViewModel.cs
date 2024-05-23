@@ -83,6 +83,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
             Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
             foreach (UserProfileModel profile in Profiles)
             {
+                Profiles.Add(profile);
                 ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
             }
         }
