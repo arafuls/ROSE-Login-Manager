@@ -161,9 +161,7 @@ namespace ROSE_Online_Login_Manager.ViewModel
         /// <param name="userProfileModel">The new UserProfileModel to send in the message.</param>
         private static void NewUserProfileModelMessage(UserProfileModel userProfileModel)
         {
-            // Inform the ProfilesViewModel about the new profile
-            var message = new ProfileAddedMessage { NewProfile = userProfileModel };
-            WeakReferenceMessenger.Default.Send(message);
+            WeakReferenceMessenger.Default.Send(new ProfileAddedMessage { NewProfile = userProfileModel });
         }
 
 

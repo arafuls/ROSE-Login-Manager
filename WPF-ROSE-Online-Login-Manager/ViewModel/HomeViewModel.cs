@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Online_Login_Manager.Model;
 using ROSE_Online_Login_Manager.Resources.Util;
 using ROSE_Online_Login_Manager.Services;
+using ROSE_Online_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -60,12 +61,15 @@ namespace ROSE_Online_Login_Manager.ViewModel
             _db = new DatabaseManager();
 
             WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, (recipient, message) => LaunchProfile(message.ProfileEmail));
+            WeakReferenceMessenger.Default.Register<ProfileAddedUpdateMessage>(this, HandleProfileAddedUpdate);
+            WeakReferenceMessenger.Default.Register<ProfileDeletedUpdateMessage>(this, HandleProfileDeletedUpdate);
 
             LoadProfileData();
         }
 
 
 
+        #region Message Handlers
         /// <summary>
         ///     Loads the user profiles and initializes the corresponding profile card view models.
         /// </summary>
@@ -82,6 +86,36 @@ namespace ROSE_Online_Login_Manager.ViewModel
                 ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
             }
         }
+
+
+
+        /// <summary>
+        ///     Handles the update message triggered by the addition of a new user profile, updating the UI accordingly.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The message containing the details of the newly added profile.</param>
+        private void HandleProfileAddedUpdate(object recipient, ProfileAddedUpdateMessage message)
+        {
+            UserProfileModel profile = message.Profile;
+            bool display = GlobalVariables.Instance.DisplayEmail;
+            bool mask = GlobalVariables.Instance.MaskEmail;
+
+            ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
+        }
+
+
+
+        /// <summary>
+        ///     Handles the update message triggered by the deletion of a user profile, removing the corresponding profile card from the UI.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The message containing the details of the profile to be deleted.</param>
+        private void HandleProfileDeletedUpdate(object recipient, ProfileDeletedUpdateMessage message)
+        {
+            UserProfileModel profile = message.Profile;
+            ProfileCards.Remove(ProfileCards.FirstOrDefault(card => card.ProfileEmail == profile.ProfileEmail));
+        }
+        #endregion
 
 
 
