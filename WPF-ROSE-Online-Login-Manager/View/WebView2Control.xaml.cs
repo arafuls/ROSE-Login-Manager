@@ -47,14 +47,7 @@ namespace ROSE_Online_Login_Manager.View
             {
                 await webView.EnsureCoreWebView2Async();
             }
-            catch (Exception ex)
-            {
-                new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - WebView2Control::InitializeWebView",
-                    message: "WebView initialization failed: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
-            }
+            finally { }
         }
 
 
@@ -75,14 +68,7 @@ namespace ROSE_Online_Login_Manager.View
                         await webViewControl.webView.EnsureCoreWebView2Async();
                         webViewControl.webView.CoreWebView2.Navigate(newUrl);
                     }
-                    catch (Exception ex)
-                    {
-                        new DialogService().ShowMessageBox(
-                            title: "ROSE Online Login Manager - WebView2Control::OnSourceUrlChanged",
-                            message: "WebView navigation failed: " + ex.Message,
-                            button: MessageBoxButton.OK,
-                            icon: MessageBoxImage.Error);
-                    }
+                    finally { }
                 }
             }
         }
