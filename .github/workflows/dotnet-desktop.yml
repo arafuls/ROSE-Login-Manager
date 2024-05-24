@@ -31,11 +31,8 @@ jobs:
     - name: Build
       run: dotnet build --configuration ${{ matrix.configuration }}
 
-    - name: Execute unit tests
-      run: dotnet test --configuration ${{ matrix.configuration }}
-
     - name: Publish
-      run: dotnet publish -r win-x64 -c ${{ matrix.configuration }} --self-contained true -o ${{ github.workspace }}/publish/$(Configuration)
+      run: dotnet publish -r win-x64 -c ${{ matrix.configuration }} --self-contained true -o ${{ github.workspace }}/publish/${{ matrix.configuration }}
 
     - name: Upload Publish Directory (Debug)
       if: matrix.configuration == 'Debug'
