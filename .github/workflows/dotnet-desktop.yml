@@ -7,9 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-
   build:
-
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -37,10 +35,18 @@ jobs:
       run: dotnet test --configuration ${{ matrix.configuration }}
 
     - name: Publish
-      run: dotnet publish -r win-x64 -c ${{ matrix.configuration }} --self-contained true -o ${{ github.workspace }}/publish
+      run: dotnet publish -r win-x64 -c ${{ matrix.configuration }} --self-contained true -o ${{ github.workspace }}/publish/$(Configuration)
 
-    - name: Upload Publish Directory
-      uses: actions/upload-artifact@v3
+    - name: Upload Publish Directory (Debug)
+      if: matrix.configuration == 'Debug'
+      uses: actions/upload-artifact@v4
       with:
-        name: published-app
-        path: ${{ github.workspace }}/publish
+        name: published-app-debug
+        path: ${{ github.workspace }}/publish/Debug
+
+    - name: Upload Publish Directory (Release)
+      if: matrix.configuration == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: published-app-release
+        path: ${{ github.workspace }}/publish/Release
