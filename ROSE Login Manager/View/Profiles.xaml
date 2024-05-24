@@ -38,7 +38,7 @@
                 <!-- Profile Name -->
                 <DataGridTextColumn Header="Profile" Binding="{Binding ProfileName}" 
                                     CellStyle="{StaticResource DataGridCell_Style}"
-                                    MinWidth="125"/>
+                                    MinWidth="200"/>
                 <!-- Profile Email -->
                 <DataGridTextColumn Header="Email" Binding="{Binding ProfileEmail}" 
                                     CellStyle="{StaticResource DataGridCell_Style}"
