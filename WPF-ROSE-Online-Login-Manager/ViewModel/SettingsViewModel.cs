@@ -134,6 +134,8 @@ namespace ROSE_Login_Manager.ViewModel
         private void InitializeSettingsVariables()
         {
             _roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
+            _isPathValidImage = ContainsRoseExec(_roseGameFolderPath);
+
             _displayEmailChecked = GlobalVariables.Instance.DisplayEmail;
             _maskEmailChecked = GlobalVariables.Instance.MaskEmail;
         }
