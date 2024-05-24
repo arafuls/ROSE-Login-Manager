@@ -32,7 +32,7 @@ namespace ROSE_Online_Login_Manager.Model
         /// </summary>
         private ConfigurationManager()
         {
-            _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager") + "\\config.xml";
+            _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager", "config.xml");
             _doc = new XmlDocument();
 
             if (File.Exists(_configFile))
