@@ -38,12 +38,12 @@ jobs:
       if: matrix.configuration == 'Debug'
       uses: actions/upload-artifact@v4
       with:
-        name: published-app-debug
+        name: debug
         path: ${{ github.workspace }}/publish/Debug
 
     - name: Upload Publish Directory (Release)
       if: matrix.configuration == 'Release'
       uses: actions/upload-artifact@v4
       with:
-        name: published-app-release
+        name: release
         path: ${{ github.workspace }}/publish/Release
