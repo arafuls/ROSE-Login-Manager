@@ -4,7 +4,7 @@ using System.Windows.Controls;
 
 
 
-namespace ROSE_Online_Login_Manager.View
+namespace ROSE_Login_Manager.View
 {
     /// <summary>
     ///     Interaction logic for WebView2Control.xaml

@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using ROSE_Online_Login_Manager.Services.Infrastructure;
+using ROSE_Login_Manager.Services.Infrastructure;
 using System.Windows.Input;
 
 
 
-namespace ROSE_Online_Login_Manager.ViewModel
+namespace ROSE_Login_Manager.ViewModel
 {
     /// <summary>
     ///     Message class used to convey information about launching a profile.

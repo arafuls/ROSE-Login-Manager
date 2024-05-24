@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
-using ROSE_Online_Login_Manager.ViewModel;
+using ROSE_Login_Manager.ViewModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 
 
-namespace ROSE_Online_Login_Manager.View
+namespace ROSE_Login_Manager.View
 {
     /// <summary>
     ///     Interaction logic for AddProfile.xaml

@@ -1,7 +1,7 @@
 ﻿
 
 
-namespace ROSE_Online_Login_Manager.Services.Infrastructure
+namespace ROSE_Login_Manager.Services.Infrastructure
 {
     /// <summary>
     ///     Represents a message indicating a change in a setting value.

@@ -1,10 +1,10 @@
-﻿using ROSE_Online_Login_Manager.Model;
-using ROSE_Online_Login_Manager.Services;
+﻿using ROSE_Login_Manager.Model;
+using ROSE_Login_Manager.Services;
 using System.Windows;
 
 
 
-namespace ROSE_Online_Login_Manager
+namespace ROSE_Login_Manager
 {
     /// <summary>
     ///     Interaction logic for App.xaml
@@ -21,7 +21,7 @@ namespace ROSE_Online_Login_Manager
         /// <param name="e">Information about the startup event.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            const string mutexName = "ROSE_Online_Login_Manager_Mutex"; // Replace with your application name
+            const string mutexName = "ROSE_Login_Manager_Mutex"; // Replace with your application name
 
             // Attempt to create a new mutex
             _mutex = new Mutex(true, mutexName, out bool createdNew);

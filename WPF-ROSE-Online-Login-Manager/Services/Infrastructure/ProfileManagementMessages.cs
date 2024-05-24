@@ -1,8 +1,8 @@
-﻿using ROSE_Online_Login_Manager.Model;
+﻿using ROSE_Login_Manager.Model;
 
 
 
-namespace ROSE_Online_Login_Manager.Services.Infrastructure
+namespace ROSE_Login_Manager.Services.Infrastructure
 {
     public class ProfileAddedUpdateMessage(UserProfileModel newProfile)
     {

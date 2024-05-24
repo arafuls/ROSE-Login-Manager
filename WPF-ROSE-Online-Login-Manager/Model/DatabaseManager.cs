@@ -1,12 +1,12 @@
 ﻿using Microsoft.Data.Sqlite;
-using ROSE_Online_Login_Manager.Model;
+using ROSE_Login_Manager.Model;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 
 
 
-namespace ROSE_Online_Login_Manager.Resources.Util
+namespace ROSE_Login_Manager.Resources.Util
 {
     /// <summary>
     ///     Manages interactions with the SQLite database.

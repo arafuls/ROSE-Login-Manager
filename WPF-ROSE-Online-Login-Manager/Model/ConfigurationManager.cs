@@ -1,13 +1,13 @@
 using CommunityToolkit.Mvvm.Messaging;
-using ROSE_Online_Login_Manager.Services;
-using ROSE_Online_Login_Manager.Services.Infrastructure;
+using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
 using System.Windows;
 using System.Xml;
 
 
 
-namespace ROSE_Online_Login_Manager.Model
+namespace ROSE_Login_Manager.Model
 {
     /// <summary>
     ///     Represents a singleton class responsible for managing and storing configuration settings.

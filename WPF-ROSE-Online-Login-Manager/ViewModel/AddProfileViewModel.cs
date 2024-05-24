@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ROSE_Online_Login_Manager.Model;
-using ROSE_Online_Login_Manager.Resources.Util;
-using ROSE_Online_Login_Manager.Services;
+using ROSE_Login_Manager.Model;
+using ROSE_Login_Manager.Resources.Util;
+using ROSE_Login_Manager.Services;
 using System.Security;
 using System.Security.Cryptography;
 using System.Windows;
@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 
 
-namespace ROSE_Online_Login_Manager.ViewModel
+namespace ROSE_Login_Manager.ViewModel
 {
     /// <summary>
     ///     Message class to carry the information about a newly added profile.

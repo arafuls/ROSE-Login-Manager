@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ROSE_Online_Login_Manager.Services
+namespace ROSE_Login_Manager.Services
 {
     internal interface IDialogService
     {

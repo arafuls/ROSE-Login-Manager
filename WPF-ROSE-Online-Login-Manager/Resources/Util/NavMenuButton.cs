@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 
 
-namespace ROSE_Online_Login_Manager.Resources.Util
+namespace ROSE_Login_Manager.Resources.Util
 {
     /// <summary>
     ///     Represents a custom RadioButton control for navigation menus.

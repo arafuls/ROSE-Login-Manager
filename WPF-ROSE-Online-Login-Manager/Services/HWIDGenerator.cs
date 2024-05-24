@@ -4,7 +4,7 @@ using System.Text;
 
 
 
-namespace ROSE_Online_Login_Manager.Services
+namespace ROSE_Login_Manager.Services
 {
     internal class HWIDGenerator
     {

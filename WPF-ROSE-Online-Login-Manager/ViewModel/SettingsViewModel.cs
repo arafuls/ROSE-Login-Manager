@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
-using ROSE_Online_Login_Manager.Model;
-using ROSE_Online_Login_Manager.Services;
-using ROSE_Online_Login_Manager.Services.Infrastructure;
+using ROSE_Login_Manager.Model;
+using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -11,7 +11,7 @@ using System.Windows.Input;
 
 
 
-namespace ROSE_Online_Login_Manager.ViewModel
+namespace ROSE_Login_Manager.ViewModel
 {
     /// <summary>
     ///     ViewModel for managing settings related to the application.

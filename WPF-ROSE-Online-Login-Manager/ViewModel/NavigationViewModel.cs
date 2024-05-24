@@ -1,12 +1,12 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ROSE_Online_Login_Manager.Resources.Util;
-using ROSE_Online_Login_Manager.Services;
+using ROSE_Login_Manager.Resources.Util;
+using ROSE_Login_Manager.Services;
 using SQLitePCL;
 
 
 
-namespace ROSE_Online_Login_Manager.ViewModel
+namespace ROSE_Login_Manager.ViewModel
 {
     /// <summary>
     ///     View model responsible for managing navigation between different views.

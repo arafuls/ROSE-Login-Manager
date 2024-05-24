@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 
 
-namespace ROSE_Online_Login_Manager.Services
+namespace ROSE_Login_Manager.Services
 {
 
     internal interface IPasswordEncryptor

@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ROSE_Online_Login_Manager.Model;
-using ROSE_Online_Login_Manager.Resources.Util;
-using ROSE_Online_Login_Manager.Services;
-using ROSE_Online_Login_Manager.Services.Infrastructure;
+using ROSE_Login_Manager.Model;
+using ROSE_Login_Manager.Resources.Util;
+using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using System.Windows;
 
 
 
-namespace ROSE_Online_Login_Manager.ViewModel
+namespace ROSE_Login_Manager.ViewModel
 {
     internal class HomeViewModel : ObservableObject
     {

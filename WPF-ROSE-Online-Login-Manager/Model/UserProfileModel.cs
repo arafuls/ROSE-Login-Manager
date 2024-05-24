@@ -2,7 +2,7 @@
 
 
 
-namespace ROSE_Online_Login_Manager.Model
+namespace ROSE_Login_Manager.Model
 {
     /// <summary>
     ///     Represents a user profile model containing information such as status, name, email, password, and initialization vector.
