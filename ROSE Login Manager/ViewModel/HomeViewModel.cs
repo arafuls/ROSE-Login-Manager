@@ -172,6 +172,17 @@ namespace ROSE_Login_Manager.ViewModel
                 WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
             };
 
+            if (string.IsNullOrEmpty(startInfo.FileName))
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - HomeViewModel::LoginThread",
+                    message: "TRose.exe could not be found.\n\n" +
+                             "Confirm that the ROSE Online Folder Location is set correctly.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return;
+            }
+
             try
             {   // Start the ROSE Online client process
                 Process.Start(startInfo);
