@@ -15,13 +15,13 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_1A13C62459A5413F908433075854FDE5"
+        "MsmKey" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_83B897EE3FAA40E1A9CE6105A8FEBB6C"
+        "MsmKey" = "8:_533891D6DB614480BB4CB87B6EB1523B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -43,6 +43,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -68,15 +84,15 @@
             "ComponentsUrl" = "8:"
                 "Items"
                 {
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.8"
                     {
-                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
-                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    "Name" = "8:Microsoft .NET Framework 4.8 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.8"
                     }
-                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.8.0.Arm64"
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.EdgeRuntime"
                     {
-                    "Name" = "8:.NET Runtime 8.0.5 (Arm64)"
-                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.8.0.Arm64"
+                    "Name" = "8:Edge WebView runtime"
+                    "ProductCode" = "8:Microsoft.EdgeRuntime"
                     }
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.8.0.x64"
                     {
@@ -87,6 +103,16 @@
                     {
                     "Name" = "8:.NET Runtime 8.0.5 (x86)"
                     "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.8.0.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x64"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 8.0.5 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.8.0.x86"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 8.0.5 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.8.0.x86"
                     }
                 }
             }
@@ -121,9 +147,9 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1A13C62459A5413F908433075854FDE5"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0F5553B1D66E4CBF9AEF88077782E711"
             {
-            "SourcePath" = "8:..\\WPF-ROSE-Online-Login-Manager\\Resources\\Images\\Rose_Online_Favicon.ico"
+            "SourcePath" = "8:..\\ROSE Login Manager\\Resources\\Images\\Rose_Online_Favicon.ico"
             "TargetName" = "8:Rose_Online_Favicon.ico"
             "Tag" = "8:"
             "Folder" = "8:_E655567E08C24E8AAAB1BC516A756908"
@@ -198,7 +224,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ROSE Login Manager"
         "ProductCode" = "8:{404A5F57-4087-42C6-8052-40983ED1BE4B}"
-        "PackageCode" = "8:{4BA57E71-533C-47BB-B0D1-5C293207517B}"
+        "PackageCode" = "8:{80B1CFBA-F145-471D-83DF-55E1729793C6}"
         "UpgradeCode" = "8:{EF5AF8BC-CCBD-41D5-A1F7-68A042AF528D}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -215,7 +241,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:An automation tool for logging into ROSE Online."
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:_1A13C62459A5413F908433075854FDE5"
+        "ARPPRODUCTICON" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -318,7 +344,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_28CA2731C04E488C9E12E44784899D63"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_516A338BA681496C91F91C3F0AD33F47"
             {
             "Name" = "8:ROSE Login Manager"
             "Arguments" = "8:"
@@ -326,13 +352,13 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_83B897EE3FAA40E1A9CE6105A8FEBB6C"
+            "Target" = "8:_533891D6DB614480BB4CB87B6EB1523B"
             "Folder" = "8:_B7EB72E010C948519284265CF343E12F"
             "WorkingFolder" = "8:_E655567E08C24E8AAAB1BC516A756908"
-            "Icon" = "8:_1A13C62459A5413F908433075854FDE5"
+            "Icon" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_2F71D37B1F104CC792A93C7E61E36BA1"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5AF80361B2504454BFDD074544109971"
             {
             "Name" = "8:ROSE Login Manager"
             "Arguments" = "8:"
@@ -340,10 +366,10 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_83B897EE3FAA40E1A9CE6105A8FEBB6C"
+            "Target" = "8:_533891D6DB614480BB4CB87B6EB1523B"
             "Folder" = "8:_139971A79A3F4F65BF212643AEA26D04"
             "WorkingFolder" = "8:_E655567E08C24E8AAAB1BC516A756908"
-            "Icon" = "8:_1A13C62459A5413F908433075854FDE5"
+            "Icon" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
             "Feature" = "8:"
             }
         }
@@ -745,9 +771,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_83B897EE3FAA40E1A9CE6105A8FEBB6C"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_533891D6DB614480BB4CB87B6EB1523B"
             {
-            "SourcePath" = "8:..\\WPF-ROSE-Online-Login-Manager\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\ROSE Login Manager\\obj\\Release\\net8.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E655567E08C24E8AAAB1BC516A756908"
