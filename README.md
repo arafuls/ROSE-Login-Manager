@@ -17,7 +17,6 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
 
 ## Planned Features
 
-- Maximum Client Limit: 2 (per ROSE Guidelines)
 - Party system to launch paired accounts together with a single click
 - Launch clients with specific screen coordinates
 - Update ROSE client with current logged in account name and class
