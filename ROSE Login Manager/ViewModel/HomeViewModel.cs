@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
-using ROSE_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -13,6 +12,9 @@ using System.Windows;
 
 namespace ROSE_Login_Manager.ViewModel
 {
+    /// <summary>
+    ///     ViewModel class for the home view, responsible for managing user profiles and launching the ROSE Online client.
+    /// </summary>
     internal class HomeViewModel : ObservableObject
     {
         private readonly DatabaseManager _db;
@@ -20,9 +22,6 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         #region Accessors
-        /// <summary>
-        ///     Gets or sets the collection of profile card view models.
-        /// </summary>
         private ObservableCollection<ProfileCardViewModel> _profileCards;
         public ObservableCollection<ProfileCardViewModel> ProfileCards
         {
@@ -34,11 +33,6 @@ namespace ROSE_Login_Manager.ViewModel
             }
         }
 
-
-
-        /// <summary>
-        ///     Gets or sets the collection of user profiles.
-        /// </summary>
         private ObservableCollection<UserProfileModel> _profiles;
         public ObservableCollection<UserProfileModel> Profiles
         {
@@ -60,9 +54,8 @@ namespace ROSE_Login_Manager.ViewModel
         {
             _db = new DatabaseManager();
 
-            WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, (recipient, message) => LaunchProfile(message.ProfileEmail));
-            WeakReferenceMessenger.Default.Register<ProfileAddedUpdateMessage>(this, HandleProfileAddedUpdate);
-            WeakReferenceMessenger.Default.Register<ProfileDeletedUpdateMessage>(this, HandleProfileDeletedUpdate);
+            WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, LaunchProfile);
+            WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
 
             LoadProfileData();
         }
@@ -70,6 +63,52 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         #region Message Handlers
+        /// <summary>
+        ///     Handles the reception of the database change message.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The received message.</param>
+        private void OnDatabaseChangedReceived(object recipient, DatabaseChangedMessage message)
+        {
+            LoadProfileData();
+        }
+
+
+
+        /// <summary>
+        ///     Handles the launch profile message by starting a new thread to launch the ROSE Online client.
+        /// </summary>
+        /// <param name="obj">The object parameter.</param>
+        /// <param name="message">The launch profile message.</param>
+        public void LaunchProfile(object obj, LaunchProfileMessage message)
+        {
+            if (GlobalVariables.Instance.RoseGameFolder == null ||
+                GlobalVariables.Instance.RoseGameFolder == string.Empty)
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - HomeViewModel::LaunchProfile",
+                    message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return;
+            }
+
+            // Find the user profile with the specified email
+            UserProfileModel? profile = Profiles.FirstOrDefault(p => p.ProfileEmail == message.ProfileEmail);
+
+            if (profile != null)
+            {   // Start a new thread to handle launching the ROSE Online client with the user's credentials
+                Thread thread = new(() => LoginThread(
+                    profile.ProfileEmail,
+                    profile.ProfilePassword,
+                    profile.ProfileIV
+                ));
+                thread.Start();
+            }
+        }
+
+
+
         /// <summary>
         ///     Loads the user profiles and initializes the corresponding profile card view models.
         /// </summary>
@@ -86,70 +125,7 @@ namespace ROSE_Login_Manager.ViewModel
                 ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
             }
         }
-
-
-
-        /// <summary>
-        ///     Handles the update message triggered by the addition of a new user profile, updating the UI accordingly.
-        /// </summary>
-        /// <param name="recipient">The recipient of the message.</param>
-        /// <param name="message">The message containing the details of the newly added profile.</param>
-        private void HandleProfileAddedUpdate(object recipient, ProfileAddedUpdateMessage message)
-        {
-            UserProfileModel profile = message.Profile;
-            bool display = GlobalVariables.Instance.DisplayEmail;
-            bool mask = GlobalVariables.Instance.MaskEmail;
-
-            Profiles.Add(profile);
-            ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
-        }
-
-
-
-        /// <summary>
-        ///     Handles the update message triggered by the deletion of a user profile, removing the corresponding profile card from the UI.
-        /// </summary>
-        /// <param name="recipient">The recipient of the message.</param>
-        /// <param name="message">The message containing the details of the profile to be deleted.</param>
-        private void HandleProfileDeletedUpdate(object recipient, ProfileDeletedUpdateMessage message)
-        {
-            UserProfileModel profile = message.Profile;
-            ProfileCards.Remove(ProfileCards.FirstOrDefault(card => card.ProfileEmail == profile.ProfileEmail));
-        }
         #endregion
-
-
-
-        /// <summary>
-        ///     Launches the ROSE Online client with the provided user profile credentials.
-        /// </summary>
-        /// <param name="email">The email associated with the user profile.</param>
-        public void LaunchProfile(string email)
-        {
-            if (GlobalVariables.Instance.RoseGameFolder == null || 
-                GlobalVariables.Instance.RoseGameFolder == string.Empty)
-            {
-                new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - HomeViewModel::LaunchProfile",
-                    message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
-                return;
-            }
-
-            // Find the user profile with the specified email
-            UserProfileModel? profile = Profiles.FirstOrDefault(p => p.ProfileEmail == email);
-
-            if (profile != null)
-            {   // Start a new thread to handle launching the ROSE Online client with the user's credentials
-                Thread thread = new(() => LoginThread(
-                    profile.ProfileEmail,
-                    profile.ProfilePassword,
-                    profile.ProfileIV
-                ));
-                thread.Start();
-            }
-        }
 
 
 

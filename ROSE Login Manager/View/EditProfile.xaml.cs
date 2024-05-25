@@ -1,15 +1,16 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 
 
 namespace ROSE_Login_Manager.View
 {
     /// <summary>
-    ///     Interaction logic for AddProfile.xaml
+    ///     Interaction logic for EditProfile.xaml
     /// </summary>
-    public partial class AddProfile : Window
+    public partial class EditProfile : Window
     {
-        public AddProfile()
+        public EditProfile()
         {
             InitializeComponent();
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;

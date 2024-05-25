@@ -17,7 +17,7 @@
                 <ResourceDictionary Source="Resources/Styles/ViewStyle.xaml"/>
                 
                 <!-- Data Template Styling -->
-                <ResourceDictionary Source="View/DataTemplate.xaml"/>
+                <ResourceDictionary Source="View/Template/DataTemplate.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
