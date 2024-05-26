@@ -38,6 +38,13 @@ namespace ROSE_Login_Manager.ViewModel
 
 
     /// <summary>
+    ///     Message class representing an action related resetting the User Password Field.
+    /// </summary>
+    public class ResetPasswordFieldMessage { }
+
+
+
+    /// <summary>
     ///     Base view model class for profile-related functionalities.
     /// </summary>
     internal abstract class ProfileViewModelBase : ObservableObject
@@ -159,8 +166,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             ProfileName = string.Empty;
             ProfileEmail = string.Empty;
-
-            WeakReferenceMessenger.Default.Send("ResetPasswordField");
+            WeakReferenceMessenger.Default.Send(new ResetPasswordFieldMessage());
         }
     }
 }

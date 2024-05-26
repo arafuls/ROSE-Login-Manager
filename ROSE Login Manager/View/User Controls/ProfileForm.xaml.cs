@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.ViewModel;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -38,7 +39,11 @@ namespace ROSE_Login_Manager.View
         {
             InitializeComponent();
             AttachEventHandlers();
-            RegisterMessenger();
+
+            // Set focus to the ProfileNameTextBox when the UserControl is loaded
+            Loaded += (s, e) => ProfileNameTextBox.Focus();
+
+            WeakReferenceMessenger.Default.Register<ResetPasswordFieldMessage>(this, ResetPasswordField);
         }
 
 
@@ -56,17 +61,16 @@ namespace ROSE_Login_Manager.View
 
 
         /// <summary>
-        ///     Registers a messenger to listen for messages to reset the password field.
+        ///     Resets the password field by clearing the text in the associated PasswordBox.
         /// </summary>
-        private void RegisterMessenger()
+        /// <param name="recipient">The recipient object.</param>
+        /// <param name="message">The message containing the reset password field indicator.</param>
+        private void ResetPasswordField(object recipient, ResetPasswordFieldMessage message)
         {
-            WeakReferenceMessenger.Default.Register<string>(this, (r, m) =>
+            if (ProfilePasswordTextBox != null && ProfilePasswordTextBox.IsLoaded)
             {
-                if (m == "ResetPasswordField")
-                {
-                    ProfilePasswordTextBox.Clear();
-                }
-            });
+                ProfilePasswordTextBox.Clear();
+            }
         }
 
 
@@ -102,7 +106,7 @@ namespace ROSE_Login_Manager.View
             // Check if the key combination for paste (Ctrl + V) is pressed
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.V)
             {
-                e.Handled = true;   // Cancel the paste operation
+                //e.Handled = true;   // Cancel the paste operation
             }
 
             // Check if the entered character is whitespace or non-ASCII
@@ -132,15 +136,41 @@ namespace ROSE_Login_Manager.View
 
 
         /// <summary>
+        ///     Validates whether the given string is in a valid email format.
+        /// </summary>
+        /// <param name="email">The email address to validate.</param>
+        /// <returns><c>true</c> if the email address is in a valid format; otherwise, <c>false</c>.</returns>
+        private static bool IsValidEmail(string email)
+        {
+            // Check if the email address is null, empty, or contains only white space
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                // Use regular expression to validate email format
+                Regex regex = new(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+                return regex.IsMatch(email);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                // In case of regex match timeout, return false
+                return false;
+            }
+        }
+
+
+
+        /// <summary>
         ///     Determines the state of the add profile button based on the validity of profile data.
         /// </summary>
         public void DetermineButtonState()
         {
-            bool nameValid = !string.IsNullOrEmpty(ProfileNameTextBox.Text);
-            bool emailValid = !string.IsNullOrEmpty(ProfileEmailTextBox.Text);
-            bool passwordValid = ProfilePasswordTextBox.Password != null && ProfilePasswordTextBox.Password.Length >= 8;
+            bool nameIsValid = !string.IsNullOrEmpty(ProfileNameTextBox.Text);
+            bool emailIsValid = IsValidEmail(ProfileEmailTextBox.Text);
+            bool passwordIsValid = ProfilePasswordTextBox.Password != null && ProfilePasswordTextBox.Password.Length >= 8;
 
-            AllowProfileButton = nameValid && emailValid && passwordValid;
+            AllowProfileButton = nameIsValid && emailIsValid && passwordIsValid;
         }
     }
 }
