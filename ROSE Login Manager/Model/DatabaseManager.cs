@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Data.Sqlite;
 using ROSE_Login_Manager.Model;
+using ROSE_Login_Manager.Services;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 
 
 
@@ -102,14 +104,21 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (SqliteException ex)
             {
-                // TODO: Update using dialog service
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - DatabaseManager::ExecuteNonQuery",
+                    message: $"SQLite Error {ex.SqliteErrorCode}: '{ex.Message}'",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
                 result = false;
-                //ShowErrorMessage($"SQLite Error {ex.SqliteErrorCode}: '{ex.Message}'", "SQLite Error");
             }
             catch (Exception ex)
             {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - DatabaseManager::ExecuteNonQuery",
+                    message: $"An error occurred: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
                 result = false;
-                //ShowErrorMessage($"An error occurred: {ex.Message}", "Error");
             }
             finally
             {
