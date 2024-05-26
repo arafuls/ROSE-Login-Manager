@@ -76,7 +76,8 @@ namespace ROSE_Login_Manager.View
 
 
         /// <summary>
-        ///     Handles the PasswordChanged event of the profile password field. Updates the corresponding view model's profile password property and determines the button state.
+        ///     Handles the PasswordChanged event of the profile password field. Updates the corresponding view model's
+        ///     profile password property and determines the button state.
         /// </summary>
         /// <param name="sender">The sender of the event.</param>
         /// <param name="e">The event arguments.</param>
@@ -97,7 +98,9 @@ namespace ROSE_Login_Manager.View
 
 
         /// <summary>
-        ///  Handles the PreviewKeyDown event of the profile password field. Cancels the input event if the entered character is whitespace or non-ASCII, and cancels the paste operation if the Ctrl + V key combination is pressed.
+        ///  Handles the PreviewKeyDown event of the profile password field. Cancels the input event if the entered 
+        ///  character is whitespace or non-ASCII, and cancels the paste operation if the Ctrl + V key combination is 
+        ///  pressed.
         /// </summary>
         /// <param name="sender">The sender of the event.</param>
         /// <param name="e">The event arguments.</param>
