@@ -45,7 +45,11 @@
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </util:NavMenuButton>
+                </StackPanel>
 
+
+
+                <StackPanel VerticalAlignment="Bottom" Margin="0 0 0 26">
                     <!-- Settings View Button -->
                     <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding SettingsCommand}">

@@ -30,7 +30,7 @@
 
         <!-- Right Panel -->
         <Border Grid.Column="1" Margin="5 10 5 10">
-            <local:WebView2Control x:Name="webView" SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+            <!-- <local:WebView2Control x:Name="webView" SourceUrl="https://www.roseonlinegame.com/launcher.html"/> -->
         </Border>
     </Grid>
 </UserControl>
