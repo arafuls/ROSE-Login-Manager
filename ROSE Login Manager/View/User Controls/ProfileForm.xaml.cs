@@ -98,42 +98,19 @@ namespace ROSE_Login_Manager.View
 
 
         /// <summary>
-        ///  Handles the PreviewKeyDown event of the profile password field. Cancels the input event if the entered 
-        ///  character is whitespace or non-ASCII, and cancels the paste operation if the Ctrl + V key combination is 
-        ///  pressed.
+        ///     Handles the PreviewKeyDown event of the profile password field.
+        ///     Cancels the input event if the entered character is not a UTF-8 character.
         /// </summary>
         /// <param name="sender">The sender of the event.</param>
         /// <param name="e">The event arguments.</param>
         private void ProfilePasswordTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Check if the key combination for paste (Ctrl + V) is pressed
-            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.V)
-            {
-                //e.Handled = true;   // Cancel the paste operation
-            }
-
-            // Check if the entered character is whitespace or non-ASCII
-            if (e.Key == Key.Space || !IsAscii(e.Key))
+            // Check if the entered character is a UTF-8 character
+            if ((e.Key < Key.Space || e.Key > Key.OemClear) && e.Key != Key.Back)
             {
                 e.Handled = true;   // Cancel the input event
                 return;
             }
-        }
-
-
-
-        /// <summary>
-        ///     Determines whether the specified key represents an ASCII character.
-        /// </summary>
-        /// <param name="key">The key to check.</param>
-        /// <returns><c>true</c> if the key represents an ASCII character; otherwise, <c>false</c>.</returns>
-        private static bool IsAscii(Key key)
-        {
-            return (key >= Key.A && key <= Key.Z) || (key >= Key.D0 && key <= Key.D9) || key == Key.Back ||
-                   key == Key.Oem3 || key == Key.OemMinus || key == Key.OemPlus ||
-                   key == Key.OemOpenBrackets || key == Key.OemCloseBrackets || key == Key.OemPipe ||
-                   key == Key.OemQuotes || key == Key.OemComma || key == Key.OemPeriod || key == Key.OemQuestion ||
-                   key == Key.OemTilde || key == Key.Oem8 || key == Key.OemSemicolon;
         }
 
 
