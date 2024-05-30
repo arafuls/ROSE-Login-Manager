@@ -21,7 +21,7 @@ namespace ROSE_Login_Manager
         ///     Handles the application startup event.
         /// </summary>
         /// <param name="e">Information about the startup event.</param>
-        protected override async void OnStartup(StartupEventArgs e)
+        protected override void OnStartup(StartupEventArgs e)
         {
             const string mutexName = "ROSE_Login_Manager_Mutex"; // Replace with your application name
 
