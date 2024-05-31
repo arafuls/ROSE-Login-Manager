@@ -4,6 +4,9 @@ using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Channels;
+using System.Threading.Tasks;
+using System.Windows;
 
 
 
@@ -14,8 +17,6 @@ namespace ROSE_Login_Manager.Services
         private const string RemoteUrl = "https://updates.roseonlinegame.com";
         private const string RemoteManifestUrl = RemoteUrl + "/manifest.json";
         private const string LocalManifestFileName = "local_manifest.json";
-        private const string ManifestFileName = "manifest.json";
-        private const string GameExeFileName = "trose.exe";
 
         private static readonly HttpClient _client = new();
 
@@ -41,24 +42,159 @@ namespace ROSE_Login_Manager.Services
         public RoseUpdater()
         {
             RootFolder = GlobalVariables.Instance.RoseGameFolder;
-            InitializeAsync();
-        }
 
-        private async void InitializeAsync()
-        {
-            Run();
+            RunUpdater();
         }
 
 
-
-        public async void Run()
+        public async void RunUpdater()
         {
-            if (await CompareManifests())
-            {   // Updater is up-to-date
-                return;
+            // Check if we are out of date
+            if (!await CompareManifests())
+            {
+                // TODO: Send message to disable launch buttons until complete
+                MessageBox.Show("Update in progress");
+
+                await ParseManifestFilesAsync();
+
+                // Update the local manifest with only the data for the updater
+                LocalManifest newManifest = new()
+                {
+                    Version = 1,
+                    Updater = new LocalManifestFileEntry
+                    {
+                        Path = RemoteManifest.Updater.SourcePath,
+                        Hash = RemoteManifest.Updater.SourceHash,
+                        Size = RemoteManifest.Updater.SourceSize
+                    },
+                    Files = LocalManifest.Files // Preserving existing files data
+                };
+
+                await SaveLocalManifest(newManifest);
             }
 
-            await ParseManifestFilesAsync();
+
+
+            // Channel for communication
+            var channel = Channel.CreateUnbounded<LocalManifestFileEntry>();
+            var rx = channel.Reader;
+            var tx = channel.Writer;
+
+            var currentLocalFileData = new Dictionary<string, LocalManifestFileEntry>();
+
+            VerificationResults verificationResults = VerifyLocalFiles();
+
+            var hashNewLocalManifest = new HashSet<string>();
+            var newLocalManifest = new LocalManifest
+            {
+                Version = 1,
+                Updater = localManifest.Updater,
+                Files = []
+            };
+
+            // Define the work task
+            var work = Task.Run(async () =>
+            {
+                var hashNewLocalManifest = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var newLocalManifest = new LocalManifest
+                {
+                    Version = 1,
+                    Updater = localManifest.Updater
+                };
+
+                await foreach (var manifest in rx.ReadAllAsync())
+                {
+                    hashNewLocalManifest.Add(Path.GetFullPath(manifest.Path));
+                    newLocalManifest.Files.Add(manifest);
+                }
+
+                return (hashNewLocalManifest, newLocalManifest);
+            });
+
+            // Start the asynchronous file download tasks
+            List<Task> cloneTasks = await GetRemoteFiles(verificationResults.FilesToUpdate, tx);
+
+            // Wait for all clone tasks to complete
+            await Task.WhenAll(cloneTasks);
+
+            // Await the 'work' task to get the results
+            (hashNewLocalManifest, newLocalManifest) = await work;
+
+            // Iterate through the current local file data
+            foreach (var kvp in currentLocalFileData)
+            {
+                string path = kvp.Key;
+                LocalManifestFileEntry localEntry = kvp.Value;
+
+                // If the path is not in the hash set of new local manifest, add it to the new local manifest
+                if (!hashNewLocalManifest.Contains(Path.GetFullPath(path)))
+                {
+                    newLocalManifest.Files.Add(localEntry);
+                }
+            }
+
+            await SaveLocalManifest(newLocalManifest);
+
+            // TODO: Send message to enable launch buttons until complete
+            MessageBox.Show("Update complete");
+        }
+
+
+
+        private VerificationResults VerifyLocalFiles()
+        {
+            List<(Uri, RemoteManifestFileEntry)> filesToUpdate = [];
+
+            long totalSize = 0;
+            long alreadyDownloadedSize = 0;
+
+            // Pre-calculate the full file paths for local files
+            HashSet<string> localFullPaths = LocalManifest.Files.Select(file => Path.Combine(RootFolder, file.Path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (RemoteManifestFileEntry remoteEntry in remoteManifest.Files)
+            {
+                string outputPath = Path.Combine(RootFolder, remoteEntry.SourcePath);
+
+                bool needsUpdate()
+                {
+                    if (!localFullPaths.Contains(outputPath))
+                    {
+                        return true;
+                    }
+
+                    LocalManifestFileEntry? localEntry = LocalManifest.Files.FirstOrDefault(entry => entry.Path == remoteEntry.SourcePath);
+                    if (localEntry != null && File.Exists(outputPath))
+                    {
+                        if (localEntry.Hash.SequenceEqual(remoteEntry.SourceHash))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                totalSize += remoteEntry.SourceSize;
+
+                if (!needsUpdate())
+                {
+                    Console.WriteLine($"Skipping file {outputPath} as it is already present");
+                    alreadyDownloadedSize += remoteEntry.SourceSize;
+                    continue;
+                }
+
+                //Uri remoteUrl = new Uri(RemoteUrl);
+                //filesToUpdate.Add((new Uri(Path.Combine(remoteUrl.Host, remoteEntry.Path)), remoteEntry));
+                //filesToUpdate.Add((new Uri(Path.Combine(RemoteUrl, remoteEntry.Path)), remoteEntry));
+                filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
+            }
+
+            return new VerificationResults
+            {
+                FilesToUpdate = filesToUpdate,
+                TotalSize = totalSize,
+                AlreadyDownloadedSize = alreadyDownloadedSize
+            };
         }
 
 
@@ -79,15 +215,13 @@ namespace ROSE_Login_Manager.Services
 
         public async Task ParseManifestFilesAsync()
         {
-            // TODO: Send message to disable launch buttons until complete
-
             // List to store the tasks for updating files
-            var updateTasks = new List<Task>();
+            List<Task> updateTasks = [];
 
             foreach (RemoteManifestFileEntry fileEntry in RemoteManifest.Files)
             {
                 string localfile = Path.Combine(RootFolder, fileEntry.SourcePath);
-                if (File.Exists(localfile) && CompareHash(fileEntry.SourcePath, fileEntry.SourceHash))
+                if (LocalManifest.Files != null && File.Exists(localfile) && CompareHash(fileEntry.SourcePath, fileEntry.SourceHash))
                 {   // Up to date entry
                     continue;
                 }
@@ -99,29 +233,27 @@ namespace ROSE_Login_Manager.Services
 
             // Wait for all update tasks to complete
             await Task.WhenAll(updateTasks);
-
-            // TODO: Save local manifest
-
-            // TODO: Send message to enable launch buttons until complete
         }
+
+
 
 
         private static async Task UpdateFileAsync(RemoteManifestFileEntry fileEntry)
         {
-            string? directoryPath = Path.GetDirectoryName(fileEntry.SourcePath);
+            string directoryPath = Path.Combine(RootFolder, Path.GetDirectoryName(fileEntry.SourcePath) ?? string.Empty);
+
             if (!Directory.Exists(directoryPath))
             {
-                Console.WriteLine($"Creating possibly deleted directory {directoryPath}");
                 Directory.CreateDirectory(directoryPath);
             }
 
+            // Download the file using DownloadFileWithBitaAsync
             if (await DownloadFileWithBitaAsync(fileEntry))
             {
-                Console.WriteLine($"Successfully updated {fileEntry.Path}");
+                //Console.WriteLine($"Successfully updated {fileEntry.Path}");
             }
             else
             {
-                Console.WriteLine("Failed to update file!");
                 throw new Exception("File update failed");
             }
         }
@@ -203,7 +335,7 @@ namespace ROSE_Login_Manager.Services
             try
             {
                 // Load and Fetch Manifests
-                LocalManifest = LoadLocalManifest();
+                LocalManifest = GetLocalManifest();
                 RemoteManifest = await DownloadRemoteManifestAsync().ConfigureAwait(false);
 
                 // Get the hash values from the updaters
@@ -225,10 +357,18 @@ namespace ROSE_Login_Manager.Services
         ///     Loads the local manifest file from the file system.
         /// </summary>
         /// <returns>The deserialized local manifest object.</returns>
-        private LocalManifest LoadLocalManifest()
+        private static LocalManifest GetLocalManifest()
         {
             Uri remoteUri = new(RemoteUrl);
             string localManifestPath = Path.Combine(RootFolder, "updater", remoteUri.Host, LocalManifestFileName);
+
+            if (!File.Exists(localManifestPath))
+            {
+                // If the file does not exist, return a new LocalManifest
+                return new LocalManifest();
+            }
+
+            // If the file exists, read its contents and deserialize
             string json = File.ReadAllText(localManifestPath);
             return JsonConvert.DeserializeObject<LocalManifest>(json);
         }
@@ -245,6 +385,104 @@ namespace ROSE_Login_Manager.Services
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<RemoteManifest>(responseBody);
+        }
+
+
+
+
+        private static async Task SaveLocalManifest(LocalManifest newLocalManifest)
+        {
+            Uri remoteUri = new(RemoteUrl);
+            string localManifestParentDir = Path.Combine(RootFolder, "updater", remoteUri.Host);
+            string localManifestPath = Path.Combine(localManifestParentDir, LocalManifestFileName);
+
+            try
+            {
+                if (!string.IsNullOrEmpty(localManifestParentDir))
+                {
+                    Directory.CreateDirectory(localManifestParentDir);
+                }
+
+                // Serialize the object to a JSON string
+                string json = JsonConvert.SerializeObject(newLocalManifest, Formatting.Indented);
+
+                // Write the JSON string to the file
+                await File.WriteAllTextAsync(localManifestPath, json);
+
+                Console.WriteLine($"Saved local manifest to {localManifestPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to save local manifest to {localManifestPath}: {ex.Message}");
+                throw;
+            }
+        }
+
+
+        public static Task<List<Task>> GetRemoteFiles(
+            List<(Uri, RemoteManifestFileEntry)> filesToUpdate,
+            ChannelWriter<LocalManifestFileEntry> channelWriter)
+        {
+            return Task.Run(() =>
+            {
+                string[] TEXT_FILE_EXTENSIONS = [".txt", ".json", ".xml"];
+                var cloneTasks = new List<Task>();
+
+                foreach (var entry in filesToUpdate)
+                {
+                    var (cloneUrl, remoteEntry) = entry;
+                    var outputPath = Path.Combine(RootFolder, remoteEntry.SourcePath);
+                    var clonedWriter = channelWriter; // Use the same channel writer
+
+                    // Handle text files
+                    var ext = Path.GetExtension(outputPath);
+                    if (TEXT_FILE_EXTENSIONS.Contains(ext))
+                    {
+                        try
+                        {
+                            if (File.Exists(outputPath))
+                            {
+                                File.Delete(outputPath);
+                                Console.WriteLine($"Deleted text file: {outputPath}");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Failed to delete text file {outputPath}: {e.Message}");
+                        }
+                    }
+
+                    cloneTasks.Add(Task.Run(async () =>
+                    {
+                        Console.WriteLine($"Downloading {cloneUrl}");
+                        try
+                        {
+                            var response = await _client.GetAsync(cloneUrl);
+                            response.EnsureSuccessStatusCode();
+
+                            var content = await response.Content.ReadAsByteArrayAsync();
+                            await File.WriteAllBytesAsync(outputPath, content);
+
+                            Console.WriteLine($"Cloned {cloneUrl} to {outputPath}");
+
+                            var localEntry = new LocalManifestFileEntry
+                            {
+                                Path = remoteEntry.SourcePath,
+                                Hash = remoteEntry.SourceHash,
+                                Size = remoteEntry.SourceSize
+                            };
+
+                            await clonedWriter.WriteAsync(localEntry);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Failed to clone {cloneUrl}: {e.Message}");
+                        }
+                    }));
+                }
+
+                return cloneTasks;
+            });
         }
     }
 }
