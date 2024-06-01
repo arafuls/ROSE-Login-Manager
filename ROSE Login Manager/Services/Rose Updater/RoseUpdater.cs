@@ -94,23 +94,20 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A Task representing the asynchronous operation.</returns>
         public async Task Run()
         {
-            if (VerifyRoseUpdater().Result)
-            {   // Only verify if updater was modified
-                await VerifyGameFileIntegrity().ConfigureAwait(false);
-            }
+            VerifyRoseUpdater();
+            await VerifyGameFileIntegrity().ConfigureAwait(false);
         }
-
 
 
 
         /// <summary>
         ///     Verifies the Rose Online updater integrity and updates if necessary.
         /// </summary>
-        private async Task<bool> VerifyRoseUpdater()
+        private async void VerifyRoseUpdater()
         {
             if (UpdaterIsLatestAndExists)
             {
-                return false;
+                return;
             }
 
             // Update the local manifest with only the data for the updater
@@ -128,19 +125,14 @@ namespace ROSE_Login_Manager.Services
 
             _ = DownloadUpdaterWithBitaAsync();
             await SaveLocalManifest(newManifest).ConfigureAwait(false);
-
-            return true;
         }
 
 
 
         /// <summary>
-        ///     Verifies the integrity of game files and performs updates if necessary.
+        ///     Asynchronously verifies the integrity of game files against the remote manifest and performs updates if necessary.
         /// </summary>
-        /// <remarks>
-        ///     This method checks the integrity of local game files against the remote manifest. If any files need to be updated,
-        ///     it downloads the updated files and replaces the local copies.
-        /// </remarks>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task VerifyGameFileIntegrity()
         {
             VerificationResults verificationResults = await VerifyLocalFiles().ConfigureAwait(false);
@@ -159,111 +151,60 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Asynchronously verifies the integrity of local files against the remote manifest.
+        ///     Asynchronously verifies the integrity of local files against the remote manifest and identifies files that need updating.
         /// </summary>
-        /// <remarks>
-        ///     This method iterates through the list of files in the remote manifest and checks if they exist locally.
-        ///     If a file is missing locally or its hash and size differ from the corresponding entry in the remote manifest,
-        ///     it is considered outdated and added to the list of files to update. Otherwise, if the file exists locally
-        ///     and matches the remote entry, it is skipped.
-        /// </remarks>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the verification results.</returns>
-        private async Task<VerificationResults> VerifyLocalFiles()
+        /// <returns>A task representing the asynchronous operation, containing the verification results.</returns>
+        private Task<VerificationResults> VerifyLocalFiles()
         {
             List<(Uri, RemoteManifestFileEntry)> filesToUpdate = [];
             long totalSize = 0;
             long alreadyDownloadedSize = 0;
 
-            // Pre-calculate the full file paths for local files
-            HashSet<string> localFullPaths = LocalManifest.Files.Select(file => Path.Combine(RootFolder, file.Path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            foreach (RemoteManifestFileEntry remoteEntry in remoteManifest.Files)
+            // Dictionary to store local file data for efficient lookup
+            Dictionary<string, LocalManifestFileEntry> localFileData = [];
+            foreach (LocalManifestFileEntry entry in localManifest.Files)
             {
-                // Skip null entries
-                if (remoteEntry == null)
-                    continue;
-
-                string localFilePath = Path.Combine(RootFolder, remoteEntry.SourcePath);
-                totalSize += remoteEntry.SourceSize;
-
-                bool fileIsOutdated = true;
-
-                // Check if the file exists locally in the manifest and on disk
-                if (localFullPaths.Contains(localFilePath) || File.Exists(localFilePath))
-                {
-                    if (File.Exists(localFilePath))
-                    {
-                        // Check if the local manifest contains an entry matching the remote entry
-                        LocalManifestFileEntry? localEntry = LocalManifest.Files
-                            .FirstOrDefault(entry => entry.Path == remoteEntry.SourcePath);
-
-                        if (localEntry != null && localEntry.Hash.SequenceEqual(remoteEntry.SourceHash))
-                        {
-                            fileIsOutdated = false;
-                        }
-                        else
-                        {
-                            (long fileSize, byte[] fileHash) = await GetFileSizeAndHashAsync(localFilePath).ConfigureAwait(false);
-
-                            // Check if the local file hash and size match the remote entry
-                            if (fileHash.SequenceEqual(remoteEntry.SourceHash) && fileSize == remoteEntry.SourceSize)
-                            {
-                                fileIsOutdated = false;
-                            }
-                        }
-                    }
-                }
-
-                // Update the lists based on the file status
-                if (fileIsOutdated)
-                {
-                    filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
-                }
-                else
-                {
-                    alreadyDownloadedSize += remoteEntry.SourceSize;
-                }
+                localFileData[entry.Path] = entry;
             }
 
-            return new VerificationResults
+            foreach (var remoteEntry in remoteManifest.Files)
+            {
+                string outputPath = Path.Combine(RootFolder, remoteEntry.SourcePath);
+                bool needsUpdate()
+                {
+                    if (!File.Exists(outputPath))
+                    {
+                        return true;
+                    }
+
+                    if (localFileData.TryGetValue(remoteEntry.SourcePath, out var localEntry))
+                    {
+                        if (localEntry.Hash.SequenceEqual(remoteEntry.SourceHash))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                totalSize += remoteEntry.SourceSize;
+
+                if (!needsUpdate())
+                {
+                    alreadyDownloadedSize += remoteEntry.SourceSize;
+                    continue;
+                }
+
+                filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
+            }
+
+            return Task.FromResult(new VerificationResults
             {
                 FilesToUpdate = filesToUpdate,
                 TotalSize = totalSize,
                 AlreadyDownloadedSize = alreadyDownloadedSize
-            };
-        }
-
-
-
-        /// <summary>
-        ///     Asynchronously calculates the size and hash of the specified file.
-        /// </summary>
-        /// <param name="localFilePath">The path to the local file.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a tuple with the file size and its hash.</returns>
-        private static async Task<(long size, byte[] hash)> GetFileSizeAndHashAsync(string localFilePath)
-        {
-            // Get the size of the file
-            FileInfo fileInfo = new(localFilePath);
-            long fileSize = fileInfo.Length;
-
-            // Get the hash of the file using BLAKE2b-512 used by Bitar
-            byte[] fileHash;
-            using (FileStream stream = File.OpenRead(localFilePath))
-            {
-                var blake2b = new Blake2bDigest(512);
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-
-                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
-                {
-                    blake2b.BlockUpdate(buffer, 0, bytesRead);
-                }
-
-                fileHash = new byte[blake2b.GetDigestSize()];
-                blake2b.DoFinal(fileHash, 0);
-            }
-
-            return (fileSize, fileHash);
+            });
         }
 
 
