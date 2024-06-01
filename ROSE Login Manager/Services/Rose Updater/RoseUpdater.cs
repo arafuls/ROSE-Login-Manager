@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
-using Org.BouncyCastle.Crypto.Digests;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Windows;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
