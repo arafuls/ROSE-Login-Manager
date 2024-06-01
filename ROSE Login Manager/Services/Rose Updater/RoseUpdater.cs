@@ -241,50 +241,11 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
         private async Task<bool> DownloadUpdaterWithBitaAsync()
         {
-            try
-            {
-                string bitaExecutablePath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory)?.Parent?.FullName, "Tools", "Bita", "bita.exe");
-                if (!File.Exists(bitaExecutablePath))
-                    throw new FileNotFoundException("Bita executable not found", bitaExecutablePath);
+            string archiveUrl = Path.Combine(RemoteUrl, RemoteManifest.Updater.Path);
+            string outputPath = Path.Combine(RootFolder, RemoteManifest.Updater.SourcePath);
 
-                string archiveUrl = Path.Combine(RemoteUrl, RemoteManifest.Updater.Path);
-                string outputPath = Path.Combine(RootFolder, RemoteManifest.Updater.SourcePath);
-                string arguments = $"clone --seed-output \"{archiveUrl}\" \"{outputPath}\"";
-
-                using Process process = new()
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = bitaExecutablePath,
-                        Arguments = arguments,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-
-                process.Start();
-                await process.WaitForExitAsync();
-
-                string output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                string error = await process.StandardError.ReadToEndAsync().ConfigureAwait(false);
-
-                if (process.ExitCode != 0)
-                {
-                    Console.WriteLine($"Error running bita: {error}");
-                    return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error running bita: {ex.Message}");
-                return false;
-            }
+            return await DownloadFileWithBitaAsync(archiveUrl, outputPath).ConfigureAwait(false);
         }
-
 
 
 
@@ -295,14 +256,28 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
         private static async Task<bool> DownloadFileWithBitaAsync(RemoteManifestFileEntry file)
         {
+            string archiveUrl = Path.Combine(RemoteUrl, file.Path);
+            string outputPath = Path.Combine(RootFolder, file.SourcePath);
+
+            return await DownloadFileWithBitaAsync(archiveUrl, outputPath).ConfigureAwait(false);
+        }
+
+
+
+        /// <summary>
+        ///     Downloads a remote file using the Bita tool asynchronously.
+        /// </summary>
+        /// <param name="archiveUrl">The URL of the remote file to be downloaded.</param>
+        /// <param name="outputPath">The local path where the file will be saved.</param>
+        /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
+        private static async Task<bool> DownloadFileWithBitaAsync(string archiveUrl, string outputPath)
+        {
             try
             {
                 string bitaExecutablePath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory)?.Parent?.FullName, "Tools", "Bita", "bita.exe");
                 if (!File.Exists(bitaExecutablePath))
                     throw new FileNotFoundException("Bita executable not found", bitaExecutablePath);
 
-                string archiveUrl = Path.Combine(RemoteUrl, file.Path);
-                string outputPath = Path.Combine(RootFolder, file.SourcePath);
                 string arguments = $"clone --seed-output \"{archiveUrl}\" \"{outputPath}\"";
 
                 using Process process = new()
