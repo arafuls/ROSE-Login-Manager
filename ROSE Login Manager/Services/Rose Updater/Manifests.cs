@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 
 
 namespace ROSE_Login_Manager.Services.Rose_Updater
 {
+    /// <summary>
+    ///     Represents the structure of a remote manifest.
+    /// </summary>
     public class RemoteManifest
     {
         public int Version { get; set; }
@@ -13,6 +14,11 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
         public List<RemoteManifestFileEntry> Files { get; set; }
     }
 
+
+
+    /// <summary>
+    ///     Represents a file entry in the remote manifest.
+    /// </summary>
     public class RemoteManifestFileEntry
     {
         [JsonProperty("path")]
@@ -30,7 +36,9 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
 
 
 
-
+    /// <summary>
+    ///     Represents the structure of a local manifest.
+    /// </summary>
     public class LocalManifest
     {
         public int Version { get; set; }
@@ -46,6 +54,11 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
         }
     }
 
+
+
+    /// <summary>
+    ///     Represents a file entry in the local manifest.
+    /// </summary>
     public class LocalManifestFileEntry
     {
         [JsonProperty("path")]
@@ -68,7 +81,9 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
 
 
 
-
+    /// <summary>
+    ///     Represents the verification results after comparing local and remote files.
+    /// </summary>
     public class VerificationResults
     {
         public List<(Uri, RemoteManifestFileEntry)> FilesToUpdate { get; set; }
@@ -77,6 +92,10 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
     }
 
 
+
+    /// <summary>
+    ///     Custom JSON converter for serializing/deserializing LocalManifestFileEntry objects.
+    /// </summary>
     public class LocalManifestFileEntryConverter : JsonConverter<LocalManifestFileEntry>
     {
         public override void WriteJson(JsonWriter writer, LocalManifestFileEntry value, JsonSerializer serializer)
@@ -104,7 +123,7 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
 
         public override LocalManifestFileEntry ReadJson(JsonReader reader, Type objectType, LocalManifestFileEntry existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            throw new NotImplementedException(); // Implement if needed
+            throw new NotImplementedException();
         }
     }
 }

@@ -37,6 +37,30 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
+        ///     Indicates whether the updater in the local manifest is both present and up to date.
+        /// </summary>
+        public bool UpdaterIsLatestAndExists
+        {
+            get
+            {
+                // Check if the updater exists and if its hash matches the hash in the remote manifest
+                try
+                {
+                    return !string.IsNullOrEmpty(LocalManifest.Updater.Path) &&
+                           File.Exists(Path.Combine(RootFolder, LocalManifest.Updater.Path)) &&
+                           LocalManifest.Updater.Hash.SequenceEqual(RemoteManifest.Updater.SourceHash);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error validating updater: {ex.Message}");
+                    return false;
+                }
+            }
+        }
+
+
+
+        /// <summary>
         ///     Default constructor
         /// </summary>
         public RoseUpdater()
@@ -204,28 +228,10 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Converts a remote manifest file entry to a local manifest file entry.
-        /// </summary>
-        /// <param name="remoteFile">The remote manifest file entry to be converted.</param>
-        /// <returns>The corresponding local manifest file entry.</returns>
-        private LocalManifestFileEntry ConvertRemoteFileEntryToLocal(RemoteManifestFileEntry remoteFile)
-        {
-            LocalManifestFileEntry localFileEntry = new()
-            {
-                Path = remoteFile.SourcePath,
-                Hash = remoteFile.SourceHash,
-                Size = remoteFile.SourceSize
-            };
-            return localFileEntry;
-        }
-
-
-
-        /// <summary>
         ///     Retrieves the remote manifest asynchronously from the specified URL.
         /// </summary>
         /// <returns>The remote manifest object.</returns>
-        public static async Task<RemoteManifest> GetRemoteManifest()
+        private static async Task<RemoteManifest> GetRemoteManifest()
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
             HttpResponseMessage response = await httpClient.GetAsync(RemoteManifestUrl);
@@ -342,43 +348,6 @@ namespace ROSE_Login_Manager.Services
 
 
 
-
-
-        /// <summary>
-        ///     Compares the hash of a remote file with the hash of the corresponding local file.
-        /// </summary>
-        /// <param name="remoteEntryPath">The path of the remote file.</param>
-        /// <param name="remoteHash">The hash of the remote file.</param>
-        /// <returns>True if the hashes match, false otherwise.</returns>
-        private bool CompareHash(string remoteEntryPath, byte[] remoteHash) =>
-            LocalManifest.Files.Any(file => file.Path == remoteEntryPath && file.Hash.SequenceEqual(remoteHash));
-
-
-
-        /// <summary>
-        ///     Indicates whether the updater in the local manifest is both present and up to date.
-        /// </summary>
-        public bool UpdaterIsLatestAndExists
-        {
-            get
-            {
-                // Check if the updater exists and if its hash matches the hash in the remote manifest
-                try
-                {
-                    return !string.IsNullOrEmpty(LocalManifest.Updater.Path) &&
-                           File.Exists(Path.Combine(RootFolder, LocalManifest.Updater.Path)) &&
-                           LocalManifest.Updater.Hash.SequenceEqual(RemoteManifest.Updater.SourceHash);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error validating updater: {ex.Message}");
-                    return false;
-                }
-            }
-        }
-
-
-
         /// <summary>
         ///     Retrieves the local manifest if it exists; otherwise, returns a new instance of LocalManifest.
         /// </summary>
@@ -439,6 +408,35 @@ namespace ROSE_Login_Manager.Services
                 MessageBox.Show($"Failed to save local manifest to {localManifestPath}: {ex.Message}");
                 throw;
             }
+        }
+
+
+
+        /// <summary>
+        ///     Compares the hash of a remote file with the hash of the corresponding local file.
+        /// </summary>
+        /// <param name="remoteEntryPath">The path of the remote file.</param>
+        /// <param name="remoteHash">The hash of the remote file.</param>
+        /// <returns>True if the hashes match, false otherwise.</returns>
+        private bool CompareHash(string remoteEntryPath, byte[] remoteHash) =>
+            LocalManifest.Files.Any(file => file.Path == remoteEntryPath && file.Hash.SequenceEqual(remoteHash));
+
+
+
+        /// <summary>
+        ///     Converts a remote manifest file entry to a local manifest file entry.
+        /// </summary>
+        /// <param name="remoteFile">The remote manifest file entry to be converted.</param>
+        /// <returns>The corresponding local manifest file entry.</returns>
+        private LocalManifestFileEntry ConvertRemoteFileEntryToLocal(RemoteManifestFileEntry remoteFile)
+        {
+            LocalManifestFileEntry localFileEntry = new()
+            {
+                Path = remoteFile.SourcePath,
+                Hash = remoteFile.SourceHash,
+                Size = remoteFile.SourceSize
+            };
+            return localFileEntry;
         }
     }
 }
