@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto.Digests;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Windows;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -81,7 +83,7 @@ namespace ROSE_Login_Manager.Services
             LocalManifest = GetLocalManifest();
             RemoteManifest = DownloadRemoteManifest();
 
-            await Run();
+            await Run().ConfigureAwait(false);
         }
 
 
@@ -93,8 +95,9 @@ namespace ROSE_Login_Manager.Services
         public async Task Run()
         {
             VerifyRoseUpdater();
-            VerifyGameFileIntegrity();
+            await VerifyGameFileIntegrity().ConfigureAwait(false);
         }
+
 
 
 
@@ -134,9 +137,9 @@ namespace ROSE_Login_Manager.Services
         ///     This method checks the integrity of local game files against the remote manifest. If any files need to be updated,
         ///     it downloads the updated files and replaces the local copies.
         /// </remarks>
-        private async Task VerifyGameFileIntegrity()
+        public async Task VerifyGameFileIntegrity()
         {
-            VerificationResults verificationResults = VerifyLocalFiles();
+            VerificationResults verificationResults = await VerifyLocalFiles().ConfigureAwait(false);
             if (verificationResults.FilesToUpdate.Count == 0)
             {
                 return;
@@ -152,16 +155,16 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Verifies the local files against the remote manifest and identifies files that need to be updated.
-        ///     Calculates the total size of the files listed in the remote manifest and the size of files that are already downloaded.
+        ///     Asynchronously verifies the integrity of local files against the remote manifest.
         /// </summary>
-        /// <returns>
-        ///     A VerificationResults object containing:
-        ///         - FilesToUpdate: A list of tuples where each tuple contains the URI of the remote file and its corresponding RemoteManifestFileEntry.
-        ///         - TotalSize: The total size of all files listed in the remote manifest.
-        ///         - AlreadyDownloadedSize: The total size of files that are already downloaded and up-to-date.
-        /// </returns>
-        private VerificationResults VerifyLocalFiles()
+        /// <remarks>
+        ///     This method iterates through the list of files in the remote manifest and checks if they exist locally.
+        ///     If a file is missing locally or its hash and size differ from the corresponding entry in the remote manifest,
+        ///     it is considered outdated and added to the list of files to update. Otherwise, if the file exists locally
+        ///     and matches the remote entry, it is skipped.
+        /// </remarks>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the verification results.</returns>
+        private async Task<VerificationResults> VerifyLocalFiles()
         {
             List<(Uri, RemoteManifestFileEntry)> filesToUpdate = [];
             long totalSize = 0;
@@ -172,23 +175,49 @@ namespace ROSE_Login_Manager.Services
 
             foreach (RemoteManifestFileEntry remoteEntry in remoteManifest.Files)
             {
+                // Skip null entries
+                if (remoteEntry == null)
+                    continue;
+
                 string localFilePath = Path.Combine(RootFolder, remoteEntry.SourcePath);
                 totalSize += remoteEntry.SourceSize;
 
-                // Check if the file exists locally and if it matches the remote hash
-                bool fileIsOutdated = !localFullPaths.Contains(localFilePath) ||
-                                      !LocalManifest.Files.Any(localEntry =>
-                                          localEntry.Path == remoteEntry.SourcePath &&
-                                          localEntry.Hash.SequenceEqual(remoteEntry.SourceHash));
+                bool fileIsOutdated = true;
+
+                // Check if the file exists locally in the manifest and on disk
+                if (localFullPaths.Contains(localFilePath) || File.Exists(localFilePath))
+                {
+                    if (File.Exists(localFilePath))
+                    {
+                        // Check if the local manifest contains an entry matching the remote entry
+                        LocalManifestFileEntry? localEntry = LocalManifest.Files
+                            .FirstOrDefault(entry => entry.Path == remoteEntry.SourcePath);
+
+                        if (localEntry != null && localEntry.Hash.SequenceEqual(remoteEntry.SourceHash))
+                        {
+                            fileIsOutdated = false;
+                        }
+                        else
+                        {
+                            (long fileSize, byte[] fileHash) = await GetFileSizeAndHashAsync(localFilePath).ConfigureAwait(false);
+
+                            // Check if the local file hash and size match the remote entry
+                            if (fileHash.SequenceEqual(remoteEntry.SourceHash) && fileSize == remoteEntry.SourceSize)
+                            {
+                                fileIsOutdated = false;
+                            }
+                        }
+                    }
+                }
 
                 // Update the lists based on the file status
-                if (!fileIsOutdated)
+                if (fileIsOutdated)
                 {
-                    alreadyDownloadedSize += remoteEntry.SourceSize;
+                    filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
                 }
                 else
                 {
-                    filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
+                    alreadyDownloadedSize += remoteEntry.SourceSize;
                 }
             }
 
@@ -199,6 +228,40 @@ namespace ROSE_Login_Manager.Services
                 AlreadyDownloadedSize = alreadyDownloadedSize
             };
         }
+
+
+
+        /// <summary>
+        ///     Asynchronously calculates the size and hash of the specified file.
+        /// </summary>
+        /// <param name="localFilePath">The path to the local file.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a tuple with the file size and its hash.</returns>
+        private static async Task<(long size, byte[] hash)> GetFileSizeAndHashAsync(string localFilePath)
+        {
+            // Get the size of the file
+            FileInfo fileInfo = new(localFilePath);
+            long fileSize = fileInfo.Length;
+
+            // Get the hash of the file using BLAKE2b-512 used by Bitar
+            byte[] fileHash;
+            using (FileStream stream = File.OpenRead(localFilePath))
+            {
+                var blake2b = new Blake2bDigest(512);
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+
+                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
+                {
+                    blake2b.BlockUpdate(buffer, 0, bytesRead);
+                }
+
+                fileHash = new byte[blake2b.GetDigestSize()];
+                blake2b.DoFinal(fileHash, 0);
+            }
+
+            return (fileSize, fileHash);
+        }
+
 
 
 
@@ -223,21 +286,6 @@ namespace ROSE_Login_Manager.Services
             }
 
             await SaveLocalManifest(newLocalManifest).ConfigureAwait(false);
-        }
-
-
-
-        /// <summary>
-        ///     Retrieves the remote manifest asynchronously from the specified URL.
-        /// </summary>
-        /// <returns>The remote manifest object.</returns>
-        private static async Task<RemoteManifest> GetRemoteManifest()
-        {
-            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-            HttpResponseMessage response = await httpClient.GetAsync(RemoteManifestUrl);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<RemoteManifest>(responseBody);
         }
 
 
@@ -326,10 +374,10 @@ namespace ROSE_Login_Manager.Services
                 };
 
                 process.Start();
-                await process.WaitForExitAsync();
+                await process.WaitForExitAsync().ConfigureAwait(false);
 
-                string output = await process.StandardOutput.ReadToEndAsync();
-                string error = await process.StandardError.ReadToEndAsync();
+                string output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+                string error = await process.StandardError.ReadToEndAsync().ConfigureAwait(false);
 
                 if (process.ExitCode != 0)
                 {
@@ -413,22 +461,11 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Compares the hash of a remote file with the hash of the corresponding local file.
-        /// </summary>
-        /// <param name="remoteEntryPath">The path of the remote file.</param>
-        /// <param name="remoteHash">The hash of the remote file.</param>
-        /// <returns>True if the hashes match, false otherwise.</returns>
-        private bool CompareHash(string remoteEntryPath, byte[] remoteHash) =>
-            LocalManifest.Files.Any(file => file.Path == remoteEntryPath && file.Hash.SequenceEqual(remoteHash));
-
-
-
-        /// <summary>
         ///     Converts a remote manifest file entry to a local manifest file entry.
         /// </summary>
         /// <param name="remoteFile">The remote manifest file entry to be converted.</param>
         /// <returns>The corresponding local manifest file entry.</returns>
-        private LocalManifestFileEntry ConvertRemoteFileEntryToLocal(RemoteManifestFileEntry remoteFile)
+        private static LocalManifestFileEntry ConvertRemoteFileEntryToLocal(RemoteManifestFileEntry remoteFile)
         {
             LocalManifestFileEntry localFileEntry = new()
             {

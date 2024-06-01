@@ -98,8 +98,10 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
     /// </summary>
     public class LocalManifestFileEntryConverter : JsonConverter<LocalManifestFileEntry>
     {
-        public override void WriteJson(JsonWriter writer, LocalManifestFileEntry value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, LocalManifestFileEntry? value, JsonSerializer serializer)
         {
+            if (value == null) { return; }
+
             writer.WriteStartObject();
 
             // Write other properties except the 'Hash' property
@@ -121,7 +123,7 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
             writer.WriteEndObject();
         }
 
-        public override LocalManifestFileEntry ReadJson(JsonReader reader, Type objectType, LocalManifestFileEntry existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override LocalManifestFileEntry ReadJson(JsonReader reader, Type objectType, LocalManifestFileEntry? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             throw new NotImplementedException();
         }
