@@ -94,8 +94,10 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A Task representing the asynchronous operation.</returns>
         public async Task Run()
         {
-            VerifyRoseUpdater();
-            await VerifyGameFileIntegrity().ConfigureAwait(false);
+            if (VerifyRoseUpdater().Result)
+            {   // Only verify if updater was modified
+                await VerifyGameFileIntegrity().ConfigureAwait(false);
+            }
         }
 
 
@@ -104,11 +106,11 @@ namespace ROSE_Login_Manager.Services
         /// <summary>
         ///     Verifies the Rose Online updater integrity and updates if necessary.
         /// </summary>
-        private async void VerifyRoseUpdater()
+        private async Task<bool> VerifyRoseUpdater()
         {
             if (UpdaterIsLatestAndExists)
             {
-                return;
+                return false;
             }
 
             // Update the local manifest with only the data for the updater
@@ -125,7 +127,9 @@ namespace ROSE_Login_Manager.Services
             };
 
             _ = DownloadUpdaterWithBitaAsync();
-            await SaveLocalManifest(newManifest);
+            await SaveLocalManifest(newManifest).ConfigureAwait(false);
+
+            return true;
         }
 
 
@@ -449,7 +453,7 @@ namespace ROSE_Login_Manager.Services
                 });
 
                 // Write the JSON string to the file
-                await File.WriteAllTextAsync(localManifestPath, json);
+                await File.WriteAllTextAsync(localManifestPath, json).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
