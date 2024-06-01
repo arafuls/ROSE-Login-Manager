@@ -4,9 +4,8 @@ using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using System.Windows;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
@@ -17,8 +16,6 @@ namespace ROSE_Login_Manager.Services
         private const string RemoteUrl = "https://updates.roseonlinegame.com";
         private const string RemoteManifestUrl = RemoteUrl + "/manifest.json";
         private const string LocalManifestFileName = "local_manifest.json";
-
-        private static readonly HttpClient _client = new();
 
         private static string? RootFolder { get; set; }
 
@@ -39,112 +36,110 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Default constructor
+        /// </summary>
         public RoseUpdater()
         {
-            RootFolder = GlobalVariables.Instance.RoseGameFolder;
-
-            RunUpdater();
+            InitializeAsync().GetAwaiter().GetResult();
         }
 
 
-        public async void RunUpdater()
+
+        /// <summary>
+        ///     Asynchronously initializes the RoseUpdater by setting up the root folder, retrieving the local and remote manifests,
+        ///     and executing the main operations.
+        /// </summary>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public async Task InitializeAsync()
         {
-            // Check if we are out of date
-            if (!await CompareManifests())
+            RootFolder = GlobalVariables.Instance.RoseGameFolder;
+            LocalManifest = GetLocalManifest();
+            RemoteManifest = DownloadRemoteManifest();
+
+            await Run();
+        }
+
+
+
+        /// <summary>
+        ///     Runs the main operations of the updater, including verifying the updater and game file integrity.
+        /// </summary>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public async Task Run()
+        {
+            VerifyRoseUpdater();
+            VerifyGameFileIntegrity();
+        }
+
+
+
+        /// <summary>
+        ///     Verifies the Rose Online updater integrity and updates if necessary.
+        /// </summary>
+        private async void VerifyRoseUpdater()
+        {
+            if (UpdaterIsLatestAndExists)
             {
-                // TODO: Send message to disable launch buttons until complete
-                MessageBox.Show("Update in progress");
-
-                await ParseManifestFilesAsync();
-
-                // Update the local manifest with only the data for the updater
-                LocalManifest newManifest = new()
-                {
-                    Version = 1,
-                    Updater = new LocalManifestFileEntry
-                    {
-                        Path = RemoteManifest.Updater.SourcePath,
-                        Hash = RemoteManifest.Updater.SourceHash,
-                        Size = RemoteManifest.Updater.SourceSize
-                    },
-                    Files = LocalManifest.Files // Preserving existing files data
-                };
-
-                await SaveLocalManifest(newManifest);
+                return;
             }
 
-
-
-            // Channel for communication
-            var channel = Channel.CreateUnbounded<LocalManifestFileEntry>();
-            var rx = channel.Reader;
-            var tx = channel.Writer;
-
-            var currentLocalFileData = new Dictionary<string, LocalManifestFileEntry>();
-
-            VerificationResults verificationResults = VerifyLocalFiles();
-
-            var hashNewLocalManifest = new HashSet<string>();
-            var newLocalManifest = new LocalManifest
+            // Update the local manifest with only the data for the updater
+            LocalManifest newManifest = new()
             {
                 Version = 1,
-                Updater = localManifest.Updater,
-                Files = []
+                Updater = new LocalManifestFileEntry
+                {
+                    Path = RemoteManifest.Updater.SourcePath,
+                    Hash = RemoteManifest.Updater.SourceHash,
+                    Size = RemoteManifest.Updater.SourceSize
+                },
+                Files = LocalManifest.Files // Preserving existing files data
             };
 
-            // Define the work task
-            var work = Task.Run(async () =>
-            {
-                var hashNewLocalManifest = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var newLocalManifest = new LocalManifest
-                {
-                    Version = 1,
-                    Updater = localManifest.Updater
-                };
-
-                await foreach (var manifest in rx.ReadAllAsync())
-                {
-                    hashNewLocalManifest.Add(Path.GetFullPath(manifest.Path));
-                    newLocalManifest.Files.Add(manifest);
-                }
-
-                return (hashNewLocalManifest, newLocalManifest);
-            });
-
-            // Start the asynchronous file download tasks
-            List<Task> cloneTasks = await GetRemoteFiles(verificationResults.FilesToUpdate, tx);
-
-            // Wait for all clone tasks to complete
-            await Task.WhenAll(cloneTasks);
-
-            // Await the 'work' task to get the results
-            (hashNewLocalManifest, newLocalManifest) = await work;
-
-            // Iterate through the current local file data
-            foreach (var kvp in currentLocalFileData)
-            {
-                string path = kvp.Key;
-                LocalManifestFileEntry localEntry = kvp.Value;
-
-                // If the path is not in the hash set of new local manifest, add it to the new local manifest
-                if (!hashNewLocalManifest.Contains(Path.GetFullPath(path)))
-                {
-                    newLocalManifest.Files.Add(localEntry);
-                }
-            }
-
-            await SaveLocalManifest(newLocalManifest);
-
-            // TODO: Send message to enable launch buttons until complete
-            MessageBox.Show("Update complete");
+            _ = DownloadUpdaterWithBitaAsync();
+            await SaveLocalManifest(newManifest);
         }
 
 
 
+        /// <summary>
+        ///     Verifies the integrity of game files and performs updates if necessary.
+        /// </summary>
+        /// <remarks>
+        ///     This method checks the integrity of local game files against the remote manifest. If any files need to be updated,
+        ///     it downloads the updated files and replaces the local copies.
+        /// </remarks>
+        private async Task VerifyGameFileIntegrity()
+        {
+            VerificationResults verificationResults = VerifyLocalFiles();
+            if (verificationResults.FilesToUpdate.Count == 0)
+            {
+                return;
+            }
+
+            // TODO: Send update started message
+
+            await UpdateLocalFiles(verificationResults.FilesToUpdate).ConfigureAwait(false);
+
+            // TODO: Send update complete message
+        }
+
+
+
+        /// <summary>
+        ///     Verifies the local files against the remote manifest and identifies files that need to be updated.
+        ///     Calculates the total size of the files listed in the remote manifest and the size of files that are already downloaded.
+        /// </summary>
+        /// <returns>
+        ///     A VerificationResults object containing:
+        ///         - FilesToUpdate: A list of tuples where each tuple contains the URI of the remote file and its corresponding RemoteManifestFileEntry.
+        ///         - TotalSize: The total size of all files listed in the remote manifest.
+        ///         - AlreadyDownloadedSize: The total size of files that are already downloaded and up-to-date.
+        /// </returns>
         private VerificationResults VerifyLocalFiles()
         {
             List<(Uri, RemoteManifestFileEntry)> filesToUpdate = [];
-
             long totalSize = 0;
             long alreadyDownloadedSize = 0;
 
@@ -153,40 +148,24 @@ namespace ROSE_Login_Manager.Services
 
             foreach (RemoteManifestFileEntry remoteEntry in remoteManifest.Files)
             {
-                string outputPath = Path.Combine(RootFolder, remoteEntry.SourcePath);
-
-                bool needsUpdate()
-                {
-                    if (!localFullPaths.Contains(outputPath))
-                    {
-                        return true;
-                    }
-
-                    LocalManifestFileEntry? localEntry = LocalManifest.Files.FirstOrDefault(entry => entry.Path == remoteEntry.SourcePath);
-                    if (localEntry != null && File.Exists(outputPath))
-                    {
-                        if (localEntry.Hash.SequenceEqual(remoteEntry.SourceHash))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
+                string localFilePath = Path.Combine(RootFolder, remoteEntry.SourcePath);
                 totalSize += remoteEntry.SourceSize;
 
-                if (!needsUpdate())
-                {
-                    Console.WriteLine($"Skipping file {outputPath} as it is already present");
-                    alreadyDownloadedSize += remoteEntry.SourceSize;
-                    continue;
-                }
+                // Check if the file exists locally and if it matches the remote hash
+                bool fileIsOutdated = !localFullPaths.Contains(localFilePath) ||
+                                      !LocalManifest.Files.Any(localEntry =>
+                                          localEntry.Path == remoteEntry.SourcePath &&
+                                          localEntry.Hash.SequenceEqual(remoteEntry.SourceHash));
 
-                //Uri remoteUrl = new Uri(RemoteUrl);
-                //filesToUpdate.Add((new Uri(Path.Combine(remoteUrl.Host, remoteEntry.Path)), remoteEntry));
-                //filesToUpdate.Add((new Uri(Path.Combine(RemoteUrl, remoteEntry.Path)), remoteEntry));
-                filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
+                // Update the lists based on the file status
+                if (!fileIsOutdated)
+                {
+                    alreadyDownloadedSize += remoteEntry.SourceSize;
+                }
+                else
+                {
+                    filesToUpdate.Add((new Uri(new Uri(RemoteUrl), remoteEntry.Path), remoteEntry));
+                }
             }
 
             return new VerificationResults
@@ -199,67 +178,122 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Asynchronously updates local files based on the provided list of file URIs and their corresponding remote manifest entries.
+        /// </summary>
+        /// <param name="files">A list of tuples containing the file URIs and their corresponding remote manifest entries.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        private async Task UpdateLocalFiles(List<(Uri, RemoteManifestFileEntry)> files)
+        {
+            // Create a dictionary from the remote manifest entries for quick lookup by file path
+            Dictionary<string, RemoteManifestFileEntry> remoteFilePaths = RemoteManifest.Files.ToDictionary(file => file.SourcePath);
+
+            LocalManifest newLocalManifest = GetLocalManifest();
+
+            foreach ((Uri, RemoteManifestFileEntry) file in files)
+            {
+                if (await DownloadFileWithBitaAsync(remoteFilePaths[file.Item2.SourcePath]).ConfigureAwait(false))
+                {
+                    newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                }
+            }
+
+            await SaveLocalManifest(newLocalManifest).ConfigureAwait(false);
+        }
+
+
+
+        /// <summary>
+        ///     Converts a remote manifest file entry to a local manifest file entry.
+        /// </summary>
+        /// <param name="remoteFile">The remote manifest file entry to be converted.</param>
+        /// <returns>The corresponding local manifest file entry.</returns>
+        private LocalManifestFileEntry ConvertRemoteFileEntryToLocal(RemoteManifestFileEntry remoteFile)
+        {
+            LocalManifestFileEntry localFileEntry = new()
+            {
+                Path = remoteFile.SourcePath,
+                Hash = remoteFile.SourceHash,
+                Size = remoteFile.SourceSize
+            };
+            return localFileEntry;
+        }
+
+
+
+        /// <summary>
+        ///     Retrieves the remote manifest asynchronously from the specified URL.
+        /// </summary>
+        /// <returns>The remote manifest object.</returns>
         public static async Task<RemoteManifest> GetRemoteManifest()
         {
-            Console.WriteLine("Downloading remote manifest");
-
-            HttpResponseMessage response = await _client.GetAsync(RemoteManifestUrl);
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            HttpResponseMessage response = await httpClient.GetAsync(RemoteManifestUrl);
             response.EnsureSuccessStatusCode();
-
             string responseBody = await response.Content.ReadAsStringAsync();
-
             return JsonConvert.DeserializeObject<RemoteManifest>(responseBody);
         }
 
 
 
-        public async Task ParseManifestFilesAsync()
+        /// <summary>
+        ///     Downloads the updater file using Bita tool asynchronously.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
+        private async Task<bool> DownloadUpdaterWithBitaAsync()
         {
-            // List to store the tasks for updating files
-            List<Task> updateTasks = [];
-
-            foreach (RemoteManifestFileEntry fileEntry in RemoteManifest.Files)
+            try
             {
-                string localfile = Path.Combine(RootFolder, fileEntry.SourcePath);
-                if (LocalManifest.Files != null && File.Exists(localfile) && CompareHash(fileEntry.SourcePath, fileEntry.SourceHash))
-                {   // Up to date entry
-                    continue;
+                string bitaExecutablePath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory)?.Parent?.FullName, "Tools", "Bita", "bita.exe");
+                if (!File.Exists(bitaExecutablePath))
+                    throw new FileNotFoundException("Bita executable not found", bitaExecutablePath);
+
+                string archiveUrl = Path.Combine(RemoteUrl, RemoteManifest.Updater.Path);
+                string outputPath = Path.Combine(RootFolder, RemoteManifest.Updater.SourcePath);
+                string arguments = $"clone --seed-output \"{archiveUrl}\" \"{outputPath}\"";
+
+                using Process process = new()
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = bitaExecutablePath,
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.Start();
+                await process.WaitForExitAsync();
+
+                string output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+                string error = await process.StandardError.ReadToEndAsync().ConfigureAwait(false);
+
+                if (process.ExitCode != 0)
+                {
+                    Console.WriteLine($"Error running bita: {error}");
+                    return false;
                 }
 
-                // Start the update task and add it to the list
-                Task updateTask = UpdateFileAsync(fileEntry);
-                updateTasks.Add(updateTask);
+                return true;
             }
-
-            // Wait for all update tasks to complete
-            await Task.WhenAll(updateTasks);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error running bita: {ex.Message}");
+                return false;
+            }
         }
 
 
 
 
-        private static async Task UpdateFileAsync(RemoteManifestFileEntry fileEntry)
-        {
-            string directoryPath = Path.Combine(RootFolder, Path.GetDirectoryName(fileEntry.SourcePath) ?? string.Empty);
-
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-
-            // Download the file using DownloadFileWithBitaAsync
-            if (await DownloadFileWithBitaAsync(fileEntry))
-            {
-                //Console.WriteLine($"Successfully updated {fileEntry.Path}");
-            }
-            else
-            {
-                throw new Exception("File update failed");
-            }
-        }
-
-
-
+        /// <summary>
+        ///     Downloads a remote file using the Bita tool asynchronously.
+        /// </summary>
+        /// <param name="file">The file entry from the remote manifest to be downloaded.</param>
+        /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
         private static async Task<bool> DownloadFileWithBitaAsync(RemoteManifestFileEntry file)
         {
             try
@@ -310,65 +344,52 @@ namespace ROSE_Login_Manager.Services
 
 
 
-        private bool CompareHash(string remoteEntryPath, byte[] remoteHash)
-        {
-            LocalManifestFileEntry? local = LocalManifest.Files.FirstOrDefault(file => file.Path == remoteEntryPath);
-
-            if (local == null) 
-            { 
-                return false; 
-            }
-
-            return local.Hash.SequenceEqual(remoteHash);
-        }
+        /// <summary>
+        ///     Compares the hash of a remote file with the hash of the corresponding local file.
+        /// </summary>
+        /// <param name="remoteEntryPath">The path of the remote file.</param>
+        /// <param name="remoteHash">The hash of the remote file.</param>
+        /// <returns>True if the hashes match, false otherwise.</returns>
+        private bool CompareHash(string remoteEntryPath, byte[] remoteHash) =>
+            LocalManifest.Files.Any(file => file.Path == remoteEntryPath && file.Hash.SequenceEqual(remoteHash));
 
 
 
         /// <summary>
-        ///     Compares the hash values of the local and remote manifests to validate the updater integrity.
+        ///     Indicates whether the updater in the local manifest is both present and up to date.
         /// </summary>
-        /// <returns>
-        ///     True if the hash values match, indicating that the updater is valid and up-to-date; otherwise, false.
-        /// </returns>
-        public async Task<bool> CompareManifests()
+        public bool UpdaterIsLatestAndExists
         {
-            try
+            get
             {
-                // Load and Fetch Manifests
-                LocalManifest = GetLocalManifest();
-                RemoteManifest = await DownloadRemoteManifestAsync().ConfigureAwait(false);
-
-                // Get the hash values from the updaters
-                byte[] localHash = LocalManifest.Updater.Hash;
-                byte[] remoteHash = RemoteManifest.Updater.SourceHash;
-
-                return localHash.SequenceEqual(remoteHash);
-            }
-            catch (Exception ex)
-            {   
-                Console.WriteLine($"Error validating updater: {ex.Message}");
-                return false;
+                // Check if the updater exists and if its hash matches the hash in the remote manifest
+                try
+                {
+                    return !string.IsNullOrEmpty(LocalManifest.Updater.Path) &&
+                           File.Exists(Path.Combine(RootFolder, LocalManifest.Updater.Path)) &&
+                           LocalManifest.Updater.Hash.SequenceEqual(RemoteManifest.Updater.SourceHash);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error validating updater: {ex.Message}");
+                    return false;
+                }
             }
         }
 
 
 
         /// <summary>
-        ///     Loads the local manifest file from the file system.
+        ///     Retrieves the local manifest if it exists; otherwise, returns a new instance of LocalManifest.
         /// </summary>
-        /// <returns>The deserialized local manifest object.</returns>
+        /// <returns>The local manifest if it exists; otherwise, a new instance of LocalManifest.</returns>
         private static LocalManifest GetLocalManifest()
         {
-            Uri remoteUri = new(RemoteUrl);
-            string localManifestPath = Path.Combine(RootFolder, "updater", remoteUri.Host, LocalManifestFileName);
+            string localManifestPath = Path.Combine(RootFolder, "updater", new Uri(RemoteUrl).Host, LocalManifestFileName);
 
             if (!File.Exists(localManifestPath))
-            {
-                // If the file does not exist, return a new LocalManifest
                 return new LocalManifest();
-            }
 
-            // If the file exists, read its contents and deserialize
             string json = File.ReadAllText(localManifestPath);
             return JsonConvert.DeserializeObject<LocalManifest>(json);
         }
@@ -379,110 +400,45 @@ namespace ROSE_Login_Manager.Services
         ///     Downloads the remote manifest file asynchronously from the specified URL.
         /// </summary>
         /// <returns>The deserialized remote manifest object.</returns>
-        private static async Task<RemoteManifest> DownloadRemoteManifestAsync()
+        private static RemoteManifest DownloadRemoteManifest()
         {
-            HttpResponseMessage response = await _client.GetAsync(RemoteManifestUrl).ConfigureAwait(false);
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            HttpResponseMessage response = httpClient.GetAsync(RemoteManifestUrl).Result; // Blocking call
             response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string responseBody = response.Content.ReadAsStringAsync().Result; // Blocking call
             return JsonConvert.DeserializeObject<RemoteManifest>(responseBody);
         }
 
 
 
-
+        /// <summary>
+        ///     Saves the provided local manifest to the file system.
+        /// </summary>
+        /// <param name="newLocalManifest">The local manifest to save.</param>
+        /// <exception cref="IOException">Thrown if an I/O error occurs while writing to the file.</exception>
         private static async Task SaveLocalManifest(LocalManifest newLocalManifest)
         {
-            Uri remoteUri = new(RemoteUrl);
-            string localManifestParentDir = Path.Combine(RootFolder, "updater", remoteUri.Host);
-            string localManifestPath = Path.Combine(localManifestParentDir, LocalManifestFileName);
+            string localManifestPath = Path.Combine(RootFolder, "updater", new Uri(RemoteUrl).Host, LocalManifestFileName);
 
             try
             {
-                if (!string.IsNullOrEmpty(localManifestParentDir))
-                {
-                    Directory.CreateDirectory(localManifestParentDir);
-                }
+                // Ensure parent directory exists
+                Directory.CreateDirectory(Path.GetDirectoryName(localManifestPath));
 
                 // Serialize the object to a JSON string
-                string json = JsonConvert.SerializeObject(newLocalManifest, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(newLocalManifest, new JsonSerializerSettings
+                {
+                    Converters = { new LocalManifestFileEntryConverter() }
+                });
 
                 // Write the JSON string to the file
                 await File.WriteAllTextAsync(localManifestPath, json);
-
-                Console.WriteLine($"Saved local manifest to {localManifestPath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to save local manifest to {localManifestPath}: {ex.Message}");
+                MessageBox.Show($"Failed to save local manifest to {localManifestPath}: {ex.Message}");
                 throw;
             }
-        }
-
-
-        public static Task<List<Task>> GetRemoteFiles(
-            List<(Uri, RemoteManifestFileEntry)> filesToUpdate,
-            ChannelWriter<LocalManifestFileEntry> channelWriter)
-        {
-            return Task.Run(() =>
-            {
-                string[] TEXT_FILE_EXTENSIONS = [".txt", ".json", ".xml"];
-                var cloneTasks = new List<Task>();
-
-                foreach (var entry in filesToUpdate)
-                {
-                    var (cloneUrl, remoteEntry) = entry;
-                    var outputPath = Path.Combine(RootFolder, remoteEntry.SourcePath);
-                    var clonedWriter = channelWriter; // Use the same channel writer
-
-                    // Handle text files
-                    var ext = Path.GetExtension(outputPath);
-                    if (TEXT_FILE_EXTENSIONS.Contains(ext))
-                    {
-                        try
-                        {
-                            if (File.Exists(outputPath))
-                            {
-                                File.Delete(outputPath);
-                                Console.WriteLine($"Deleted text file: {outputPath}");
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine($"Failed to delete text file {outputPath}: {e.Message}");
-                        }
-                    }
-
-                    cloneTasks.Add(Task.Run(async () =>
-                    {
-                        Console.WriteLine($"Downloading {cloneUrl}");
-                        try
-                        {
-                            var response = await _client.GetAsync(cloneUrl);
-                            response.EnsureSuccessStatusCode();
-
-                            var content = await response.Content.ReadAsByteArrayAsync();
-                            await File.WriteAllBytesAsync(outputPath, content);
-
-                            Console.WriteLine($"Cloned {cloneUrl} to {outputPath}");
-
-                            var localEntry = new LocalManifestFileEntry
-                            {
-                                Path = remoteEntry.SourcePath,
-                                Hash = remoteEntry.SourceHash,
-                                Size = remoteEntry.SourceSize
-                            };
-
-                            await clonedWriter.WriteAsync(localEntry);
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine($"Failed to clone {cloneUrl}: {e.Message}");
-                        }
-                    }));
-                }
-
-                return cloneTasks;
-            });
         }
     }
 }
