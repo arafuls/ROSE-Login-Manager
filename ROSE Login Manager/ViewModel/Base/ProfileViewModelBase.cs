@@ -97,7 +97,11 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (string.IsNullOrEmpty(ProfileName) || string.IsNullOrEmpty(ProfileEmail) || ProfilePassword == null || ProfilePassword.Length < 8)
             {
-                MessageBox.Show("Verify all data fields have been completed and password has 8 or more characters.", "Error Creating Profile", MessageBoxButton.OK, MessageBoxImage.Error);
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - Error Creating Profile",
+                    message: "Verify all data fields have been completed and password has 8 or more characters.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
                 return false;
             }
 

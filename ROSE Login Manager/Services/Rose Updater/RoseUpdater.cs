@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
@@ -51,7 +52,11 @@ namespace ROSE_Login_Manager.Services
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error validating updater: {ex.Message}");
+                    new DialogService().ShowMessageBox(
+                        title: "ROSE Online Login Manager - RoseUpdater::UpdaterIsLatestAndExists",
+                        message: $"Error validating updater: {ex.Message}",
+                        button: MessageBoxButton.OK,
+                        icon: MessageBoxImage.Error);
                     return false;
                 }
             }
@@ -298,7 +303,11 @@ namespace ROSE_Login_Manager.Services
 
                 if (process.ExitCode != 0)
                 {
-                    Console.WriteLine($"Error running bita: {error}");
+                    new DialogService().ShowMessageBox(
+                        title: "ROSE Online Login Manager - RoseUpdater::DownloadFileWithBitaAsync",
+                        message: $"Error running bita: {error}",
+                        button: MessageBoxButton.OK,
+                        icon: MessageBoxImage.Error);
                     return false;
                 }
 
@@ -306,7 +315,11 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error running bita: {ex.Message}");
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - RoseUpdater::DownloadFileWithBitaAsync",
+                    message: $"Error running bita: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
                 return false;
             }
         }
@@ -370,7 +383,11 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to save local manifest to {localManifestPath}: {ex.Message}");
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - RoseUpdater::SaveLocalManifest",
+                    message: $"Failed to save local manifest to {localManifestPath}: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
                 throw;
             }
         }
