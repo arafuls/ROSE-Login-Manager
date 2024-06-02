@@ -45,9 +45,6 @@ namespace ROSE_Login_Manager
             // Instantiate Singletons
             _ = GlobalVariables.Instance;
             _ = ConfigurationManager.Instance;
-
-            // ROSE Updater
-            _ = new RoseUpdater();
         }
 
 

@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Newtonsoft.Json;
 using ROSE_Login_Manager.Model;
+using ROSE_Login_Manager.Services.Infrastructure;
 using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
@@ -69,7 +71,7 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         public RoseUpdater()
         {
-            InitializeAsync().GetAwaiter().GetResult();
+            InitializeAsync().ConfigureAwait(false);
         }
 
 
@@ -140,14 +142,15 @@ namespace ROSE_Login_Manager.Services
             VerificationResults verificationResults = await VerifyLocalFiles().ConfigureAwait(false);
             if (verificationResults.FilesToUpdate.Count == 0)
             {
+                WeakReferenceMessenger.Default.Send(new ProgressMessage(100));
                 return;
             }
 
-            // TODO: Send update started message
+            WeakReferenceMessenger.Default.Send(new ProgressMessage(0));
 
             await UpdateLocalFiles(verificationResults.FilesToUpdate).ConfigureAwait(false);
 
-            // TODO: Send update complete message
+            WeakReferenceMessenger.Default.Send(new ProgressMessage(100));
         }
 
 
@@ -224,12 +227,20 @@ namespace ROSE_Login_Manager.Services
 
             LocalManifest newLocalManifest = GetLocalManifest();
 
+            int totalFiles = files.Count;
+            int processedFiles = 0;
+
             foreach ((Uri, RemoteManifestFileEntry) file in files)
             {
                 if (await DownloadFileWithBitaAsync(remoteFilePaths[file.Item2.SourcePath]).ConfigureAwait(false))
                 {
                     newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
                 }
+
+                processedFiles++;
+                int progressPercentage = (processedFiles * 100) / totalFiles;
+
+                WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage));
             }
 
             await SaveLocalManifest(newLocalManifest).ConfigureAwait(false);

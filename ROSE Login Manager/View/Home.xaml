@@ -29,8 +29,15 @@
         </Border>
 
         <!-- Right Panel -->
-        <Border Grid.Column="1" Margin="5 10 5 10">
-            <local:WebView2Control x:Name="webView" SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+        <Border Grid.Column="1" Margin="0 0 10 0">
+            <StackPanel VerticalAlignment="Center">
+                <local:WebView2Control 
+                            x:Name="webView" 
+                            SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+                <Grid>
+                    <ProgressBar Minimum="0" Maximum="100" Height="30" Width="780" Margin="10" Value="{Binding Progress}" />
+                </Grid>
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>

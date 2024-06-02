@@ -63,4 +63,17 @@ namespace ROSE_Login_Manager.Services.Infrastructure
             IsChecked = isChecked;
         }
     }
+
+
+
+
+    public class ProgressMessage
+    {
+        public int ProgressPercentage { get; }
+
+        public ProgressMessage(int progressPercentage)
+        {
+            ProgressPercentage = progressPercentage;
+        }
+    }
 }

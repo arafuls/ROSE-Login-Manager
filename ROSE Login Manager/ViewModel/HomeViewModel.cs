@@ -3,9 +3,11 @@ using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows;
 
 
@@ -22,6 +24,13 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         #region Accessors
+        private int _progress;
+        public int Progress
+        {
+            get => _progress;
+            set => SetProperty(ref _progress, value);
+        }
+
         private ObservableCollection<ProfileCardViewModel> _profileCards;
         public ObservableCollection<ProfileCardViewModel> ProfileCards
         {
@@ -56,8 +65,12 @@ namespace ROSE_Login_Manager.ViewModel
 
             WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, LaunchProfile);
             WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
+            WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
 
             LoadProfileData();
+
+            // ROSE Updater
+            _ = new RoseUpdater();
         }
 
 
@@ -124,6 +137,13 @@ namespace ROSE_Login_Manager.ViewModel
             {
                 ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
             }
+        }
+
+
+
+        private void OnProgressMessageReceived(object recipient, ProgressMessage message)
+        {
+            Progress = message.ProgressPercentage;
         }
         #endregion
 
@@ -193,5 +213,9 @@ namespace ROSE_Login_Manager.ViewModel
                 startInfo.Arguments = string.Empty;
             }
         }
+
+
+
+
     }
 }

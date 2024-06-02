@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Services.Infrastructure;
+using System;
 using System.Windows.Input;
 
 
@@ -89,6 +90,14 @@ namespace ROSE_Login_Manager.ViewModel
                 }
             }
         }
+
+
+        private bool _launchButtonEnabled;
+        public bool LaunchButtonEnabled
+        {
+            get => _launchButtonEnabled;
+            set => SetProperty(ref _launchButtonEnabled, value);
+        }
         #endregion
 
 
@@ -119,6 +128,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             WeakReferenceMessenger.Default.Register<DisplayEmailCheckedMessage>(this, SettingsViewModel_DisplayEmailCheckedChanged);
             WeakReferenceMessenger.Default.Register<MaskEmailCheckedMessage>(this, SettingsViewModel_MaskEmailCheckedChanged);
+            WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
         }
 
 
@@ -134,6 +144,13 @@ namespace ROSE_Login_Manager.ViewModel
         private void SettingsViewModel_MaskEmailCheckedChanged(object recipient, MaskEmailCheckedMessage message)
         {
             MaskEmail = message.IsChecked;
+        }
+
+
+
+        private void OnProgressMessageReceived(object recipient, ProgressMessage message)
+        {
+            LaunchButtonEnabled = (message.ProgressPercentage == 100);
         }
         #endregion
 
