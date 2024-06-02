@@ -126,7 +126,7 @@ namespace ROSE_Login_Manager.Services
                 Files = LocalManifest.Files // Preserving existing files data
             };
 
-            _ = DownloadUpdaterWithBitaAsync();
+            _ = DownloadUpdater();
             await SaveLocalManifest(newManifest).ConfigureAwait(false);
         }
 
@@ -227,22 +227,30 @@ namespace ROSE_Login_Manager.Services
             LocalManifest newLocalManifest = GetLocalManifest();
 
             int totalFiles = files.Count;
-            int processedFiles = 0;
+            int _processedFiles = 0;
 
-            foreach ((Uri, RemoteManifestFileEntry) file in files)
+            // Transform each loop iteration into a task and run them concurrently
+            var tasks = files.Select(async file =>
             {
-                if (await DownloadFileWithBitaAsync(remoteFilePaths[file.Item2.SourcePath]).ConfigureAwait(false))
+                if (await DownloadFile(remoteFilePaths[file.Item2.SourcePath]))
                 {
-                    newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                    lock (newLocalManifest) // Ensure thread safety when accessing newLocalManifest
+                    {
+                        newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                    }
                 }
 
-                processedFiles++;
+                int processedFiles = Interlocked.Increment(ref _processedFiles);
                 int progressPercentage = (processedFiles * 100) / totalFiles;
 
                 WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
-            }
+            });
 
-            await SaveLocalManifest(newLocalManifest).ConfigureAwait(false);
+            // Wait for all tasks to complete
+            await Task.WhenAll(tasks);
+
+            // Save the updated local manifest
+            SaveLocalManifest(newLocalManifest);
         }
 
 
@@ -251,12 +259,12 @@ namespace ROSE_Login_Manager.Services
         ///     Downloads the updater file using Bita tool asynchronously.
         /// </summary>
         /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
-        private async Task<bool> DownloadUpdaterWithBitaAsync()
+        private async Task<bool> DownloadUpdater()
         {
             string archiveUrl = Path.Combine(RemoteUrl, RemoteManifest.Updater.Path);
             string outputPath = Path.Combine(RootFolder, RemoteManifest.Updater.SourcePath);
 
-            return await DownloadFileWithBitaAsync(archiveUrl, outputPath).ConfigureAwait(false);
+            return await DownloadAsync(archiveUrl, outputPath).ConfigureAwait(false);
         }
 
 
@@ -266,12 +274,12 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="file">The file entry from the remote manifest to be downloaded.</param>
         /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
-        private static async Task<bool> DownloadFileWithBitaAsync(RemoteManifestFileEntry file)
+        private async Task<bool> DownloadFile(RemoteManifestFileEntry file)
         {
             string archiveUrl = Path.Combine(RemoteUrl, file.Path);
             string outputPath = Path.Combine(RootFolder, file.SourcePath);
 
-            return await DownloadFileWithBitaAsync(archiveUrl, outputPath).ConfigureAwait(false);
+            return await DownloadAsync(archiveUrl, outputPath).ConfigureAwait(false);
         }
 
 
@@ -282,7 +290,7 @@ namespace ROSE_Login_Manager.Services
         /// <param name="archiveUrl">The URL of the remote file to be downloaded.</param>
         /// <param name="outputPath">The local path where the file will be saved.</param>
         /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
-        private static async Task<bool> DownloadFileWithBitaAsync(string archiveUrl, string outputPath)
+        private async Task<bool> DownloadAsync(string archiveUrl, string outputPath)
         {
             try
             {
@@ -308,16 +316,16 @@ namespace ROSE_Login_Manager.Services
                 process.Start();
                 await process.WaitForExitAsync().ConfigureAwait(false);
 
-                string output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                string error = await process.StandardError.ReadToEndAsync().ConfigureAwait(false);
+                //string output = process.StandardOutput.ReadToEndAsync();
+                //string error = process.StandardError.ReadToEndAsync();
 
                 if (process.ExitCode != 0)
                 {
-                    new DialogService().ShowMessageBox(
-                        title: "ROSE Online Login Manager - RoseUpdater::DownloadFileWithBitaAsync",
-                        message: $"Error running bita: {error}",
-                        button: MessageBoxButton.OK,
-                        icon: MessageBoxImage.Error);
+                    //new DialogService().ShowMessageBox(
+                    //    title: "ROSE Online Login Manager - RoseUpdater::DownloadFileWithBitaAsync",
+                    //    message: $"Error running bita: {error}",
+                    //    button: MessageBoxButton.OK,
+                    //    icon: MessageBoxImage.Error);
                     return false;
                 }
 
