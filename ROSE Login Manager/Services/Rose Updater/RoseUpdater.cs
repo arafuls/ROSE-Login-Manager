@@ -215,10 +215,11 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Asynchronously updates local files based on the provided list of file URIs and their corresponding remote manifest entries.
+        ///     Updates the local files based on the provided list of remote files, downloading each file if necessary,
+        ///     and saving the updated local manifest.
         /// </summary>
-        /// <param name="files">A list of tuples containing the file URIs and their corresponding remote manifest entries.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
+        /// <param name="files">The list of tuples containing the URI and the remote manifest file entry to be processed.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task UpdateLocalFiles(List<(Uri, RemoteManifestFileEntry)> files)
         {
             // Create a dictionary from the remote manifest entries for quick lookup by file path
@@ -246,19 +247,19 @@ namespace ROSE_Login_Manager.Services
                 WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
             });
 
-            // Wait for all tasks to complete
             await Task.WhenAll(tasks);
-
-            // Save the updated local manifest
-            SaveLocalManifest(newLocalManifest);
+            _ = SaveLocalManifest(newLocalManifest);
         }
 
 
 
         /// <summary>
-        ///     Downloads the updater file using Bita tool asynchronously.
+        ///     Downloads the updater file using the Bita tool asynchronously.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The task result contains a boolean value:
+        ///     true if the download is successful, otherwise false.
+        /// </returns>
         private async Task<bool> DownloadUpdater()
         {
             string archiveUrl = Path.Combine(RemoteUrl, RemoteManifest.Updater.Path);
@@ -270,10 +271,13 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Downloads a remote file using the Bita tool asynchronously.
+        ///     Downloads a file specified in the remote manifest entry using the Bita tool asynchronously.
         /// </summary>
         /// <param name="file">The file entry from the remote manifest to be downloaded.</param>
-        /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The task result contains a boolean value:
+        ///     true if the download is successful, otherwise false.
+        /// </returns>
         private async Task<bool> DownloadFile(RemoteManifestFileEntry file)
         {
             string archiveUrl = Path.Combine(RemoteUrl, file.Path);
@@ -289,7 +293,11 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="archiveUrl">The URL of the remote file to be downloaded.</param>
         /// <param name="outputPath">The local path where the file will be saved.</param>
-        /// <returns>A task representing the asynchronous operation. Returns true if the download is successful, otherwise false.</returns>
+        /// <returns>
+        ///     A task representing the asynchronous operation. The task result contains a boolean value:
+        ///     true if the download is successful, otherwise false.
+        /// </returns>
+        /// <exception cref="FileNotFoundException">Thrown when the Bita executable is not found at the expected path.</exception>
         private async Task<bool> DownloadAsync(string archiveUrl, string outputPath)
         {
             try
