@@ -149,13 +149,13 @@ namespace ROSE_Login_Manager.ViewModel
 
         private void OnProgressMessageReceived(object recipient, ProgressMessage message)
         {
-            _ = UpdateProgressAsync(message.ProgressPercentage, message.CurrentFileName);
+            UpdateProgressAsync(message.ProgressPercentage, message.CurrentFileName);
         }
         #endregion
 
 
 
-        private async Task UpdateProgressAsync(int targetProgress, string currentFileName)
+        private void UpdateProgressAsync(int targetProgress, string currentFileName)
         {
             int currentProgress = Progress;
 
@@ -163,11 +163,7 @@ namespace ROSE_Login_Manager.ViewModel
             {
                 currentProgress++;
                 Progress = currentProgress;
-                CurrentFileName = Progress != 100 ? ("Downloading " + currentFileName) : "Latest";
-
-                // Lower value for smoother and faster animation (e.g., 10 ms)
-                // Higher value for slower and potentially less smooth animation (e.g., 50 ms)
-                await Task.Delay(1);
+                CurrentFileName = Progress != 100 ? "Downloading " + currentFileName : "Latest";
             }
         }
 
