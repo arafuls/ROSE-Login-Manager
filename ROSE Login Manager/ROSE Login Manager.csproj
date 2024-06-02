@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows8.0</TargetFramework>
     <RootNamespace>ROSE_Login_Manager</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>Resources\Images\Rose_Online_Favicon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Images\Moldie.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,16 +18,15 @@
     <None Remove="Resources\Images\cog.png" />
     <None Remove="Resources\Images\home.png" />
     <None Remove="Resources\Images\magnify.png" />
+    <None Remove="Resources\Images\Moldie.ico" />
     <None Remove="Resources\Images\pencil.png" />
-    <None Remove="Resources\Images\Rose_Online_Favicon.ico" />
-    <None Remove="Resources\Images\Rose_Online_Favicon.png" />
     <None Remove="Resources\Images\Rose_Online_Logo_Small.png" />
     <None Remove="Resources\Images\trash-can.png" />
     <None Remove="Resources\Images\x-red.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Images\Rose_Online_Favicon.ico" />
+    <Content Include="Resources\Images\Moldie.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,8 +48,8 @@
     <Resource Include="Resources\Images\cog.png" />
     <Resource Include="Resources\Images\home.png" />
     <Resource Include="Resources\Images\magnify.png" />
+    <Resource Include="Resources\Images\Moldie.ico" />
     <Resource Include="Resources\Images\pencil.png" />
-    <Resource Include="Resources\Images\Rose_Online_Favicon.png" />
     <Resource Include="Resources\Images\Rose_Online_Logo_Small.png" />
     <Resource Include="Resources\Images\trash-can.png" />
     <Resource Include="Resources\Images\x-red.png" />
