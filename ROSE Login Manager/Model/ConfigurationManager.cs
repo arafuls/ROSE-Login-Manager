@@ -58,7 +58,7 @@ namespace ROSE_Login_Manager.Model
 
                 XmlNode? generalSettingsNode = _doc.SelectSingleNode("//Configuration/GeneralSettings");
                 if (generalSettingsNode != null)
-                {   
+                {
                     WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder")));
                     WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail"))));
                     WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("MaskEmail", bool.Parse(GetConfigSetting("MaskEmail"))));

@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ROSE_Login_Manager.View"
-             xmlns:model="clr-namespace:ROSE_Login_Manager.Model"
+             xmlns:model="clr-namespace:ROSE_Login_Manager.Model" 
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025">
     <Grid>
@@ -35,7 +36,23 @@
                             x:Name="webView" 
                             SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
                 <Grid>
-                    <ProgressBar Minimum="0" Maximum="100" Height="30" Width="780" Margin="10" Value="{Binding Progress}" />
+                    <!-- Define a row and column for the ProgressBar -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ProgressBar 
+                        Minimum="0" Maximum="100" Value="{Binding Progress}"
+                        Height="30" Width="780" Margin="10" />
+                    <TextBlock Text="{Binding CurrentFileName}" 
+                               VerticalAlignment="Center" HorizontalAlignment="Center" 
+                               Foreground="Black" Background="Transparent"/>
+                    <TextBlock Text="{Binding DownloadSpeed}" 
+                               VerticalAlignment="Center" HorizontalAlignment="Right" 
+                               Foreground="Black" Background="Transparent"/>
                 </Grid>
             </StackPanel>
         </Border>

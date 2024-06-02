@@ -42,7 +42,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
 
             if (obj is Window wnd)
-            {   
+            {
                 wnd.Close();
             }
         }

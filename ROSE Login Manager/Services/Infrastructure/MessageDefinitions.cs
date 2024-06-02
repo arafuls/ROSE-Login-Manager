@@ -70,10 +70,12 @@ namespace ROSE_Login_Manager.Services.Infrastructure
     public class ProgressMessage
     {
         public int ProgressPercentage { get; }
+        public string CurrentFileName { get; }
 
-        public ProgressMessage(int progressPercentage)
+        public ProgressMessage(int progressPercentage, string currentFileName)
         {
             ProgressPercentage = progressPercentage;
+            CurrentFileName = currentFileName;
         }
     }
 }

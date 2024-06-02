@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.View;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
 using static ROSE_Login_Manager.ViewModel.ProfileActionMessage;
 
 
@@ -102,7 +102,7 @@ namespace ROSE_Login_Manager.ViewModel
         ///     Initializes a new instance of the <see cref="ProfilesViewModel"/> class.
         /// </summary>
         public ProfilesViewModel()
-        {   
+        {
             WeakReferenceMessenger.Default.Register<ProfileActionMessage>(this, OnProfileActionReceived);
             WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
 

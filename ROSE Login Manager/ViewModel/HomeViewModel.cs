@@ -7,7 +7,6 @@ using ROSE_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Windows;
 
 
@@ -29,6 +28,13 @@ namespace ROSE_Login_Manager.ViewModel
         {
             get => _progress;
             set => SetProperty(ref _progress, value);
+        }
+
+        private string _currentFileName;
+        public string CurrentFileName
+        {
+            get => _currentFileName;
+            set => SetProperty(ref _currentFileName, value);
         }
 
         private ObservableCollection<ProfileCardViewModel> _profileCards;
@@ -143,9 +149,27 @@ namespace ROSE_Login_Manager.ViewModel
 
         private void OnProgressMessageReceived(object recipient, ProgressMessage message)
         {
-            Progress = message.ProgressPercentage;
+            _ = UpdateProgressAsync(message.ProgressPercentage, message.CurrentFileName);
         }
         #endregion
+
+
+
+        private async Task UpdateProgressAsync(int targetProgress, string currentFileName)
+        {
+            int currentProgress = Progress;
+
+            while (currentProgress < targetProgress)
+            {
+                currentProgress++;
+                Progress = currentProgress;
+                CurrentFileName = Progress != 100 ? ("Downloading " + currentFileName) : "Latest";
+
+                // Lower value for smoother and faster animation (e.g., 10 ms)
+                // Higher value for slower and potentially less smooth animation (e.g., 50 ms)
+                await Task.Delay(1);
+            }
+        }
 
 
 
@@ -213,9 +237,5 @@ namespace ROSE_Login_Manager.ViewModel
                 startInfo.Arguments = string.Empty;
             }
         }
-
-
-
-
     }
 }

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
@@ -142,15 +141,15 @@ namespace ROSE_Login_Manager.Services
             VerificationResults verificationResults = await VerifyLocalFiles().ConfigureAwait(false);
             if (verificationResults.FilesToUpdate.Count == 0)
             {
-                WeakReferenceMessenger.Default.Send(new ProgressMessage(100));
+                WeakReferenceMessenger.Default.Send(new ProgressMessage(100, string.Empty));
                 return;
             }
 
-            WeakReferenceMessenger.Default.Send(new ProgressMessage(0));
+            WeakReferenceMessenger.Default.Send(new ProgressMessage(0, string.Empty));
 
             await UpdateLocalFiles(verificationResults.FilesToUpdate).ConfigureAwait(false);
 
-            WeakReferenceMessenger.Default.Send(new ProgressMessage(100));
+            WeakReferenceMessenger.Default.Send(new ProgressMessage(100, string.Empty));
         }
 
 
@@ -240,7 +239,7 @@ namespace ROSE_Login_Manager.Services
                 processedFiles++;
                 int progressPercentage = (processedFiles * 100) / totalFiles;
 
-                WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage));
+                WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
             }
 
             await SaveLocalManifest(newLocalManifest).ConfigureAwait(false);

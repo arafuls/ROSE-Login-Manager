@@ -95,7 +95,7 @@ namespace ROSE_Login_Manager.ViewModel
             set
             {
                 SetProperty(ref _maskEmailChecked, value);
-                ConfigurationManager.Instance.SaveConfigSetting("MaskEmail",value);
+                ConfigurationManager.Instance.SaveConfigSetting("MaskEmail", value);
 
                 if (value && !DisplayEmailChecked)
                 {
@@ -219,16 +219,16 @@ namespace ROSE_Login_Manager.ViewModel
         private static string TruncatePath(string path)
         {
             const int MAX_PATH_LENGTH = 45;
-            
+
             // If path is null or empty, or its length is within the allowed limit, return the original path
             if (string.IsNullOrEmpty(path) || path.Length <= MAX_PATH_LENGTH)
                 return path ?? string.Empty;
 
             // Initialize variables
-            string[] folders     = path.Split(Path.DirectorySeparatorChar);
-            string[] reversed    = folders.Reverse().ToArray();
+            string[] folders = path.Split(Path.DirectorySeparatorChar);
+            string[] reversed = folders.Reverse().ToArray();
             string truncatedPath = string.Empty;
-            StringBuilder sb     = new();
+            StringBuilder sb = new();
 
             foreach (string folder in reversed)
             {

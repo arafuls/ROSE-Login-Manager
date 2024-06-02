@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Services.Infrastructure;
-using System;
 using System.Windows.Input;
 
 
@@ -82,7 +81,7 @@ namespace ROSE_Login_Manager.ViewModel
         public bool MaskEmail
         {
             get => _maskEmail;
-            set 
+            set
             {
                 if (SetProperty(ref _maskEmail, value))
                 {

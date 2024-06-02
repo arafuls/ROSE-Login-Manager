@@ -75,7 +75,7 @@ namespace ROSE_Login_Manager.Services.Rose_Updater
         {
             Path = string.Empty;
             Hash = [];
-            Size = 0; 
+            Size = 0;
         }
     }
 
