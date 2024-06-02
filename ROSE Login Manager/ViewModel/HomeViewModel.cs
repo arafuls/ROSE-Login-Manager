@@ -186,7 +186,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             ProcessStartInfo startInfo = new()
             {
-                FileName = GlobalVariables.Instance.FindFile("TRose.exe"),
+                FileName = "TRose.exe",
                 WorkingDirectory = GlobalVariables.Instance.RoseGameFolder,
                 Arguments = arguments,
                 WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal

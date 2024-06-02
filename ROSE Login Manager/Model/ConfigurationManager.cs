@@ -72,6 +72,16 @@ namespace ROSE_Login_Manager.Model
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
+
+            // Attempt to automatically find ROSE install location - Thanks ZeroPoke :D
+            if (string.IsNullOrEmpty(GlobalVariables.Instance.RoseGameFolder))
+            {
+                string folderLocation = GlobalVariables.GetInstallLocationFromRegistry();
+                if (!string.IsNullOrEmpty(folderLocation))
+                {
+                    SaveSetting("RoseGameFolder", folderLocation);
+                }
+            }
         }
 
 
