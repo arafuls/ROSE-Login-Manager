@@ -104,6 +104,67 @@ namespace ROSE_Login_Manager.Model
 
 
         /// <summary>
+        ///     Checks if the specified directory contains the file "TRose.exe".
+        /// </summary>
+        /// <param name="directoryPath">The path of the directory to search.</param>
+        /// <returns>True if "TRose.exe" is found in the directory, otherwise false.</returns>
+        public bool ContainsRoseExec(string? directoryPath = null)
+        {
+            if (string.IsNullOrEmpty(directoryPath))
+            {
+                directoryPath = RoseGameFolder;
+            }
+
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(directoryPath))
+                {
+                    return false;
+                }
+
+                // Get all files in the directory
+                string[] files = Directory.GetFiles(directoryPath);
+
+                // Check if any file matches "TRose.exe"
+                foreach (string file in files)
+                {
+                    if (Path.GetFileName(file).Equals("TRose.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                // TRose.exe not found in the directory
+                return false;
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - SettingsViewModel::ContainsRoseExec",
+                    message: ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return false;
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Retrieves the install location of a specified application from the Windows Registry.
+        /// </summary>
+        /// <returns>The install location if found; otherwise, null.</returns>
+        public static string GetInstallLocationFromRegistry()
+        {
+            string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{975CAD98-4A32-4E44-8681-29A2C4BE0B93}_is1";
+            string valueName = "InstallLocation";
+            return RegistryRead(registryPath, valueName);
+        }
+
+
+
+        /// <summary>
         ///     Handles the change of a setting by updating the corresponding property in the recipient object.
         /// </summary>
         /// <typeparam name="T">The type of the setting value.</typeparam>
@@ -127,19 +188,6 @@ namespace ROSE_Login_Manager.Model
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
-        }
-
-
-
-        /// <summary>
-        ///     Retrieves the install location of a specified application from the Windows Registry.
-        /// </summary>
-        /// <returns>The install location if found; otherwise, null.</returns>
-        public static string GetInstallLocationFromRegistry()
-        {
-            string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{975CAD98-4A32-4E44-8681-29A2C4BE0B93}_is1";
-            string valueName = "InstallLocation";
-            return RegistryRead(registryPath, valueName);
         }
 
 

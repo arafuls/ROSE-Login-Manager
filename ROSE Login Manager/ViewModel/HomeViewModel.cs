@@ -19,10 +19,18 @@ namespace ROSE_Login_Manager.ViewModel
     internal class HomeViewModel : ObservableObject
     {
         private readonly DatabaseManager _db;
+        private readonly RoseUpdater _roseUpdater;
 
 
 
         #region Accessors
+        private bool _gameFolderChanged = false;
+        public bool GameFolderChanged
+        {
+            get => _gameFolderChanged;
+            set => _gameFolderChanged = value;
+        }
+
         private int _progress;
         public int Progress
         {
@@ -72,16 +80,60 @@ namespace ROSE_Login_Manager.ViewModel
             WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, LaunchProfile);
             WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
             WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
+            WeakReferenceMessenger.Default.Register<ViewChangedMessage>(this, OnViewChangedMessage);
+            WeakReferenceMessenger.Default.Register<GameFolderChanged>(this, OnGameFolderChanged);
 
             LoadProfileData();
 
             // ROSE Updater
-            _ = new RoseUpdater();
+            _roseUpdater = new RoseUpdater();
+
+            if (GlobalVariables.Instance.ContainsRoseExec())
+            {
+                _roseUpdater.RunPatcher();
+                GameFolderChanged = false;
+            };
         }
 
 
 
         #region Message Handlers
+        /// <summary>
+        ///     Handles the reception of a view changed message.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The message indicating that the view has changed.</param>
+        private void OnViewChangedMessage(object recipient, ViewChangedMessage message)
+        {
+            if (message.ViewModelName != nameof(HomeViewModel)) { return; }
+
+            if (!GameFolderChanged) { return; }
+
+            if (GlobalVariables.Instance.ContainsRoseExec())
+            {
+                _roseUpdater.RunPatcher();
+                GameFolderChanged = false;
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Handles the reception of a game folder change message.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The message indicating that the game folder has changed.</param>
+        private void OnGameFolderChanged(object recipient, GameFolderChanged message)
+        {
+            GameFolderChanged = true;
+
+            // Progress Bar
+            Progress = 0;
+            CurrentFileName = string.Empty;
+        }
+
+
+
         /// <summary>
         ///     Handles the reception of the database change message.
         /// </summary>
@@ -147,6 +199,11 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
+        /// <summary>
+        ///     Handles the reception of a progress message.
+        /// </summary>
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The progress message containing the progress percentage and current file name.</param>
         private void OnProgressMessageReceived(object recipient, ProgressMessage message)
         {
             UpdateProgressAsync(message.ProgressPercentage, message.CurrentFileName);
@@ -155,6 +212,11 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
+        /// <summary>
+        ///     Updates the progress asynchronously.
+        /// </summary>
+        /// <param name="targetProgress">The target progress percentage to reach.</param>
+        /// <param name="currentFileName">The name of the current file being processed.</param>
         private void UpdateProgressAsync(int targetProgress, string currentFileName)
         {
             int currentProgress = Progress;

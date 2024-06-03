@@ -70,6 +70,16 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         public RoseUpdater()
         {
+
+        }
+
+
+
+        /// <summary>
+        ///     Runs the patcher
+        /// </summary>
+        public void RunPatcher()
+        {
             InitializeAsync().ConfigureAwait(false);
         }
 
@@ -80,22 +90,22 @@ namespace ROSE_Login_Manager.Services
         ///     and executing the main operations.
         /// </summary>
         /// <returns>A Task representing the asynchronous operation.</returns>
-        public async Task InitializeAsync()
+        private async Task InitializeAsync()
         {
             RootFolder = GlobalVariables.Instance.RoseGameFolder;
             LocalManifest = GetLocalManifest();
             RemoteManifest = DownloadRemoteManifest();
 
-            await Run().ConfigureAwait(false);
+            await Process().ConfigureAwait(false);
         }
 
 
 
         /// <summary>
-        ///     Runs the main operations of the updater, including verifying the updater and game file integrity.
+        ///     Processes the patching operations asynchronously.
         /// </summary>
         /// <returns>A Task representing the asynchronous operation.</returns>
-        public async Task Run()
+        private async Task Process()
         {
             VerifyRoseUpdater();
             await VerifyGameFileIntegrity().ConfigureAwait(false);
@@ -136,7 +146,7 @@ namespace ROSE_Login_Manager.Services
         ///     Asynchronously verifies the integrity of game files against the remote manifest and performs updates if necessary.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task VerifyGameFileIntegrity()
+        private async Task VerifyGameFileIntegrity()
         {
             VerificationResults verificationResults = await VerifyLocalFiles().ConfigureAwait(false);
             if (verificationResults.FilesToUpdate.Count == 0)
@@ -278,7 +288,7 @@ namespace ROSE_Login_Manager.Services
         ///     A task representing the asynchronous operation. The task result contains a boolean value:
         ///     true if the download is successful, otherwise false.
         /// </returns>
-        private async Task<bool> DownloadFile(RemoteManifestFileEntry file)
+        private static async Task<bool> DownloadFile(RemoteManifestFileEntry file)
         {
             string archiveUrl = Path.Combine(RemoteUrl, file.Path);
             string outputPath = Path.Combine(RootFolder, file.SourcePath);
@@ -298,7 +308,7 @@ namespace ROSE_Login_Manager.Services
         ///     true if the download is successful, otherwise false.
         /// </returns>
         /// <exception cref="FileNotFoundException">Thrown when the Bita executable is not found at the expected path.</exception>
-        private async Task<bool> DownloadAsync(string archiveUrl, string outputPath)
+        private static async Task<bool> DownloadAsync(string archiveUrl, string outputPath)
         {
             try
             {
@@ -324,20 +334,7 @@ namespace ROSE_Login_Manager.Services
                 process.Start();
                 await process.WaitForExitAsync().ConfigureAwait(false);
 
-                //string output = process.StandardOutput.ReadToEndAsync();
-                //string error = process.StandardError.ReadToEndAsync();
-
-                if (process.ExitCode != 0)
-                {
-                    //new DialogService().ShowMessageBox(
-                    //    title: "ROSE Online Login Manager - RoseUpdater::DownloadFileWithBitaAsync",
-                    //    message: $"Error running bita: {error}",
-                    //    button: MessageBoxButton.OK,
-                    //    icon: MessageBoxImage.Error);
-                    return false;
-                }
-
-                return true;
+                return process.ExitCode == 0;
             }
             catch (Exception ex)
             {

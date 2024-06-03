@@ -7,21 +7,15 @@ namespace ROSE_Login_Manager.Services.Infrastructure
     ///     Represents a message indicating a change in a setting value.
     /// </summary>
     /// <typeparam name="T">The type of the setting value.</typeparam>
-    public class SettingChangedMessage<T>
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="SettingChangedMessage{T}"/> class.
+    /// </remarks>
+    /// <param name="key">The key of the setting that changed.</param>
+    /// <param name="value">The new value of the setting.</param>
+    public class SettingChangedMessage<T>(string key, T value)
     {
-        public string Key { get; }
-        public T Value { get; }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="SettingChangedMessage{T}"/> class.
-        /// </summary>
-        /// <param name="key">The key of the setting that changed.</param>
-        /// <param name="value">The new value of the setting.</param>
-        public SettingChangedMessage(string key, T value)
-        {
-            Key = key;
-            Value = value;
-        }
+        public string Key { get; } = key;
+        public T Value { get; } = value;
     }
 
 
@@ -30,18 +24,13 @@ namespace ROSE_Login_Manager.Services.Infrastructure
     /// <summary>
     ///     Represents a message indicating a change in the status of the "Display Email" checkbox.
     /// </summary>
-    public class DisplayEmailCheckedMessage
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="DisplayEmailCheckedMessage"/> class with the specified checked status.
+    /// </remarks>
+    /// <param name="isChecked">True if the "Display Email" checkbox is checked; otherwise, false.</param>
+    public class DisplayEmailCheckedMessage(bool isChecked)
     {
-        public bool IsChecked { get; }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="DisplayEmailCheckedMessage"/> class with the specified checked status.
-        /// </summary>
-        /// <param name="isChecked">True if the "Display Email" checkbox is checked; otherwise, false.</param>
-        public DisplayEmailCheckedMessage(bool isChecked)
-        {
-            IsChecked = isChecked;
-        }
+        public bool IsChecked { get; } = isChecked;
     }
 
 
@@ -50,32 +39,47 @@ namespace ROSE_Login_Manager.Services.Infrastructure
     /// <summary>
     ///     Represents a message indicating a change in the status of the "Mask Email" checkbox.
     /// </summary>
-    public class MaskEmailCheckedMessage
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="DisplayEmailCheckedMessage"/> class with the specified checked status.
+    /// </remarks>
+    /// <param name="isChecked">True if the "Mask Email" checkbox is checked; otherwise, false.</param>
+    public class MaskEmailCheckedMessage(bool isChecked)
     {
-        public bool IsChecked { get; }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="DisplayEmailCheckedMessage"/> class with the specified checked status.
-        /// </summary>
-        /// <param name="isChecked">True if the "Mask Email" checkbox is checked; otherwise, false.</param>
-        public MaskEmailCheckedMessage(bool isChecked)
-        {
-            IsChecked = isChecked;
-        }
+        public bool IsChecked { get; } = isChecked;
     }
 
 
 
 
-    public class ProgressMessage
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ProgressMessage"/> class with the specified progress percentage and current file name.
+    /// </summary>
+    /// <param name="progressPercentage">The progress percentage of the task.</param>
+    /// <param name="currentFileName">The name of the current file being processed.</param>
+    public class ProgressMessage(int progressPercentage, string currentFileName)
     {
-        public int ProgressPercentage { get; }
-        public string CurrentFileName { get; }
+        public int ProgressPercentage { get; } = progressPercentage;
+        public string CurrentFileName { get; } = currentFileName;
+    }
 
-        public ProgressMessage(int progressPercentage, string currentFileName)
-        {
-            ProgressPercentage = progressPercentage;
-            CurrentFileName = currentFileName;
-        }
+
+
+    /// <summary>
+    ///     Represents a message indicating a change in the view model being displayed.
+    /// </summary>
+    public class ViewChangedMessage(string viewModelName)
+    {
+        public string ViewModelName { get; } = viewModelName;
+    }
+
+
+
+    /// <summary>
+    ///     Represents a message indicating a change in the game folder.
+    /// </summary>
+    public class GameFolderChanged()
+    {
+        // This class does not contain any properties or methods.
+        // It serves as a marker class to indicate a change in the game folder.
     }
 }

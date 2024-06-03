@@ -14,12 +14,14 @@
     <None Remove="Resources\Images\account-multiple-plus.png" />
     <None Remove="Resources\Images\account-multiple.png" />
     <None Remove="Resources\Images\account.png" />
+    <None Remove="Resources\Images\auto-fix.png" />
     <None Remove="Resources\Images\check-green.png" />
     <None Remove="Resources\Images\cog.png" />
     <None Remove="Resources\Images\home.png" />
     <None Remove="Resources\Images\magnify.png" />
     <None Remove="Resources\Images\Moldie.ico" />
     <None Remove="Resources\Images\pencil.png" />
+    <None Remove="Resources\Images\refresh-auto.png" />
     <None Remove="Resources\Images\Rose_Online_Logo_Small.png" />
     <None Remove="Resources\Images\trash-can.png" />
     <None Remove="Resources\Images\x-red.png" />
@@ -50,6 +52,7 @@
     <Resource Include="Resources\Images\magnify.png" />
     <Resource Include="Resources\Images\Moldie.ico" />
     <Resource Include="Resources\Images\pencil.png" />
+    <Resource Include="Resources\Images\refresh-auto.png" />
     <Resource Include="Resources\Images\Rose_Online_Logo_Small.png" />
     <Resource Include="Resources\Images\trash-can.png" />
     <Resource Include="Resources\Images\x-red.png" />

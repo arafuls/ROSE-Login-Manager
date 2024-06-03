@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Infrastructure;
 using System.Windows.Input;
 
 
@@ -158,6 +160,8 @@ namespace ROSE_Login_Manager.ViewModel
                     IsSettingsChecked = true;
                     break;
             }
+
+            WeakReferenceMessenger.Default.Send(new ViewChangedMessage(typeName));
         }
     }
 }
