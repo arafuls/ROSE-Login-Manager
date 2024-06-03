@@ -172,7 +172,6 @@ namespace ROSE_Login_Manager.Model
         }
 
 
-
         /// <summary>
         ///     Reads a value from the Windows Registry.
         /// </summary>

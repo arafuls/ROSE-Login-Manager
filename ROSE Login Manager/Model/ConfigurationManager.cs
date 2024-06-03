@@ -55,7 +55,7 @@ namespace ROSE_Login_Manager.Model
             try
             {
                 _doc.Load(_configFile);
-
+                
                 XmlNode? generalSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/GeneralSettings");
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder", generalSettingsNode, "")));
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail", generalSettingsNode, true))));
@@ -75,6 +75,16 @@ namespace ROSE_Login_Manager.Model
                     message: "Error loading config: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
+            }
+
+            // Attempt to automatically find ROSE install location - Thanks ZeroPoke :D
+            if (string.IsNullOrEmpty(GlobalVariables.Instance.RoseGameFolder))
+            {
+                string folderLocation = GlobalVariables.InstallLocationFromRegistry;
+                if (!string.IsNullOrEmpty(folderLocation))
+                {
+                    SaveSetting("RoseGameFolder", folderLocation);
+                }
             }
         }
 

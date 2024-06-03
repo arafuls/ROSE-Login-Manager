@@ -190,7 +190,6 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
-
         /// <summary>
         ///     Finds the game folder path and sets it to the <see cref="RoseGameFolderPath"/> property.
         /// </summary>
