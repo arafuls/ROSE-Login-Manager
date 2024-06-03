@@ -81,13 +81,21 @@ namespace ROSE_Login_Manager.ViewModel
         public bool MaskEmail
         {
             get => _maskEmail;
-            set 
+            set
             {
                 if (SetProperty(ref _maskEmail, value))
                 {
                     CosmeticEmail = value ? Mask(ProfileEmail) : ProfileEmail;
                 }
             }
+        }
+
+
+        private bool _launchButtonEnabled;
+        public bool LaunchButtonEnabled
+        {
+            get => _launchButtonEnabled;
+            set => SetProperty(ref _launchButtonEnabled, value);
         }
         #endregion
 
@@ -119,6 +127,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             WeakReferenceMessenger.Default.Register<DisplayEmailCheckedMessage>(this, SettingsViewModel_DisplayEmailCheckedChanged);
             WeakReferenceMessenger.Default.Register<MaskEmailCheckedMessage>(this, SettingsViewModel_MaskEmailCheckedChanged);
+            WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
         }
 
 
@@ -134,6 +143,13 @@ namespace ROSE_Login_Manager.ViewModel
         private void SettingsViewModel_MaskEmailCheckedChanged(object recipient, MaskEmailCheckedMessage message)
         {
             MaskEmail = message.IsChecked;
+        }
+
+
+
+        private void OnProgressMessageReceived(object recipient, ProgressMessage message)
+        {
+            LaunchButtonEnabled = (message.ProgressPercentage == 100);
         }
         #endregion
 

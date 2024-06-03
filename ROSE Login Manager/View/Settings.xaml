@@ -29,11 +29,18 @@
                         </Image.Style>
                     </Image>
                     <TextBox Text="{Binding RoseGameFolderPath, UpdateSourceTrigger=PropertyChanged}"
-                             Width="300" Margin="5 0"/>
+                            Height="20" Width="300" Margin="5 0" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged"/>
+                    <!-- Folder Search Button -->
                     <Button Command="{Binding GameFolderSearchCommand}" 
                             Style="{StaticResource CustomImageButtonStyle}" 
-                            Height="18" Width="18">
+                            Height="24" Width="24">
                         <Image Source="../Resources/Images/magnify.png"/>
+                    </Button>
+                    <!-- Auto-Fix Button -->
+                    <Button Command="{Binding FindGameFolderCommand}" 
+                            Style="{StaticResource CustomImageButtonStyle}" 
+                            Height="24" Width="24" Margin="5 0">
+                        <Image Source="../Resources/Images/refresh-auto.png"/>
                     </Button>
                 </StackPanel>
 
@@ -42,14 +49,14 @@
                             Margin="28 10 0 0"  Width="300">
                     
                     <!-- Root Checkbox -->
-                    <CheckBox Content="Display Emails" 
+                    <CheckBox Content="Display Emails" VerticalContentAlignment="Center"
                               IsChecked="{Binding DisplayEmailChecked}" 
-                              Margin="0,0,0,5" Foreground="WhiteSmoke"/>
+                              Margin=" 0 0 0 5" Foreground="WhiteSmoke"/>
 
                     <!-- Child Checkboxes -->
-                    <CheckBox Content="Mask Emails" 
-                              IsChecked="{Binding MaskEmailChecked}"
-                              Margin="20,0,0,5" Foreground="WhiteSmoke"/>
+                    <CheckBox Content="Mask Emails" VerticalContentAlignment="Center"
+                              IsChecked="{Binding MaskEmailChecked}" 
+                              Margin="20 0 0 0" Foreground="WhiteSmoke"/>
                 </StackPanel>
 
             </StackPanel>

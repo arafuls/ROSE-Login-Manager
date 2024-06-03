@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="ROSE_Login_Manager.View.ProfileForm"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <StackPanel Margin="0 10">
+            <TextBlock Text="Profile Name" Foreground="WhiteSmoke"/>
+            <Grid>
+                <TextBox x:Name="ProfileNameTextBox" 
+                         Style="{StaticResource ProfileTextBoxStyle}"
+                         Text="{Binding ProfileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Style="{StaticResource ProfileNameLabelStyle}"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Margin="0 10">
+            <TextBlock Text="Email" Foreground="WhiteSmoke"/>
+            <Grid>
+                <TextBox x:Name="ProfileEmailTextBox" 
+                         Style="{StaticResource ProfileTextBoxStyle}"
+                         Text="{Binding ProfileEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Style="{StaticResource ProfileEmailLabelStyle}"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Margin="0 10 0 20">
+            <TextBlock Text="Password" Foreground="WhiteSmoke"/>
+            <Grid>
+                <PasswordBox x:Name="ProfilePasswordTextBox" 
+                             Style="{StaticResource ProfilePasswordBoxStyle}"
+                             PasswordChanged="ProfilePasswordTextBox_PasswordChanged"
+                             PreviewKeyDown="ProfilePasswordTextBox_PreviewKeyDown"/>
+                <TextBlock Style="{StaticResource ProfilePasswordLabelStyle}"/>
+            </Grid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

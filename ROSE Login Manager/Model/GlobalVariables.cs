@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Win32;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
@@ -77,6 +78,22 @@ namespace ROSE_Login_Manager.Model
         {
             get { return _appPath; }
         }
+
+
+
+        /// <summary>
+        ///     Retrieves the install location of a specified application from the Windows Registry.
+        /// </summary>
+        /// <returns>The install location if found; otherwise, null.</returns>
+        public static string InstallLocationFromRegistry
+        {
+            get
+            {
+                string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{975CAD98-4A32-4E44-8681-29A2C4BE0B93}_is1";
+                string valueName = "InstallLocation";
+                return RegistryRead(registryPath, valueName);
+            }
+        }
         #endregion
 
 
@@ -98,6 +115,54 @@ namespace ROSE_Login_Manager.Model
 
             WeakReferenceMessenger.Default.Register<SettingChangedMessage<string>>(this, HandleSettingChanged);
             WeakReferenceMessenger.Default.Register<SettingChangedMessage<bool>>(this, HandleSettingChanged);
+        }
+
+
+
+        /// <summary>
+        ///     Checks if the specified directory contains the file "TRose.exe".
+        /// </summary>
+        /// <param name="directoryPath">The path of the directory to search.</param>
+        /// <returns>True if "TRose.exe" is found in the directory, otherwise false.</returns>
+        public bool ContainsRoseExec(string? directoryPath = null)
+        {
+            if (string.IsNullOrEmpty(directoryPath))
+            {
+                directoryPath = RoseGameFolder;
+            }
+
+            try
+            {
+                // Check if the directory exists
+                if (!Directory.Exists(directoryPath))
+                {
+                    return false;
+                }
+
+                // Get all files in the directory
+                string[] files = Directory.GetFiles(directoryPath);
+
+                // Check if any file matches "TRose.exe"
+                foreach (string file in files)
+                {
+                    if (Path.GetFileName(file).Equals("TRose.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                // TRose.exe not found in the directory
+                return false;
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - SettingsViewModel::ContainsRoseExec",
+                    message: ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return false;
+            }
         }
 
 
@@ -130,41 +195,32 @@ namespace ROSE_Login_Manager.Model
 
 
 
-
         /// <summary>
-        ///     Searches for the specified file in common locations, including the current directory and standard program folders.
+        ///     Reads a value from the Windows Registry.
         /// </summary>
-        /// <param name="fileName">The name of the file to search for.</param>
-        /// <returns>
-        ///     The full path to the file if found; otherwise, <see langword="null"/>.
-        /// </returns>
-        public string FindFile(string fileName)
+        /// <param name="path">The path to the registry key.</param>
+        /// <param name="valueName">The name of the value to read.</param>
+        /// <returns>The value of the specified registry key; otherwise, null.</returns>
+        private static string RegistryRead(string path, string valueName)
         {
-            // Search for the file in common locations
-            string[] paths =
-            [
-                Environment.CurrentDirectory,
-                @"C:\Program Files\",
-                @"C:\Program Files (x86)\",
-            ];
-
-            if (!string.IsNullOrEmpty(RoseGameFolder))
+            try
             {
-                paths = [.. paths, RoseGameFolder];
-            }
-
-
-            foreach (string path in paths)
-            {
-                string fullPath = Path.Combine(path, fileName);
-                if (File.Exists(fullPath))
+                using RegistryKey? key = Registry.LocalMachine.OpenSubKey(path);
+                if (key != null)
                 {
-                    RoseGameFolder ??= Path.GetDirectoryName(fullPath);
-                    return fullPath; // Return full path if file is found
+                    object? value = key.GetValue(valueName);
+                    if (value != null)
+                    {
+                        return value.ToString();
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading registry: {ex.Message}");
+            }
 
-            return null; // Return null if file is not found
+            return null;
         }
     }
 }

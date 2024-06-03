@@ -14,6 +14,10 @@
         <View:AddProfile/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type ViewModel:EditProfileViewModel}">
+        <View:EditProfile/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type ViewModel:SettingsViewModel}">
         <View:Settings/>
     </DataTemplate>

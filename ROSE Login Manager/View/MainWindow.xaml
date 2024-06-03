@@ -30,25 +30,32 @@
                     <!-- Home View Button -->
                     <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding HomeCommand}"
-                                        IsChecked="True">
+                                        IsChecked="{Binding IsHomeChecked, Mode=TwoWay}">
                         <Grid>
                             <Image Source="../Resources/Images/home.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </util:NavMenuButton>
+                    
 
                     <!-- Profiles View Button -->
                     <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
-                                        Command="{Binding ProfilesCommand}">
+                                        Command="{Binding ProfilesCommand}"
+                                        IsChecked="{Binding IsProfilesChecked, Mode=TwoWay}">
                         <Grid>
                             <Image Source="../Resources/Images/account-multiple.png"
                                    Style="{StaticResource ButtonImage_Style}"/>
                         </Grid>
                     </util:NavMenuButton>
+                </StackPanel>
 
+
+
+                <StackPanel VerticalAlignment="Bottom" Margin="0 0 0 26">
                     <!-- Settings View Button -->
                     <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
-                                        Command="{Binding SettingsCommand}">
+                                        Command="{Binding SettingsCommand}"
+                                        IsChecked="{Binding IsSettingsChecked, Mode=TwoWay}">
                         <Grid>
                             <Image Source="../Resources/Images/cog.png"
                                    Style="{StaticResource ButtonImage_Style}"/>

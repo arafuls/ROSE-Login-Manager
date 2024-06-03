@@ -1,4 +1,4 @@
-﻿<Window x:Class="ROSE_Login_Manager.View.AddProfile"
+﻿<Window x:Class="ROSE_Login_Manager.View.EditProfile"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ROSE_Login_Manager.ViewModel"
@@ -27,16 +27,10 @@
                     HorizontalAlignment="Center">
             <Button 
                 Style="{StaticResource ProfileButton_Style}"
-                Command="{Binding AddProfileCommand}"
+                Command="{Binding UpdateProfileCommand}"
                 CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                 IsEnabled="{Binding ElementName=ProfileForm, Path=AllowProfileButton}"
-                Content="Add"/>
-            <Button 
-                Style="{StaticResource ProfileButton_Style}"
-                Command="{Binding CreateProfileCommand}"
-                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                IsEnabled="{Binding ElementName=ProfileForm, Path=AllowProfileButton}"
-                Content="Create"/>
+                Content="Update"/>
         </StackPanel>
     </Grid>
 </Window>

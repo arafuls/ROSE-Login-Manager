@@ -46,6 +46,11 @@ namespace ROSE_Login_Manager.View
             var userDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\ROSE Login Manager";
             var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
             await webView.EnsureCoreWebView2Async(env);
+
+            if (!string.IsNullOrEmpty(SourceUrl))
+            {
+                webView.CoreWebView2.Navigate(SourceUrl);
+            }
         }
 
 
@@ -61,8 +66,15 @@ namespace ROSE_Login_Manager.View
             {
                 if (webViewControl.webView != null)
                 {
-                    await webViewControl.webView.EnsureCoreWebView2Async();
-                    webViewControl.webView.CoreWebView2.Navigate(newUrl);
+                    if (webViewControl.webView.CoreWebView2 == null)
+                    {
+                        await webViewControl.webView.EnsureCoreWebView2Async();
+                    }
+
+                    if (webViewControl.webView != null && e.NewValue != null)
+                    {
+                        webViewControl.webView.CoreWebView2?.Navigate(newUrl);
+                    }
                 }
             }
         }

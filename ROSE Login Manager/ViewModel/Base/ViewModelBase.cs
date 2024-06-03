@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 
 
-namespace ROSE_Login_Manager.View.Base
+namespace ROSE_Login_Manager.ViewModel.Base
 {
     internal class ViewModelBase : INotifyPropertyChanged
     {

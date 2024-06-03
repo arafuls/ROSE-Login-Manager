@@ -13,5 +13,10 @@ namespace ROSE_Login_Manager.View
         {
             InitializeComponent();
         }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }

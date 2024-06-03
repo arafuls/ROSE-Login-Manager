@@ -1,21 +1,18 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
-using ROSE_Login_Manager.Services.Infrastructure;
 using ROSE_Login_Manager.View;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
+using static ROSE_Login_Manager.ViewModel.ProfileActionMessage;
 
 
 
 namespace ROSE_Login_Manager.ViewModel
 {
-    /// <summary>
-    ///     View model responsible for managing user profiles.
-    /// </summary>
     internal class ProfilesViewModel : ObservableObject
     {
         private readonly DatabaseManager _db;
@@ -26,25 +23,17 @@ namespace ROSE_Login_Manager.ViewModel
         private ObservableCollection<UserProfileModel> _userProfilesCollection = [];
         public ObservableCollection<UserProfileModel> UserProfilesCollection
         {
-            get { return _userProfilesCollection; }
-            set
-            {
-                _userProfilesCollection = value;
-                OnPropertyChanged(nameof(UserProfilesCollection));
-            }
+            get => _userProfilesCollection;
+            set => SetProperty(ref _userProfilesCollection, value);
+
         }
-
-
 
         private UserProfileModel? _selectedProfile;
         public UserProfileModel? SelectedProfile
         {
-            get { return _selectedProfile; }
-            set
-            {
-                _selectedProfile = value;
-                OnPropertyChanged(nameof(SelectedProfile));
-            }
+            get => _selectedProfile;
+            set => SetProperty(ref _selectedProfile, value);
+
         }
         #endregion
 
@@ -52,6 +41,7 @@ namespace ROSE_Login_Manager.ViewModel
 
         #region Commands
         public ICommand AddProfileCommand { get; set; }
+        public ICommand EditProfileCommand { get; set; }
         public ICommand DeleteProfileCommand { get; set; }
 
 
@@ -75,6 +65,24 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         /// <summary>
+        ///     Method to edit an existing user profile.
+        /// </summary>
+        /// <param name="obj">Unused parameter.</param>
+        private void EditProfile(object obj)
+        {
+            // Open the Add Profile dialog
+            EditProfileViewModel editProfileViewModel = new(SelectedProfile);
+            EditProfile editProfileView = new()
+            {
+                DataContext = editProfileViewModel,
+                Owner = Application.Current.MainWindow
+            };
+            editProfileView.ShowDialog();
+        }
+
+
+
+        /// <summary>
         ///     Method to delete the selected user profile.
         /// </summary>
         /// <param name="obj">Unused parameter.</param>
@@ -83,12 +91,7 @@ namespace ROSE_Login_Manager.ViewModel
             // Check if a profile is selected for deletion
             if (SelectedProfile != null)
             {
-                // Delete the selected profile from the database
-                _db.DeleteProfile(SelectedProfile);
-                WeakReferenceMessenger.Default.Send(new ProfileDeletedUpdateMessage(SelectedProfile));
-
-                // Reload all profiles from the database
-                LoadAllProfilesFromDatabase();
+                OnProfileDelete(SelectedProfile.ProfileEmail);
             }
         }
         #endregion
@@ -96,18 +99,19 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         /// <summary>
-        ///     Default constructor.
+        ///     Initializes a new instance of the <see cref="ProfilesViewModel"/> class.
         /// </summary>
         public ProfilesViewModel()
         {
-            // Register to receive ProfileAddedMessage
-            WeakReferenceMessenger.Default.Register<ProfilesViewModel, ProfileAddedMessage>(this, OnProfileAdded);
+            WeakReferenceMessenger.Default.Register<ProfileActionMessage>(this, OnProfileActionReceived);
+            WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
 
             // Initialize the database manager
             _db = new DatabaseManager();
 
             // Initialize ICommand Relays
             AddProfileCommand = new RelayCommand(AddProfile);
+            EditProfileCommand = new RelayCommand(EditProfile);
             DeleteProfileCommand = new RelayCommand(DeleteProfile);
 
             LoadAllProfilesFromDatabase();
@@ -116,27 +120,86 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         /// <summary>
-        ///     Method called when a new profile is added.
+        ///     Handles the event when a database change message is received.
         /// </summary>
-        /// <param name="message">The ProfileAddedMessage containing the new profile.</param>
-        private void OnProfileAdded(object sender, ProfileAddedMessage message)
+        /// <param name="recipient">The recipient of the message.</param>
+        /// <param name="message">The database changed message.</param>
+        private void OnDatabaseChangedReceived(object recipient, DatabaseChangedMessage message)
         {
-            var newProfile = message.NewProfile;
-            if (newProfile != null)
+            LoadAllProfilesFromDatabase();
+        }
+
+
+
+        /// <summary>
+        ///     Handles the event when a profile action message is received.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <param name="message">The profile action message.</param>
+        private void OnProfileActionReceived(object obj, ProfileActionMessage message)
+        {
+            switch (message.ActionType)
             {
-                // Insert the new profile into the database and add it to the collection if successful
-                if (_db.InsertProfileIntoDatabase(newProfile))
-                {
-                    UserProfilesCollection.Add(newProfile);
-                    WeakReferenceMessenger.Default.Send(new ProfileAddedUpdateMessage(newProfile));
-                }
+                case ProfileActionType.Add:
+                    OnProfileAdd(message.Profile);
+                    break;
+
+                case ProfileActionType.Update:
+                    OnProfileUpdate(message.Profile);
+                    break;
+
+                case ProfileActionType.Delete:
+                    OnProfileDelete(message.Email);
+                    break;
             }
         }
 
 
 
         /// <summary>
-        ///     Load all user profiles from the database into the OberserableCollection list.
+        ///     Handles the addition of a user profile.
+        /// </summary>
+        /// <param name="profile">The profile to be added.</param>
+        private void OnProfileAdd(UserProfileModel profile)
+        {
+            if (profile == null)
+                return;
+
+            _db.AddProfile(profile);
+        }
+
+
+
+        /// <summary>
+        ///     Handles the update of a user profile.
+        /// </summary>
+        /// <param name="profile">The profile to be updated.</param>
+        private void OnProfileUpdate(UserProfileModel profile)
+        {
+            if (profile == null)
+                return;
+
+            _db.UpdateProfile(profile);
+        }
+
+
+
+        /// <summary>
+        ///     Handles the deletion of a user profile.
+        /// </summary>
+        /// <param name="email">The email of the profile to be deleted.</param>
+        private void OnProfileDelete(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return;
+
+            _db.DeleteProfile(email);
+        }
+
+
+
+        /// <summary>
+        ///     Loads all profiles from the database.
         /// </summary>
         private void LoadAllProfilesFromDatabase()
         {

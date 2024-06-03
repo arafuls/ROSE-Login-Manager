@@ -2,38 +2,41 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows8.0</TargetFramework>
     <RootNamespace>ROSE_Login_Manager</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>Resources\Images\Rose_Online_Favicon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Images\Moldie.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Resources\Images\account-multiple-plus.png" />
     <None Remove="Resources\Images\account-multiple.png" />
     <None Remove="Resources\Images\account.png" />
+    <None Remove="Resources\Images\auto-fix.png" />
     <None Remove="Resources\Images\check-green.png" />
     <None Remove="Resources\Images\cog.png" />
     <None Remove="Resources\Images\home.png" />
     <None Remove="Resources\Images\magnify.png" />
+    <None Remove="Resources\Images\Moldie.ico" />
     <None Remove="Resources\Images\pencil.png" />
-    <None Remove="Resources\Images\Rose_Online_Favicon.ico" />
-    <None Remove="Resources\Images\Rose_Online_Favicon.png" />
+    <None Remove="Resources\Images\refresh-auto.png" />
     <None Remove="Resources\Images\Rose_Online_Logo_Small.png" />
     <None Remove="Resources\Images\trash-can.png" />
     <None Remove="Resources\Images\x-red.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Images\Rose_Online_Favicon.ico" />
+    <Content Include="Resources\Images\Moldie.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.5" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
     <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
     <PackageReference Include="System.Management" Version="8.0.0" />
@@ -47,8 +50,9 @@
     <Resource Include="Resources\Images\cog.png" />
     <Resource Include="Resources\Images\home.png" />
     <Resource Include="Resources\Images\magnify.png" />
+    <Resource Include="Resources\Images\Moldie.ico" />
     <Resource Include="Resources\Images\pencil.png" />
-    <Resource Include="Resources\Images\Rose_Online_Favicon.png" />
+    <Resource Include="Resources\Images\refresh-auto.png" />
     <Resource Include="Resources\Images\Rose_Online_Logo_Small.png" />
     <Resource Include="Resources\Images\trash-can.png" />
     <Resource Include="Resources\Images\x-red.png" />

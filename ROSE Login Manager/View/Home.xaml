@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ROSE_Login_Manager.View"
-             xmlns:model="clr-namespace:ROSE_Login_Manager.Model"
+             xmlns:model="clr-namespace:ROSE_Login_Manager.Model" 
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025">
     <Grid>
@@ -29,8 +30,28 @@
         </Border>
 
         <!-- Right Panel -->
-        <Border Grid.Column="1" Margin="5 10 5 10">
-            <local:WebView2Control x:Name="webView" SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+        <Border Grid.Column="1" Margin="0 0 10 0">
+            <StackPanel VerticalAlignment="Center">
+                <local:WebView2Control 
+                            x:Name="webView" 
+                            SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+                <Grid>
+                    <!-- Define a row and column for the ProgressBar -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ProgressBar 
+                        Minimum="0" Maximum="100" Value="{Binding Progress}"
+                        Height="30" Width="780" Margin="10" />
+                    <TextBlock Text="{Binding CurrentFileName}" 
+                               VerticalAlignment="Center" HorizontalAlignment="Center" 
+                               Foreground="Black" Background="Transparent"/>
+                </Grid>
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>

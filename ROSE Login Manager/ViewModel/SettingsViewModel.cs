@@ -4,9 +4,6 @@ using Microsoft.Win32;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
-using System.IO;
-using System.Text;
-using System.Windows;
 using System.Windows.Input;
 
 
@@ -29,13 +26,9 @@ namespace ROSE_Login_Manager.ViewModel
             set
             {
                 _roseGameFolderPath = value;
-
-                if (Directory.Exists(value))
-                {
-                    ConfigurationManager.Instance.SaveConfigSetting("RoseGameFolder", value);
-                }
-
-                IsPathValidImage = ContainsRoseExec(value);
+                ConfigurationManager.Instance.SaveConfigSetting("RoseGameFolder", value);
+                IsPathValidImage = GlobalVariables.Instance.ContainsRoseExec(value);
+                WeakReferenceMessenger.Default.Send(new GameFolderChanged());
                 OnPropertyChanged(nameof(RoseGameFolderPath));
             }
         }
@@ -71,8 +64,6 @@ namespace ROSE_Login_Manager.ViewModel
                 if (_displayEmailChecked == value) { return; }
 
                 SetProperty(ref _displayEmailChecked, value);
-                ConfigurationManager.Instance.SaveConfigSetting("DisplayEmail", value);
-
 
                 if (!value && MaskEmailChecked)
                 {
@@ -95,7 +86,7 @@ namespace ROSE_Login_Manager.ViewModel
             set
             {
                 SetProperty(ref _maskEmailChecked, value);
-                ConfigurationManager.Instance.SaveConfigSetting("MaskEmail",value);
+                ConfigurationManager.Instance.SaveConfigSetting("MaskEmail", value);
 
                 if (value && !DisplayEmailChecked)
                 {
@@ -110,6 +101,7 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         public ICommand GameFolderSearchCommand { get; private set; }
+        public ICommand FindGameFolderCommand { get; private set; }
         public ICommand DisplayEmailCheckedCommand { get; private set; }
         public ICommand MaskEmailCheckedCommand { get; private set; }
 
@@ -122,8 +114,9 @@ namespace ROSE_Login_Manager.ViewModel
         {
             // Initialize ICommand Relays
             GameFolderSearchCommand = new RelayCommand(GameFolderSearch);
+            FindGameFolderCommand = new RelayCommand(FindGameFolder);
 
-            InitializeSettingsVariables();
+            Initialize();
         }
 
 
@@ -131,10 +124,10 @@ namespace ROSE_Login_Manager.ViewModel
         /// <summary>
         ///     Initializes the settings variables from the global vars.
         /// </summary>
-        private void InitializeSettingsVariables()
+        private void Initialize()
         {
             _roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
-            _isPathValidImage = ContainsRoseExec(_roseGameFolderPath);
+            _isPathValidImage = GlobalVariables.Instance.ContainsRoseExec(RoseGameFolderPath);
 
             _displayEmailChecked = GlobalVariables.Instance.DisplayEmail;
             _maskEmailChecked = GlobalVariables.Instance.MaskEmail;
@@ -157,107 +150,16 @@ namespace ROSE_Login_Manager.ViewModel
             if (openFolderDialog.ShowDialog() == true)
             {
                 ConfigurationManager.Instance.SaveConfigSetting("RoseGameFolder", openFolderDialog.FolderName);
-
-                // If path changed (is valid dir), then update local var
-                if (GlobalVariables.Instance.RoseGameFolder == openFolderDialog.FolderName)
-                {
-                    RoseGameFolderPath = openFolderDialog.FolderName;
-                }
+                RoseGameFolderPath = openFolderDialog.FolderName;
             }
         }
 
 
 
-        /// <summary>
-        ///     Checks if the specified directory contains the file "TRose.exe".
-        /// </summary>
-        /// <param name="directoryPath">The path of the directory to search.</param>
-        /// <returns>True if "TRose.exe" is found in the directory, otherwise false.</returns>
-        private static bool ContainsRoseExec(string directoryPath)
+
+        private void FindGameFolder(object obj)
         {
-            try
-            {
-                // Check if the directory exists
-                if (!Directory.Exists(directoryPath))
-                {
-                    return false;
-                }
-
-                // Get all files in the directory
-                string[] files = Directory.GetFiles(directoryPath);
-
-                // Check if any file matches "TRose.exe"
-                foreach (string file in files)
-                {
-                    if (Path.GetFileName(file).Equals("TRose.exe", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-
-                // TRose.exe not found in the directory
-                return false;
-            }
-            catch (Exception ex)
-            {
-                new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - SettingsViewModel::ContainsRoseExec",
-                    message: ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
-                return false;
-            }
-        }
-
-
-
-        /// <summary>
-        ///     Truncates a file path to fit within a specified maximum length, preserving the folder structure.
-        /// </summary>
-        /// <param name="path">The file path to truncate.</param>
-        /// <returns>The truncated file path.</returns>
-        private static string TruncatePath(string path)
-        {
-            const int MAX_PATH_LENGTH = 45;
-            
-            // If path is null or empty, or its length is within the allowed limit, return the original path
-            if (string.IsNullOrEmpty(path) || path.Length <= MAX_PATH_LENGTH)
-                return path ?? string.Empty;
-
-            // Initialize variables
-            string[] folders     = path.Split(Path.DirectorySeparatorChar);
-            string[] reversed    = folders.Reverse().ToArray();
-            string truncatedPath = string.Empty;
-            StringBuilder sb     = new();
-
-            foreach (string folder in reversed)
-            {
-                sb.Clear(); // Clear the StringBuilder for each iteration
-
-                // Skip the root folder
-                if (folder == Path.GetPathRoot(path))
-                    continue;
-
-                // Check if adding the folder exceeds the maximum length
-                if ((Path.GetPathRoot(path)?.Length ?? 0) + truncatedPath.Length + folder.Length + 1 < MAX_PATH_LENGTH)
-                {
-                    // Append the folder to the truncated path
-                    sb.Insert(0, folder + Path.DirectorySeparatorChar);
-                    truncatedPath = sb + truncatedPath;
-                }
-                else
-                {
-                    // If adding the folder exceeds the limit, insert ellipsis and break out of the loop
-                    sb.Insert(0, "...\\");
-                    truncatedPath = sb + truncatedPath;
-                    break;
-                }
-            }
-
-            // Prepend the drive prefix to the truncated path
-            truncatedPath = Path.GetPathRoot(path) + truncatedPath;
-
-            return truncatedPath;
+            RoseGameFolderPath = GlobalVariables.InstallLocationFromRegistry;
         }
     }
 }
