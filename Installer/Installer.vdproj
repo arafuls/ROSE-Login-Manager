@@ -15,12 +15,6 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_533891D6DB614480BB4CB87B6EB1523B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -147,26 +141,6 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0F5553B1D66E4CBF9AEF88077782E711"
-            {
-            "SourcePath" = "8:..\\ROSE Login Manager\\Resources\\Images\\Rose_Online_Favicon.ico"
-            "TargetName" = "8:Rose_Online_Favicon.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_E655567E08C24E8AAAB1BC516A756908"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
         }
         "FileType"
         {
@@ -241,7 +215,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:An automation tool for logging into ROSE Online."
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
+        "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -344,34 +318,6 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_516A338BA681496C91F91C3F0AD33F47"
-            {
-            "Name" = "8:ROSE Login Manager"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_533891D6DB614480BB4CB87B6EB1523B"
-            "Folder" = "8:_B7EB72E010C948519284265CF343E12F"
-            "WorkingFolder" = "8:_E655567E08C24E8AAAB1BC516A756908"
-            "Icon" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
-            "Feature" = "8:"
-            }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5AF80361B2504454BFDD074544109971"
-            {
-            "Name" = "8:ROSE Login Manager"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_533891D6DB614480BB4CB87B6EB1523B"
-            "Folder" = "8:_139971A79A3F4F65BF212643AEA26D04"
-            "WorkingFolder" = "8:_E655567E08C24E8AAAB1BC516A756908"
-            "Icon" = "8:_0F5553B1D66E4CBF9AEF88077782E711"
-            "Feature" = "8:"
-            }
         }
         "UserInterface"
         {
@@ -773,7 +719,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_533891D6DB614480BB4CB87B6EB1523B"
             {
-            "SourcePath" = "8:..\\ROSE Login Manager\\obj\\Release\\net8.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\ROSE Login Manager\\obj\\Release\\net8.0-windows8.0\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_E655567E08C24E8AAAB1BC516A756908"

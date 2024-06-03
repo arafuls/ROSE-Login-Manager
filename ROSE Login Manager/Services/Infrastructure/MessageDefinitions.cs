@@ -80,4 +80,26 @@ namespace ROSE_Login_Manager.Services.Infrastructure
         // This class does not contain any properties or methods.
         // It serves as a marker class to indicate a change in the game folder.
     }
+
+
+
+    /// <summary>
+    ///     Message class used to request the progress value.
+    /// </summary>
+    public class ProgressRequestMessage
+    {
+        // This class does not contain any properties or methods.
+        // It serves as a marker class to indicate a request.
+    }
+
+
+
+    /// <summary>
+    ///     Initializes a new instance of the ProgressResponseMessage class with the specified progress value.
+    /// </summary>
+    /// <param name="progress">The progress value to be sent.</param>
+    public class ProgressResponseMessage(int progress)
+    {
+        public int Progress { get; set; } = progress;
+    }
 }

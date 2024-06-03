@@ -87,6 +87,7 @@ namespace ROSE_Login_Manager.ViewModel
             WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
             WeakReferenceMessenger.Default.Register<ViewChangedMessage>(this, OnViewChangedMessage);
             WeakReferenceMessenger.Default.Register<GameFolderChanged>(this, OnGameFolderChanged);
+            WeakReferenceMessenger.Default.Register<ProgressRequestMessage>(this, OnProgressRequestMessage);
 
             LoadProfileData();
 
@@ -132,6 +133,27 @@ namespace ROSE_Login_Manager.ViewModel
         {
             GameFolderChanged = true;
             Progress = 0;
+        }
+
+
+
+        /// <summary>
+        ///     Handles the ProgressRequestMessage by sending a ProgressResponseMessage with the current progress value.
+        /// </summary>
+        private void OnProgressRequestMessage(object recipient, ProgressRequestMessage message)
+        {
+            WeakReferenceMessenger.Default.Send(new ProgressResponseMessage(Progress));
+        }
+
+
+
+
+        /// <summary>
+        ///     Handles the received ProgressResponseMessage.
+        /// </summary>
+        private static void OnProgressResponseReceived(object recipient, ProgressResponseMessage message)
+        {
+
         }
 
 
