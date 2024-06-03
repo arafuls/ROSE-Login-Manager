@@ -91,9 +91,8 @@ namespace ROSE_Login_Manager.ViewModel
 
             LoadProfileData();
 
-            // ROSE Updater
+            // Run the patcher if we are certain we are in the right location
             _roseUpdater = new RoseUpdater();
-
             if (GlobalVariables.Instance.ContainsRoseExec())
             {
                 _roseUpdater.RunPatcher();
