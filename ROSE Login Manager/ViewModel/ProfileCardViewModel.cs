@@ -128,6 +128,9 @@ namespace ROSE_Login_Manager.ViewModel
             WeakReferenceMessenger.Default.Register<DisplayEmailCheckedMessage>(this, SettingsViewModel_DisplayEmailCheckedChanged);
             WeakReferenceMessenger.Default.Register<MaskEmailCheckedMessage>(this, SettingsViewModel_MaskEmailCheckedChanged);
             WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
+            WeakReferenceMessenger.Default.Register<ProgressResponseMessage>(this, OnProgressResponseReceived);
+
+            WeakReferenceMessenger.Default.Send(new ProgressRequestMessage());
         }
 
 
@@ -150,6 +153,13 @@ namespace ROSE_Login_Manager.ViewModel
         private void OnProgressMessageReceived(object recipient, ProgressMessage message)
         {
             LaunchButtonEnabled = (message.ProgressPercentage == 100);
+        }
+
+
+
+        private void OnProgressResponseReceived(object recipient, ProgressResponseMessage message)
+        {
+            LaunchButtonEnabled = (message.Progress == 100);
         }
         #endregion
 

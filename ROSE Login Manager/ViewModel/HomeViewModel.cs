@@ -39,8 +39,10 @@ namespace ROSE_Login_Manager.ViewModel
             get => _progress;
             set
             {
-                if (!SetProperty(ref _progress, value)) { return; }
-                CurrentFileName = "Verify File Integrity";
+                if (SetProperty(ref _progress, value)) 
+                {
+                    CurrentFileName = "Verify File Integrity";
+                }
             }
         }
 
@@ -88,12 +90,12 @@ namespace ROSE_Login_Manager.ViewModel
             WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
             WeakReferenceMessenger.Default.Register<ViewChangedMessage>(this, OnViewChangedMessage);
             WeakReferenceMessenger.Default.Register<GameFolderChanged>(this, OnGameFolderChanged);
+            WeakReferenceMessenger.Default.Register<ProgressRequestMessage>(this, OnProgressRequestMessage);
 
             LoadProfileData();
 
-            // ROSE Updater
+            // Run the patcher if we are certain we are in the right location
             _roseUpdater = new RoseUpdater();
-
             if (GlobalVariables.Instance.ContainsRoseExec())
             {
                 _roseUpdater.RunPatcher();
@@ -120,6 +122,7 @@ namespace ROSE_Login_Manager.ViewModel
                 _roseUpdater.RunPatcher();
                 GameFolderChanged = false;
             }
+            WeakReferenceMessenger.Default.Send(new ProgressResponseMessage(Progress));
         }
 
 
@@ -133,6 +136,27 @@ namespace ROSE_Login_Manager.ViewModel
         {
             GameFolderChanged = true;
             Progress = 0;
+        }
+
+
+
+        /// <summary>
+        ///     Handles the ProgressRequestMessage by sending a ProgressResponseMessage with the current progress value.
+        /// </summary>
+        private void OnProgressRequestMessage(object recipient, ProgressRequestMessage message)
+        {
+            WeakReferenceMessenger.Default.Send(new ProgressResponseMessage(Progress));
+        }
+
+
+
+
+        /// <summary>
+        ///     Handles the received ProgressResponseMessage.
+        /// </summary>
+        private static void OnProgressResponseReceived(object recipient, ProgressResponseMessage message)
+        {
+
         }
 
 

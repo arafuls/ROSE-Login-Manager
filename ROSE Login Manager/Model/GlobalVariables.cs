@@ -16,63 +16,41 @@ namespace ROSE_Login_Manager.Model
     public class GlobalVariables : ObservableObject
     {
         #region Accessors
-        /// <summary>
-        ///     Gets or sets the directory path of the ROSE Online game folder.
-        /// </summary>
         private string? _roseGameFolder;
         public string? RoseGameFolder
         {
-            get { return _roseGameFolder; }
-            set
-            {
-                if (_roseGameFolder != value)
-                {
-                    _roseGameFolder = value;
-                }
-            }
+            get => _roseGameFolder;
+            set => SetProperty(ref _roseGameFolder, value);
         }
 
-
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether the "Display Email" option is enabled.
-        /// </summary>
         private bool _displayEmail;
         public bool DisplayEmail
         {
-            get { return _displayEmail; }
-            set
-            {
-                if (_displayEmail != value)
-                {
-                    _displayEmail = value;
-                }
-            }
+            get => _displayEmail;
+            set => SetProperty(ref _displayEmail, value);
         }
 
-
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether the "Mask Email" option is enabled.
-        /// </summary>
         private bool _maskEmail;
         public bool MaskEmail
         {
-            get { return _maskEmail; }
-            set
-            {
-                if (_maskEmail != value)
-                {
-                    _maskEmail = value;
-                }
-            }
+            get => _maskEmail;
+            set => SetProperty(ref _maskEmail, value);
         }
 
+        private bool _skipPlanetCutscene;
+        public bool SkipPlanetCutscene
+        {
+            get => _skipPlanetCutscene;
+            set => SetProperty(ref _skipPlanetCutscene, value);
+        }
 
+        private string _loginScreen;
+        public string LoginScreen
+        {
+            get => _loginScreen;
+            set => SetProperty(ref _loginScreen, value);
+        }
 
-        /// <summary>
-        ///     Gets the application path.
-        /// </summary>
         private readonly string _appPath;
         public string AppPath
         {
@@ -151,7 +129,6 @@ namespace ROSE_Login_Manager.Model
                     }
                 }
 
-                // TRose.exe not found in the directory
                 return false;
             }
             catch (Exception ex)
@@ -191,8 +168,8 @@ namespace ROSE_Login_Manager.Model
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
-        }
 
+        }
 
 
         /// <summary>
