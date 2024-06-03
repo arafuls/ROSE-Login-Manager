@@ -38,8 +38,10 @@ namespace ROSE_Login_Manager.ViewModel
             get => _progress;
             set
             {
-                if (!SetProperty(ref _progress, value)) { return; }
-                CurrentFileName = "Verify File Integrity";
+                if (SetProperty(ref _progress, value)) 
+                {
+                    CurrentFileName = "Verify File Integrity";
+                }
             }
         }
 
@@ -119,6 +121,7 @@ namespace ROSE_Login_Manager.ViewModel
                 _roseUpdater.RunPatcher();
                 GameFolderChanged = false;
             }
+            WeakReferenceMessenger.Default.Send(new ProgressResponseMessage(Progress));
         }
 
 
