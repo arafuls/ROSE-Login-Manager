@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Newtonsoft.Json.Linq;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
@@ -36,7 +37,11 @@ namespace ROSE_Login_Manager.ViewModel
         public int Progress
         {
             get => _progress;
-            set => SetProperty(ref _progress, value);
+            set
+            {
+                if (!SetProperty(ref _progress, value)) { return; }
+                CurrentFileName = "Verify File Integrity";
+            }
         }
 
         private string _currentFileName = "Verify File Integrity";
