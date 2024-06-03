@@ -4,13 +4,9 @@
 namespace ROSE_Login_Manager.Services.Infrastructure
 {
     /// <summary>
-    ///     Represents a message indicating a change in a setting value.
+    ///     Represents a message indicating that a setting has changed.
     /// </summary>
-    /// <typeparam name="T">The type of the setting value.</typeparam>
-    /// <remarks>
-    ///     Initializes a new instance of the <see cref="SettingChangedMessage{T}"/> class.
-    /// </remarks>
-    /// <param name="key">The key of the setting that changed.</param>
+    /// <param name="key">The key of the setting that has changed.</param>
     /// <param name="value">The new value of the setting.</param>
     public class SettingChangedMessage<T>(string key, T value)
     {
@@ -20,13 +16,9 @@ namespace ROSE_Login_Manager.Services.Infrastructure
 
 
 
-
     /// <summary>
     ///     Represents a message indicating a change in the status of the "Display Email" checkbox.
     /// </summary>
-    /// <remarks>
-    ///     Initializes a new instance of the <see cref="DisplayEmailCheckedMessage"/> class with the specified checked status.
-    /// </remarks>
     /// <param name="isChecked">True if the "Display Email" checkbox is checked; otherwise, false.</param>
     public class DisplayEmailCheckedMessage(bool isChecked)
     {
@@ -35,19 +27,25 @@ namespace ROSE_Login_Manager.Services.Infrastructure
 
 
 
-
     /// <summary>
     ///     Represents a message indicating a change in the status of the "Mask Email" checkbox.
     /// </summary>
-    /// <remarks>
-    ///     Initializes a new instance of the <see cref="DisplayEmailCheckedMessage"/> class with the specified checked status.
-    /// </remarks>
     /// <param name="isChecked">True if the "Mask Email" checkbox is checked; otherwise, false.</param>
     public class MaskEmailCheckedMessage(bool isChecked)
     {
         public bool IsChecked { get; } = isChecked;
     }
 
+
+
+    /// <summary>
+    ///     Represents a message indicating a change in the status of the "Skip Planet Cutscene" checkbox.
+    /// </summary>
+    /// <param name="isChecked">True if the "Mask Email" checkbox is checked; otherwise, false.</param>
+    public class SkipPlanetCutsceneCheckedMessage(bool isChecked)
+    {
+        public bool IsChecked { get; } = isChecked;
+    }
 
 
 

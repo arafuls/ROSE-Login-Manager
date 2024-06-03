@@ -56,30 +56,66 @@ namespace ROSE_Login_Manager.Model
             {
                 _doc.Load(_configFile);
 
-                XmlNode? generalSettingsNode = _doc.SelectSingleNode("//Configuration/GeneralSettings");
-                if (generalSettingsNode != null)
-                {
-                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder")));
-                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail"))));
-                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("MaskEmail", bool.Parse(GetConfigSetting("MaskEmail"))));
-                }
+                XmlNode? generalSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/GeneralSettings");
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder", generalSettingsNode, "")));
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail", generalSettingsNode, true))));
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("MaskEmail", bool.Parse(GetConfigSetting("MaskEmail", generalSettingsNode, false))));
+                HandleRoseInstallLocation(generalSettingsNode);
+
+                XmlNode? gameSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/GameSettings");
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("SkipPlanetCutscene", bool.Parse(GetConfigSetting("SkipPlanetCutscene", gameSettingsNode, false))));
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("LoginScreen", GetConfigSetting("LoginScreen", gameSettingsNode, "Random")));
+
+                _doc.Save(_configFile);
             }
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
                     title: "ROSE Online Login Manager - ConfigurationManager::LoadConfig",
-                    message: "Error loading configuration file: " + ex.Message,
+                    message: "Error loading config: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
+        }
 
+
+
+        /// <summary>
+        ///     Ensures the existence of an XML node specified by the XPath. If the node doesn't exist,
+        ///     it creates the node under the parent node specified by the XPath.
+        /// </summary>
+        /// <param name="doc">The XML document.</param>
+        /// <param name="xpath">The XPath of the node to ensure existence.</param>
+        /// <returns>The existing or newly created XML node.</returns>
+        private static XmlNode? EnsureXmlNodeExists(XmlDocument doc, string xpath)
+        {
+            XmlNode? node = doc.SelectSingleNode(xpath);
+            if (node == null)
+            {
+                XmlNode? parentNode = doc.SelectSingleNode("//Configuration");
+                if (parentNode != null)
+                {
+                    node = parentNode.AppendChild(doc.CreateElement(xpath[(xpath.LastIndexOf('/') + 1)..]));
+                }
+            }
+            return node;
+        }
+
+
+
+        /// <summary>
+        ///     Handles the ROSE install location by attempting to automatically find it.
+        /// </summary>
+        /// <param name="node">The XML node representing the settings.</param>
+        private void HandleRoseInstallLocation(XmlNode node)
+        {
             // Attempt to automatically find ROSE install location - Thanks ZeroPoke :D
             if (string.IsNullOrEmpty(GlobalVariables.Instance.RoseGameFolder))
             {
                 string folderLocation = GlobalVariables.InstallLocationFromRegistry;
                 if (!string.IsNullOrEmpty(folderLocation))
                 {
-                    SaveSetting("RoseGameFolder", folderLocation);
+                    SaveSetting("RoseGameFolder", folderLocation, node);
                 }
             }
         }
@@ -98,10 +134,14 @@ namespace ROSE_Login_Manager.Model
 
                 XmlElement generalSettings = _doc.CreateElement("GeneralSettings");
                 root.AppendChild(generalSettings);
+                SaveConfigSetting("RoseGameFolder", "", generalSettings);
+                SaveConfigSetting("DisplayEmail", "False", generalSettings);
+                SaveConfigSetting("MaskEmail", "False", generalSettings);
 
-                SaveConfigSetting("RoseGameFolder", "");
-                SaveConfigSetting("DisplayEmail", "False");
-                SaveConfigSetting("MaskEmail", "False");
+                XmlElement gameSettings = _doc.CreateElement("GameSettings");
+                root.AppendChild(gameSettings);
+                SaveConfigSetting("SkipPlanetCutscene", "False", gameSettings);
+                SaveConfigSetting("LoginScreen", "Random", gameSettings);
 
                 _doc.Save(_configFile);
             }
@@ -118,18 +158,18 @@ namespace ROSE_Login_Manager.Model
 
 
         /// <summary>
-        ///     Saves a configuration setting with the specified key and value.
+        ///     Saves a configuration setting with the specified key and value in the specified XML node.
         /// </summary>
         /// <param name="key">The key of the setting.</param>
         /// <param name="value">The value of the setting.</param>
-        private void SaveSetting(string key, string value)
+        /// <param name="parentNode">The XML node where the setting should be saved.</param>
+        private void SaveSetting(string key, string value, XmlNode parentNode)
         {
             try
             {
-                XmlNode? root = _doc.SelectSingleNode("//Configuration/GeneralSettings");
-                if (root != null)
+                if (parentNode != null)
                 {
-                    XmlNode? existingSetting = root.SelectSingleNode(key);
+                    XmlNode? existingSetting = parentNode.SelectSingleNode(key);
                     if (existingSetting != null)
                     {
                         if (existingSetting.InnerText == value) { return; }
@@ -140,9 +180,9 @@ namespace ROSE_Login_Manager.Model
                     else
                     {
                         // If the setting does not exist, create a new setting element.
-                        XmlElement element = _doc.CreateElement(key);
+                        XmlElement element = parentNode.OwnerDocument.CreateElement(key);
                         element.InnerText = value;
-                        root.AppendChild(element);
+                        parentNode.AppendChild(element);
                     }
                     _doc.Save(_configFile);
 
@@ -162,49 +202,77 @@ namespace ROSE_Login_Manager.Model
 
 
         /// <summary>
-        ///     Saves a configuration setting with the specified key and boolean value.
+        ///     Saves a configuration setting with the specified key and value in the specified XML node.
         /// </summary>
         /// <param name="key">The key of the setting.</param>
-        /// <param name="value">The boolean value of the setting.</param>
-        public void SaveConfigSetting(string key, bool value)
+        /// <param name="value">The value of the setting.</param>
+        /// <param name="parentNode">The XML node where the setting should be saved.</param>
+        public void SaveConfigSetting(string key, object value, XmlNode parentNode)
         {
-            SaveSetting(key, value.ToString());
+            SaveSetting(key, value.ToString(), parentNode);
         }
 
 
 
+
         /// <summary>
-        ///     Saves a configuration setting with the specified key and string value.
+        ///     Saves a configuration setting with the specified key and value under the provided parent XML node.
         /// </summary>
         /// <param name="key">The key of the setting.</param>
-        /// <param name="value">The string value of the setting.</param>
-        public void SaveConfigSetting(string key, string value)
+        /// <param name="value">The value of the setting.</param>
+        /// <param name="parentNodeName">The name of the parent XML node under which the setting will be saved.</param>
+        public void SaveConfigSetting(string key, object value, string parentNodeName)
         {
-            SaveSetting(key, value);
-        }
+            try
+            {   // Construct the XPath based on the provided parent node name
+                string parentNodeXPath = $"//Configuration/{parentNodeName}";
+                XmlNode? parentNode = _doc.SelectSingleNode(parentNodeXPath);
 
-
-
-        /// <summary>
-        ///     Retrieves the value of a configuration setting specified by the key.
-        /// </summary>
-        /// <param name="key">The key of the configuration setting to retrieve.</param>
-        /// <returns>
-        ///     The value of the configuration setting if found; otherwise, returns null.
-        /// </returns>
-        public string GetConfigSetting(string key)
-        {
-            XmlNode? root = _doc.SelectSingleNode("//Configuration/GeneralSettings");
-            if (root != null)
-            {
-                XmlNode? settingNode = root.SelectSingleNode(key);
-                if (settingNode != null)
+                // Create the parent node if it doesn't exist
+                if (parentNode == null)
                 {
-                    return settingNode.InnerText;
+                    parentNode = _doc.CreateElement(parentNodeName);
+                    _doc.SelectSingleNode("//Configuration")?.AppendChild(parentNode);
+                }
+
+                // Save the setting to the determined XML node if it's not null
+                if (parentNode != null)
+                {
+                    SaveSetting(key, value.ToString(), parentNode);
                 }
             }
-            return null;
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: "ROSE Online Login Manager - ConfigurationManager::SaveConfigSetting",
+                    message: "Error saving setting: " + ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
         }
+
+
+
+
+        /// <summary>
+        ///     Retrieves the value of a configuration setting specified by the provided key from the given XML node. If the setting node does not exist, it creates a new one with the specified default value.
+        /// </summary>
+        /// <param name="key">The key of the setting to retrieve.</param>
+        /// <param name="parentNode">The XML node where the setting is located or will be created.</param>
+        /// <param name="defaultValue">The default value to assign to the setting if it doesn't exist.</param>
+        /// <returns>The value of the configuration setting.</returns>
+        public static string? GetConfigSetting(string key, XmlNode parentNode, object defaultValue)
+        {
+            XmlNode? settingNode = parentNode.SelectSingleNode(key);
+            if (settingNode == null)
+            {
+                settingNode = parentNode.OwnerDocument.CreateElement(key);
+                settingNode.InnerText = defaultValue?.ToString() ?? string.Empty;
+                parentNode.AppendChild(settingNode);
+            }
+            return settingNode.InnerText;
+        }
+
 
 
 
