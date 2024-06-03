@@ -50,9 +50,6 @@
                     <TextBlock Text="{Binding CurrentFileName}" 
                                VerticalAlignment="Center" HorizontalAlignment="Center" 
                                Foreground="Black" Background="Transparent"/>
-                    <TextBlock Text="{Binding DownloadSpeed}" 
-                               VerticalAlignment="Center" HorizontalAlignment="Right" 
-                               Foreground="Black" Background="Transparent"/>
                 </Grid>
             </StackPanel>
         </Border>

@@ -78,6 +78,22 @@ namespace ROSE_Login_Manager.Model
         {
             get { return _appPath; }
         }
+
+
+
+        /// <summary>
+        ///     Retrieves the install location of a specified application from the Windows Registry.
+        /// </summary>
+        /// <returns>The install location if found; otherwise, null.</returns>
+        public static string InstallLocationFromRegistry
+        {
+            get
+            {
+                string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{975CAD98-4A32-4E44-8681-29A2C4BE0B93}_is1";
+                string valueName = "InstallLocation";
+                return RegistryRead(registryPath, valueName);
+            }
+        }
         #endregion
 
 
@@ -147,19 +163,6 @@ namespace ROSE_Login_Manager.Model
                     icon: MessageBoxImage.Error);
                 return false;
             }
-        }
-
-
-
-        /// <summary>
-        ///     Retrieves the install location of a specified application from the Windows Registry.
-        /// </summary>
-        /// <returns>The install location if found; otherwise, null.</returns>
-        public static string GetInstallLocationFromRegistry()
-        {
-            string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{975CAD98-4A32-4E44-8681-29A2C4BE0B93}_is1";
-            string valueName = "InstallLocation";
-            return RegistryRead(registryPath, valueName);
         }
 
 

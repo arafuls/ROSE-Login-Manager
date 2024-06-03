@@ -101,6 +101,7 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         public ICommand GameFolderSearchCommand { get; private set; }
+        public ICommand FindGameFolderCommand { get; private set; }
         public ICommand DisplayEmailCheckedCommand { get; private set; }
         public ICommand MaskEmailCheckedCommand { get; private set; }
 
@@ -113,8 +114,9 @@ namespace ROSE_Login_Manager.ViewModel
         {
             // Initialize ICommand Relays
             GameFolderSearchCommand = new RelayCommand(GameFolderSearch);
+            FindGameFolderCommand = new RelayCommand(FindGameFolder);
 
-            InitializeSettingsVariables();
+            Initialize();
         }
 
 
@@ -122,7 +124,7 @@ namespace ROSE_Login_Manager.ViewModel
         /// <summary>
         ///     Initializes the settings variables from the global vars.
         /// </summary>
-        private void InitializeSettingsVariables()
+        private void Initialize()
         {
             _roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
             _isPathValidImage = GlobalVariables.Instance.ContainsRoseExec(RoseGameFolderPath);
@@ -150,6 +152,14 @@ namespace ROSE_Login_Manager.ViewModel
                 ConfigurationManager.Instance.SaveConfigSetting("RoseGameFolder", openFolderDialog.FolderName);
                 RoseGameFolderPath = openFolderDialog.FolderName;
             }
+        }
+
+
+
+
+        private void FindGameFolder(object obj)
+        {
+            RoseGameFolderPath = GlobalVariables.InstallLocationFromRegistry;
         }
     }
 }

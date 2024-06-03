@@ -7,6 +7,7 @@ using ROSE_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 
 
@@ -38,7 +39,7 @@ namespace ROSE_Login_Manager.ViewModel
             set => SetProperty(ref _progress, value);
         }
 
-        private string _currentFileName;
+        private string _currentFileName = "Verify File Integrity";
         public string CurrentFileName
         {
             get => _currentFileName;
@@ -126,10 +127,7 @@ namespace ROSE_Login_Manager.ViewModel
         private void OnGameFolderChanged(object recipient, GameFolderChanged message)
         {
             GameFolderChanged = true;
-
-            // Progress Bar
             Progress = 0;
-            CurrentFileName = string.Empty;
         }
 
 
@@ -244,7 +242,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             ProcessStartInfo startInfo = new()
             {
-                FileName = "TRose.exe",
+                FileName = Path.Combine(GlobalVariables.Instance.RoseGameFolder, "trose.exe"),
                 WorkingDirectory = GlobalVariables.Instance.RoseGameFolder,
                 Arguments = arguments,
                 WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
@@ -269,8 +267,8 @@ namespace ROSE_Login_Manager.ViewModel
             {   // ERROR_FILE_NOT_FOUND
                 new DialogService().ShowMessageBox(
                     title: "ROSE Online Login Manager - HomeViewModel::LoginThread",
-                    message: "The ROSE Online client executable, TRose.exe, could not be found.\n\n" +
-                             "Confirm that the ROSE Online client is installed correctly and that the ROSE Online Folder Location is set correctly.",
+                    message: "trose.exe could not be found.\n\n" +
+                             $"Confirm that trose.exe exists within {startInfo.WorkingDirectory}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }

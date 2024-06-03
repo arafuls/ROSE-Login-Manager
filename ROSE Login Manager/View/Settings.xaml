@@ -37,7 +37,7 @@
                         <Image Source="../Resources/Images/magnify.png"/>
                     </Button>
                     <!-- Auto-Fix Button -->
-                    <Button Command="{Binding AutoFixGameFolderCommand}" 
+                    <Button Command="{Binding FindGameFolderCommand}" 
                             Style="{StaticResource CustomImageButtonStyle}" 
                             Height="24" Width="24" Margin="5 0">
                         <Image Source="../Resources/Images/refresh-auto.png"/>

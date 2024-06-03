@@ -76,7 +76,7 @@ namespace ROSE_Login_Manager.Model
             // Attempt to automatically find ROSE install location - Thanks ZeroPoke :D
             if (string.IsNullOrEmpty(GlobalVariables.Instance.RoseGameFolder))
             {
-                string folderLocation = GlobalVariables.GetInstallLocationFromRegistry();
+                string folderLocation = GlobalVariables.InstallLocationFromRegistry;
                 if (!string.IsNullOrEmpty(folderLocation))
                 {
                     SaveSetting("RoseGameFolder", folderLocation);
