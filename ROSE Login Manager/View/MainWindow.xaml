@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="ROSE Online Login Manager" 
         Height="650" Width="1250" 
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:NavigationViewModel/>
