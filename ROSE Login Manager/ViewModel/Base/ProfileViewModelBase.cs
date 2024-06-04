@@ -98,7 +98,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (string.IsNullOrEmpty(ProfileName) || string.IsNullOrEmpty(ProfileEmail) || ProfilePassword == null || ProfilePassword.Length < 8)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - Error Creating Profile",
+                    title: $"{GlobalVariables.APP_NAME} - Error Creating Profile",
                     message: "Verify all data fields have been completed and password has 8 or more characters.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -111,7 +111,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (isNewProfile && db.PotentialRecordCollision(ProfileEmail))
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - Duplicate Profile Email",
+                    title: $"{GlobalVariables.APP_NAME} - Duplicate Profile Email",
                     message: "This profile email is already in use. Each profile must have a unique email address.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Exclamation);
@@ -122,7 +122,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (!isNewProfile && ProfileEmail != ExistingEmail && db.PotentialRecordCollision(ProfileEmail))
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - Duplicate Profile Email",
+                    title: $"{GlobalVariables.APP_NAME} - Duplicate Profile Email",
                     message: "This profile email is already in use. Each profile must have a unique email address.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Exclamation);

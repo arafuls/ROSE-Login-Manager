@@ -1,4 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
+using ROSE_Login_Manager.Model;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -43,7 +45,7 @@ namespace ROSE_Login_Manager.View
         /// </summary>
         private async void InitializeWebView()
         {
-            var userDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\ROSE Login Manager";
+            var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), GlobalVariables.APP_NAME);
             var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
             await webView.EnsureCoreWebView2Async(env);
 
