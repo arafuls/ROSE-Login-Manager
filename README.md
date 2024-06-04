@@ -21,15 +21,17 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
 - Launch clients with specific screen coordinates
 - Update ROSE client with current logged in account name and class
 - Track if account is already logged in and display it within the profile list
-- Automatically update using the official ROSE Online Updater
-- Display game announcements similar to splash page of the official ROSE Online Updater
+- Mod Support
+- Additional rose.toml settings
 
 
 ## Screenshots
 
-![Main Menu Screenshot](https://i.imgur.com/2PbQHdW.png)
+![Main Menu Screenshot](https://i.imgur.com/r3TgeWB.png)
 
-![Profile List Screenshot](https://i.imgur.com/sERTl1y.png)
+![Profile List Screenshot](https://i.imgur.com/lHiB0RH.png)
+
+![Settings View Screenshot](https://i.imgur.com/uFm6xzd.png)
 
 ![DB Screenshot](https://i.imgur.com/rGvelwA.png)
 
