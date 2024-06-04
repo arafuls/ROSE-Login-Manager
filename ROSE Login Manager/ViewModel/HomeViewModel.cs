@@ -150,17 +150,6 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
-
-        /// <summary>
-        ///     Handles the received ProgressResponseMessage.
-        /// </summary>
-        private static void OnProgressResponseReceived(object recipient, ProgressResponseMessage message)
-        {
-
-        }
-
-
-
         /// <summary>
         ///     Handles the reception of the database change message.
         /// </summary>

@@ -76,16 +76,6 @@ namespace ROSE_Login_Manager.Model
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
-
-            // Attempt to automatically find ROSE install location - Thanks ZeroPoke :D
-            if (string.IsNullOrEmpty(GlobalVariables.Instance.RoseGameFolder))
-            {
-                string folderLocation = GlobalVariables.InstallLocationFromRegistry;
-                if (!string.IsNullOrEmpty(folderLocation))
-                {
-                    SaveSetting("RoseGameFolder", folderLocation);
-                }
-            }
         }
 
 
@@ -177,27 +167,30 @@ namespace ROSE_Login_Manager.Model
         {
             try
             {
-                if (parentNode != null)
+                if (parentNode == null || parentNode.OwnerDocument == null)
+                    return;
+
+                XmlDocument ownerDocument = parentNode.OwnerDocument;
+                XmlNode? existingSetting = parentNode.SelectSingleNode(key);
+
+                if (existingSetting != null && existingSetting.InnerText == value)
+                    return;
+
+                if (existingSetting == null)
                 {
-                    XmlNode? existingSetting = parentNode.SelectSingleNode(key);
-                    if (existingSetting != null)
-                    {
-                        if (existingSetting.InnerText == value) { return; }
-
-                        // If the setting exists, update its value.
-                        existingSetting.InnerText = value;
-                    }
-                    else
-                    {
-                        // If the setting does not exist, create a new setting element.
-                        XmlElement element = parentNode.OwnerDocument.CreateElement(key);
-                        element.InnerText = value;
-                        parentNode.AppendChild(element);
-                    }
-                    _doc.Save(_configFile);
-
-                    WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>(key, value));
+                    // If the setting does not exist, create a new setting element.
+                    XmlElement element = ownerDocument.CreateElement(key);
+                    element.InnerText = value;
+                    parentNode.AppendChild(element);
                 }
+                else
+                {
+                    // If the setting exists, update its value.
+                    existingSetting.InnerText = value;
+                }
+
+                _doc.Save(_configFile);
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>(key, value));
             }
             catch (Exception ex)
             {
@@ -274,13 +267,13 @@ namespace ROSE_Login_Manager.Model
         public static string? GetConfigSetting(string key, XmlNode parentNode, object defaultValue)
         {
             XmlNode? settingNode = parentNode.SelectSingleNode(key);
-            if (settingNode == null)
+            if (settingNode == null && parentNode.OwnerDocument != null)
             {
                 settingNode = parentNode.OwnerDocument.CreateElement(key);
                 settingNode.InnerText = defaultValue?.ToString() ?? string.Empty;
                 parentNode.AppendChild(settingNode);
             }
-            return settingNode.InnerText;
+            return settingNode?.InnerText;
         }
 
 

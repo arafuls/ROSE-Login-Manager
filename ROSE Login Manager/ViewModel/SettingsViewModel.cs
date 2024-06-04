@@ -258,21 +258,16 @@ namespace ROSE_Login_Manager.ViewModel
         /// <returns>The formatted value.</returns>
         private static object FormatTomlValue(object value)
         {
-            if (value is bool)
+            switch (value)
             {
-                return (bool)value;
-            }
-            else if (value is int)
-            {
-                return (int)value;
-            }
-            else if (value is string)
-            {
-                return $"'{value}'";
-            }
-            else
-            {
-                throw new ArgumentException("Unsupported value type.");
+                case bool:
+                    return (bool)value;
+                case int:
+                    return (int)value;
+                case string:
+                    return $"'{value}'";
+                default:
+                    throw new ArgumentException("Unsupported value type.");
             }
         }
 
@@ -292,7 +287,7 @@ namespace ROSE_Login_Manager.ViewModel
                     "Random" => 0,
                     "Treehouse" => 4,
                     "Adventure Plains" => 7,
-                    "Junon Pedestals" => 16,
+                    "Junon Polis" => 16,
                     _ => 0,
                 };
             }
