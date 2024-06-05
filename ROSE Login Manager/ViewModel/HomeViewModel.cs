@@ -323,6 +323,12 @@ namespace ROSE_Login_Manager.ViewModel
             }
         }
 
+
+
+        /// <summary>
+        ///     Handles the DragOver event for a drag-and-drop operation. This method is invoked when an object is dragged over the target area.
+        /// </summary>
+        /// <param name="dropInfo">Contains information about the drag-and-drop operation, including the dragged data and the target collection.</param>
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
             if (dropInfo.Data is ProfileCardViewModel && dropInfo.TargetCollection == ProfileCards)
