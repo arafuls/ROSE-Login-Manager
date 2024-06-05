@@ -16,8 +16,6 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
 
 
 ## Planned Features
-
-- Party system to launch paired accounts together with a single click
 - Launch clients with specific screen coordinates
 - Update ROSE client with current logged in account name and class
 - Track if account is already logged in and display it within the profile list
