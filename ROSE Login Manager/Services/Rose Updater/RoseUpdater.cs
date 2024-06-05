@@ -54,7 +54,7 @@ namespace ROSE_Login_Manager.Services
                 catch (Exception ex)
                 {
                     new DialogService().ShowMessageBox(
-                        title: "ROSE Online Login Manager - RoseUpdater::UpdaterIsLatestAndExists",
+                        title: $"{GlobalVariables.APP_NAME} - RoseUpdater::UpdaterIsLatestAndExists",
                         message: $"Error validating updater: {ex.Message}",
                         button: MessageBoxButton.OK,
                         icon: MessageBoxImage.Error);
@@ -339,7 +339,7 @@ namespace ROSE_Login_Manager.Services
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - RoseUpdater::DownloadFileWithBitaAsync",
+                    title: $"{GlobalVariables.APP_NAME} - RoseUpdater::DownloadFileWithBitaAsync",
                     message: $"Error running bita: {ex.Message}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -407,7 +407,7 @@ namespace ROSE_Login_Manager.Services
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - RoseUpdater::SaveLocalManifest",
+                    title: $"{GlobalVariables.APP_NAME} - RoseUpdater::SaveLocalManifest",
                     message: $"Failed to save local manifest to {localManifestPath}: {ex.Message}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

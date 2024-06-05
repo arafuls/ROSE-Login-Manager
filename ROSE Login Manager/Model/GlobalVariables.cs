@@ -16,6 +16,8 @@ namespace ROSE_Login_Manager.Model
     public class GlobalVariables : ObservableObject
     {
         #region Accessors
+        public const string APP_NAME = "ROSE Online Login Manager";
+
         private string? _roseGameFolder;
         public string? RoseGameFolder
         {
@@ -89,7 +91,7 @@ namespace ROSE_Login_Manager.Model
         /// </summary>
         private GlobalVariables()
         {
-            _appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager");
+            _appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), APP_NAME);
 
             WeakReferenceMessenger.Default.Register<SettingChangedMessage<string>>(this, HandleSettingChanged);
             WeakReferenceMessenger.Default.Register<SettingChangedMessage<bool>>(this, HandleSettingChanged);
@@ -134,7 +136,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - SettingsViewModel::ContainsRoseExec",
+                    title: $"{APP_NAME} - SettingsViewModel::ContainsRoseExec",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -163,7 +165,7 @@ namespace ROSE_Login_Manager.Model
             else
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - GlobalVariables::HandleSettingChanged",
+                    title: $"{APP_NAME} - GlobalVariables::HandleSettingChanged",
                     message: "Unknown setting changed.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

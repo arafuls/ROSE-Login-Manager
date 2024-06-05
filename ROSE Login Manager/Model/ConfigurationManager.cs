@@ -32,7 +32,7 @@ namespace ROSE_Login_Manager.Model
         /// </summary>
         private ConfigurationManager()
         {
-            _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ROSE Online Login Manager", "config.xml");
+            _configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "config.xml");
             _doc = new XmlDocument();
 
             if (File.Exists(_configFile))
@@ -55,7 +55,7 @@ namespace ROSE_Login_Manager.Model
             try
             {
                 _doc.Load(_configFile);
-                
+
                 XmlNode? generalSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/GeneralSettings");
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder", generalSettingsNode, "")));
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail", generalSettingsNode, true))));
@@ -71,7 +71,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - ConfigurationManager::LoadConfig",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::LoadConfig",
                     message: "Error loading config: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -129,6 +129,13 @@ namespace ROSE_Login_Manager.Model
         {
             try
             {
+                // Ensure the directory exists
+                string? directory = Path.GetDirectoryName(_configFile);
+                if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
                 XmlElement root = _doc.CreateElement("Configuration");
                 _doc.AppendChild(root);
 
@@ -137,6 +144,7 @@ namespace ROSE_Login_Manager.Model
                 SaveConfigSetting("RoseGameFolder", "", generalSettings);
                 SaveConfigSetting("DisplayEmail", "False", generalSettings);
                 SaveConfigSetting("MaskEmail", "False", generalSettings);
+                HandleRoseInstallLocation(generalSettings);
 
                 XmlElement gameSettings = _doc.CreateElement("GameSettings");
                 root.AppendChild(gameSettings);
@@ -148,7 +156,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - ConfigurationManager::CreateConfig",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::CreateConfig",
                     message: "Error creating configuration file: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -189,13 +197,12 @@ namespace ROSE_Login_Manager.Model
                     existingSetting.InnerText = value;
                 }
 
-                _doc.Save(_configFile);
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>(key, value));
             }
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - ConfigurationManager::SaveSetting",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::SaveSetting",
                     message: "Error saving setting: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -247,7 +254,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - ConfigurationManager::SaveConfigSetting",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::SaveConfigSetting",
                     message: "Error saving setting: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

@@ -30,7 +30,7 @@ namespace ROSE_Login_Manager
             if (!createdNew)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - App::OnStartup",
+                    title: $"{GlobalVariables.APP_NAME} - App::OnStartup",
                     message: "Another instance of the application is already running.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Information);

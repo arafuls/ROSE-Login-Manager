@@ -105,7 +105,7 @@ namespace ROSE_Login_Manager.Resources.Util
             catch (SqliteException ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - DatabaseManager::ExecuteNonQuery",
+                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager::ExecuteNonQuery",
                     message: $"SQLite Error {ex.SqliteErrorCode}: '{ex.Message}'",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -114,7 +114,7 @@ namespace ROSE_Login_Manager.Resources.Util
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - DatabaseManager::ExecuteNonQuery",
+                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager::ExecuteNonQuery",
                     message: $"An error occurred: {ex.Message}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

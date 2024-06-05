@@ -218,7 +218,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (string.IsNullOrEmpty(filePath))
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - GlobalVariables::UpdateTomlFile",
+                    title: $"{GlobalVariables.APP_NAME} - GlobalVariables::UpdateTomlFile",
                     message: "Failed to locate rose.toml",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -242,7 +242,7 @@ namespace ROSE_Login_Manager.ViewModel
             else
             {
                 new DialogService().ShowMessageBox(
-                    title: "ROSE Online Login Manager - GlobalVariables::UpdateTomlFile",
+                    title: $"{GlobalVariables.APP_NAME} - GlobalVariables::UpdateTomlFile",
                     message: $"Failed to update {key} within rose.toml",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
