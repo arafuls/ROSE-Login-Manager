@@ -6,7 +6,6 @@
              mc:Ignorable="d">
     
     <Grid Name="ProfileCardGrid" 
-          Background="Gray"
           Margin="0 5"
           Width="290" Height="50">
         <Grid.RowDefinitions>
@@ -17,6 +16,8 @@
             <ColumnDefinition Width="50" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+
+        <Border Grid.ColumnSpan="2" Background="Gray" CornerRadius="25 2 25 2"/>
 
         <!-- Profile Avatar -->
         <Image Name="ProfileAvatar" 
@@ -51,7 +52,7 @@
                            Grid.Row="0" Grid.Column="0" 
                            VerticalAlignment="Bottom"
                            Text="{Binding ProfileName}"
-                           FontSize="16" FontWeight="Bold" 
+                           FontSize="12" FontFamily="pack://application:,,,/Resources/Fonts/#League Spartan" 
                            Foreground="Black"/>
                 
                 <!-- Profile Email -->
@@ -59,7 +60,8 @@
                            Grid.Row="1" Grid.ColumnSpan="2"
                            Text="{Binding CosmeticEmail}"
                            TextTrimming="CharacterEllipsis" 
-                           FontSize="12" Foreground="Black">
+                           FontSize="12" 
+                           Foreground="Black">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Visible"/>
@@ -78,9 +80,9 @@
                     Grid.RowSpan="2" Grid.Column="2" 
                     Command="{Binding LaunchProfileCommand}" 
                     IsEnabled="{Binding LaunchButtonEnabled}"
-                    Width="65" Height="25" 
-                    Margin="0 0 10 0"
-                    Content="Launch"/>
+                    Width="65" Height="25" Margin="0 0 10 0"
+                    Content="PLAY" FontWeight="Bold" FontSize="14"
+                    Style="{StaticResource ButtonStyle}"/>
         </Grid>
     </Grid>
 </UserControl>

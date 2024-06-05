@@ -48,8 +48,9 @@
                         Minimum="0" Maximum="100" Value="{Binding Progress}"
                         Height="30" Width="780" Margin="10" />
                     <TextBlock Text="{Binding CurrentFileName}" 
-                               VerticalAlignment="Center" HorizontalAlignment="Center" 
-                               Foreground="Black" Background="Transparent"/>
+                           VerticalAlignment="Center" HorizontalAlignment="Center" 
+                           Foreground="Black" FontSize="12" FontFamily="pack://application:,,,/Resources/Fonts/#semplicita ombra" 
+                           Background="Transparent"/>
                 </Grid>
             </StackPanel>
         </Border>

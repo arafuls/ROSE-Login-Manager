@@ -52,7 +52,9 @@ namespace ROSE_Login_Manager.ViewModel
             {
                 if (SetProperty(ref _displayEmailChecked, value))
                 {
-                    if (!value && MaskEmailChecked)
+                    ConfigurationManager.Instance.SaveConfigSetting("DisplayEmail", value, "GeneralSettings");
+
+                    if (!value)
                     {
                         MaskEmailChecked = false;
                     }
@@ -72,7 +74,7 @@ namespace ROSE_Login_Manager.ViewModel
                 {
                     ConfigurationManager.Instance.SaveConfigSetting("MaskEmail", value, "GeneralSettings");
 
-                    if (value && !DisplayEmailChecked)
+                    if (value)
                     {
                         DisplayEmailChecked = true;
                     }

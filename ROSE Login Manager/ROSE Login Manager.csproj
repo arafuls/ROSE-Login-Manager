@@ -11,6 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Fonts\LeagueSpartan-Bold.otf" />
+    <None Remove="Resources\Fonts\terminal-grotesque.ttf" />
+    <None Remove="Resources\Fonts\terminal-grotesque_open.otf" />
     <None Remove="Resources\Images\account-multiple-plus.png" />
     <None Remove="Resources\Images\account-multiple.png" />
     <None Remove="Resources\Images\account.png" />
@@ -45,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\Fonts\LeagueSpartan-Bold.otf" />
     <Resource Include="Resources\Images\account-multiple-plus.png" />
     <Resource Include="Resources\Images\account-multiple.png" />
     <Resource Include="Resources\Images\account.png" />
