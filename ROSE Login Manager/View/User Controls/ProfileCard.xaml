@@ -84,7 +84,7 @@
                     IsEnabled="{Binding LaunchButtonEnabled}"
                     Width="65" Height="25" Margin="0 0 10 0"
                     Content="PLAY" FontWeight="Bold" FontSize="14"
-                    Style="{StaticResource ButtonStyle}"/>
+                    Style="{StaticResource LaunchButtonStyle}"/>
         </Grid>
     </Grid>
 </UserControl>
