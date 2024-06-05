@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using GongSolutions.Wpf.DragDrop;
-using Newtonsoft.Json.Linq;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
@@ -19,7 +18,7 @@ namespace ROSE_Login_Manager.ViewModel
     /// <summary>
     ///     ViewModel class for the home view, responsible for managing user profiles and launching the ROSE Online client.
     /// </summary>
-    internal class HomeViewModel : ObservableObject
+    internal class HomeViewModel : ObservableObject, IDropTarget
     {
         private readonly DatabaseManager _db;
         private readonly RoseUpdater _roseUpdater;
@@ -178,7 +177,7 @@ namespace ROSE_Login_Manager.ViewModel
         /// </summary>
         /// <param name="obj">The object parameter.</param>
         /// <param name="message">The launch profile message.</param>
-        public void LaunchProfile(object obj, LaunchProfileMessage message)
+        private void LaunchProfile(object obj, LaunchProfileMessage message)
         {
             if (GlobalVariables.Instance.RoseGameFolder == null ||
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
@@ -212,13 +211,14 @@ namespace ROSE_Login_Manager.ViewModel
         /// </summary>
         private void LoadProfileData()
         {
+            Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
             ProfileCards = [];
 
             bool display = GlobalVariables.Instance.DisplayEmail;
             bool mask = GlobalVariables.Instance.MaskEmail;
 
-            Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
-            foreach (UserProfileModel profile in Profiles)
+            var sortedProfiles = Profiles.OrderBy(p => p.ProfileOrder);
+            foreach (UserProfileModel profile in sortedProfiles)
             {
                 ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
             }
@@ -236,35 +236,6 @@ namespace ROSE_Login_Manager.ViewModel
             UpdateProgressAsync(message.ProgressPercentage, message.CurrentFileName);
         }
         #endregion
-
-
-
-
-        public void DragOver(IDropInfo dropInfo)
-        {
-            if (dropInfo.Data is ProfileCardViewModel && dropInfo.TargetCollection == ProfileCards)
-            {
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-                dropInfo.Effects = DragDropEffects.Move;
-            }
-        }
-
-
-
-
-        public void Drop(IDropInfo dropInfo)
-        {
-            if (dropInfo.Data is ProfileCardViewModel sourceItem && dropInfo.TargetCollection == ProfileCards)
-            {
-                var sourceIndex = ProfileCards.IndexOf(sourceItem);
-                var targetIndex = dropInfo.InsertIndex;
-
-                if (sourceIndex != targetIndex)
-                {
-                    ProfileCards.Move(sourceIndex, targetIndex);
-                }
-            }
-        }
 
 
 
@@ -350,6 +321,83 @@ namespace ROSE_Login_Manager.ViewModel
 
                 startInfo.Arguments = string.Empty;
             }
+        }
+
+        void IDropTarget.DragOver(IDropInfo dropInfo)
+        {
+            if (dropInfo.Data is ProfileCardViewModel && dropInfo.TargetCollection == ProfileCards)
+            {
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Handles the drop operation when a profile card is dropped onto the target collection.
+        /// </summary>
+        /// <param name="dropInfo">Information about the drop operation.</param>
+        /// <remarks>
+        ///     This method is called when a profile card is dropped onto the target collection, which is the collection of profile cards displayed in the UI.
+        ///     
+        ///     It first checks if the dropped data is a profile card view model and if the target collection matches the ProfileCards collection.
+        ///     If the source index (the index from which the profile card is dragged) is different from the target index (the index where the profile card is dropped):
+        ///         - It performs bounds checking to ensure that both the source index and target index are within the bounds of the ProfileCards collection.
+        ///         - If the target index exceeds the upper bound of the collection, it sets the target index to the last possible index.
+        ///         - It then moves the profile card from the source index to the target index in the ProfileCards collection.
+        ///         - It asynchronously calls the ReorderProfiles method to update the order of user profiles based on the new order of profile cards in the UI.
+        /// </remarks>
+        void IDropTarget.Drop(IDropInfo dropInfo)
+        {
+            if (dropInfo.Data is ProfileCardViewModel sourceItem && dropInfo.TargetCollection == ProfileCards)
+            {
+                var sourceIndex = ProfileCards.IndexOf(sourceItem);
+                var targetIndex = dropInfo.InsertIndex;
+
+                if (sourceIndex != targetIndex)
+                {
+                    // OutOfRangeException: Why does this not have self-contained bounds checking?
+                    if (sourceIndex < 0 || sourceIndex > ProfileCards.Count - 1) { return; }
+                    if (targetIndex < 0 || targetIndex > ProfileCards.Count) { return; }
+
+                    // OutOfRangeException: There are two bottom indices apparently but one is OOR? Set target to the last possible index.
+                    if (targetIndex >= ProfileCards.Count) { targetIndex = ProfileCards.Count - 1; }
+
+                    ProfileCards.Move(sourceIndex, targetIndex);
+                    _ = ReorderProfiles();
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Reorders the user profiles based on the current order of profile cards in the UI.
+        /// </summary>
+        /// <remarks>
+        ///     This method asynchronously updates the ProfileOrder property of each user profile based on the current order of profile cards in the UI.
+        ///     It iterates through the ProfileCards collection and updates the ProfileOrder property of each corresponding user profile in the Profiles collection.
+        ///     The updated order is then saved to the database asynchronously.
+        /// </remarks>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task ReorderProfiles()
+        {
+            List<UserProfileModel> newProfilesOrder = [];
+
+            for (int i = 0; i < ProfileCards.Count; i++)
+            {
+                ProfileCardViewModel profileCard = ProfileCards[i];
+
+                var profile = Profiles.FirstOrDefault(p => p.ProfileEmail == profileCard.ProfileEmail);
+                if (profile != null)
+                {
+                    profile.ProfileOrder = i;
+                    newProfilesOrder.Add(profile);
+                }
+            }
+
+            await Task.Run(() => _db.UpdateProfileOrder(Profiles));
         }
     }
 }

@@ -19,8 +19,13 @@
         <!-- Left Panel-->
         <Border Margin="10 25 5 25">
             <!-- List of Profile Cards -->
-            <ScrollViewer Name="ProfileScrollViewer" 
-                          Style="{StaticResource ScrollViewerStyle}">
+            <ScrollViewer 
+                Name="ProfileScrollViewer" 
+                Style="{StaticResource ScrollViewerStyle}"
+                PanningMode="Both"
+                  PreviewMouseDown="ProfileScrollViewer_PreviewMouseDown"
+                  PreviewMouseMove="ProfileScrollViewer_PreviewMouseMove"
+                  PreviewMouseUp="ProfileScrollViewer_PreviewMouseUp">
                 <ItemsControl 
                     ItemsSource="{Binding ProfileCards}" 
                     dd:DragDrop.IsDragSource="True" 

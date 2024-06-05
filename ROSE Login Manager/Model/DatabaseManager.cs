@@ -61,7 +61,56 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </summary>
         private void InitializeDatabase()
         {
-            CreateSchema();
+            _db.Open();
+            using (SqliteCommand command = _db.CreateCommand())
+            {   // Check if the Profiles table already exists
+                command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Profiles'";
+
+                bool tableExists = Convert.ToInt32(command.ExecuteScalar()) > 0;
+                if (tableExists)
+                {
+                    VerifySchemaHasOrder();
+                }
+                else
+                {
+                    CreateSchema();
+                }
+            }
+            _db.Close();
+        }
+
+
+
+        /// <summary>
+        ///     Checks if the 'Profiles' table contains the 'ProfileOrder' column. If not, adds the column to the table.
+        /// </summary>
+        private void VerifySchemaHasOrder()
+        {
+            using (SqliteCommand command = _db.CreateCommand())
+            {
+                bool profileOrderExists = false;
+
+                command.CommandText = "PRAGMA table_info('Profiles')";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string columnName = reader.GetString(1);
+                        if (columnName.Equals("ProfileOrder", StringComparison.OrdinalIgnoreCase))
+                        {
+                            profileOrderExists = true;
+                            break;
+                        }
+                    }
+                    reader.Close();
+                }
+
+                if (!profileOrderExists)
+                {
+                    command.CommandText = "ALTER TABLE Profiles ADD COLUMN ProfileOrder INTEGER NOT NULL DEFAULT 0";
+                    command.ExecuteNonQuery();
+                }
+            }
         }
 
 
@@ -71,7 +120,6 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </summary>
         private void CreateSchema()
         {
-            _db.Open();
             using SqliteCommand command = _db.CreateCommand();
             command.CommandText = @"
                 CREATE TABLE IF NOT EXISTS Profiles (
@@ -79,11 +127,11 @@ namespace ROSE_Login_Manager.Resources.Util
                     ProfileEmail        TEXT        PRIMARY KEY,
                     ProfileName         TEXT        NOT NULL,
                     ProfilePassword     TEXT        NOT NULL,
-                    ProfileIV           TEXT        NOT NULL
+                    ProfileIV           TEXT        NOT NULL,
+                    ProfileOrder        INTEGER     NOT NULL DEFAULT 0
                 );
             ";
             ExecuteNonQuery(command);
-            _db.Close();
         }
 
 
@@ -151,7 +199,8 @@ namespace ROSE_Login_Manager.Resources.Util
                         ProfileEmail = reader.GetString(1),
                         ProfileName = reader.GetString(2),
                         ProfilePassword = reader.GetString(3),
-                        ProfileIV = reader.GetString(4)
+                        ProfileIV = reader.GetString(4),
+                        ProfileOrder = reader.GetInt32(5)
                     };
                     profiles.Add(userProfileModel);
                 }
@@ -177,10 +226,18 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </remarks>
         internal bool AddProfile(UserProfileModel profile)
         {
+            bool success = false;
+
+            _db.Open();
             using SqliteCommand command = _db.CreateCommand();
+
+            command.CommandText = "SELECT COALESCE(MAX(ProfileOrder), 0) + 1 FROM Profiles";
+            object? order = command.ExecuteScalar();
+            int profileOrder = Convert.ToInt32(order);
+
             command.CommandText = @"
-                INSERT INTO Profiles (ProfileStatus, ProfileEmail, ProfileName, ProfilePassword, ProfileIV)
-                VALUES (@ProfileStatus, @ProfileEmail, @ProfileName, @ProfilePassword, @ProfileIV)
+                INSERT INTO Profiles (ProfileStatus, ProfileEmail, ProfileName, ProfilePassword, ProfileIV, ProfileOrder)
+                VALUES (@ProfileStatus, @ProfileEmail, @ProfileName, @ProfilePassword, @ProfileIV, @ProfileOrder)
             ";
 
             command.Parameters.AddWithValue("@ProfileStatus", profile.ProfileStatus);
@@ -188,14 +245,16 @@ namespace ROSE_Login_Manager.Resources.Util
             command.Parameters.AddWithValue("@ProfileName", profile.ProfileName);
             command.Parameters.AddWithValue("@ProfilePassword", profile.ProfilePassword);
             command.Parameters.AddWithValue("@ProfileIV", profile.ProfileIV);
+            command.Parameters.AddWithValue("@ProfileOrder", profileOrder);
 
             if (ExecuteNonQuery(command))
             {
                 WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
-                return true;
+                success = true;
             }
 
-            return false;
+            _db.Close();
+            return success;
         }
 
 
@@ -237,6 +296,52 @@ namespace ROSE_Login_Manager.Resources.Util
             }
 
             return false;
+        }
+
+
+
+        /// <summary>
+        ///     Updates the order of user profiles in the database based on the provided collection of profiles.
+        /// </summary>
+        /// <param name="profiles">The collection of user profiles containing the updated order.</param>
+        /// <remarks>
+        ///     This method updates the ProfileOrder property for each user profile in the database according to the order
+        ///     specified in the provided collection. It opens a transaction to ensure atomicity and consistency when
+        ///     updating profile orders. After updating the orders, it commits the transaction to save the changes permanently.
+        ///     If any error occurs during the update process, it rolls back the transaction to maintain data integrity.
+        ///     Finally, it sends a <see cref="DatabaseChangedMessage"/> using the WeakReferenceMessenger to notify
+        ///     ViewModels that the database has changed.
+        /// </remarks>
+        /// <param name="profiles">The collection of user profiles containing the updated order.</param>
+        internal void UpdateProfileOrder(ObservableCollection<UserProfileModel> profiles)
+        {
+            _db.Open();
+            using (SqliteTransaction transaction = _db.BeginTransaction())
+            {
+                try
+                {   // Update the ProfileOrder for each profile in the database
+                    foreach (var profile in profiles)
+                    {
+                        using var command = _db.CreateCommand();
+                        command.CommandText = "UPDATE Profiles SET ProfileOrder = @ProfileOrder WHERE ProfileEmail = @ProfileEmail";
+                        command.Parameters.AddWithValue("@ProfileOrder", profile.ProfileOrder);
+                        command.Parameters.AddWithValue("@ProfileEmail", profile.ProfileEmail);
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+
+                    // Send the message on the UI thread
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
+                    });
+                }
+                catch (Exception)
+                {   // Rollback the transaction if an error occurs
+                    transaction.Rollback();
+                }
+            }
+            _db.Close();
         }
 
 

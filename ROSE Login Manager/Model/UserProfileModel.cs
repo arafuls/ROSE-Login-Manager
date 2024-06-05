@@ -14,6 +14,7 @@ namespace ROSE_Login_Manager.Model
         public required string ProfileEmail { get; set; }
         public required string ProfilePassword { get; set; }
         public required string ProfileIV { get; set; }
+        public int ProfileOrder { get; set; }
 
 
 
