@@ -3,11 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d">
     
     <Grid Name="ProfileCardGrid" 
           Margin="0 5"
-          Width="290" Height="50">
+          Width="290" Height="50"
+           Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition/>
         </Grid.RowDefinitions>
@@ -54,7 +56,7 @@
                            Text="{Binding ProfileName}"
                            FontSize="12" FontFamily="pack://application:,,,/Resources/Fonts/#League Spartan" 
                            Foreground="Black"/>
-                
+
                 <!-- Profile Email -->
                 <TextBlock Name="ProfileEmailTextBlock" 
                            Grid.Row="1" Grid.ColumnSpan="2"

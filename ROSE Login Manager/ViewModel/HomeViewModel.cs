@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using GongSolutions.Wpf.DragDrop;
 using Newtonsoft.Json.Linq;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
@@ -225,6 +226,35 @@ namespace ROSE_Login_Manager.ViewModel
             UpdateProgressAsync(message.ProgressPercentage, message.CurrentFileName);
         }
         #endregion
+
+
+
+
+        public void DragOver(IDropInfo dropInfo)
+        {
+            if (dropInfo.Data is ProfileCardViewModel && dropInfo.TargetCollection == ProfileCards)
+            {
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+        }
+
+
+
+
+        public void Drop(IDropInfo dropInfo)
+        {
+            if (dropInfo.Data is ProfileCardViewModel sourceItem && dropInfo.TargetCollection == ProfileCards)
+            {
+                var sourceIndex = ProfileCards.IndexOf(sourceItem);
+                var targetIndex = dropInfo.InsertIndex;
+
+                if (sourceIndex != targetIndex)
+                {
+                    ProfileCards.Move(sourceIndex, targetIndex);
+                }
+            }
+        }
 
 
 

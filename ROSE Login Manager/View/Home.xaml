@@ -6,6 +6,8 @@
              xmlns:local="clr-namespace:ROSE_Login_Manager.View"
              xmlns:model="clr-namespace:ROSE_Login_Manager.Model" 
              xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025">
     <Grid>
@@ -19,7 +21,12 @@
             <!-- List of Profile Cards -->
             <ScrollViewer Name="ProfileScrollViewer" 
                           Style="{StaticResource ScrollViewerStyle}">
-                <ItemsControl ItemsSource="{Binding ProfileCards}">
+                <ItemsControl 
+                    ItemsSource="{Binding ProfileCards}" 
+                    dd:DragDrop.IsDragSource="True" 
+                    dd:DragDrop.IsDropTarget="True" 
+                    dd:DragDrop.DropHandler="{Binding}"
+                    dd:DragDrop.DragAdornerTemplate="{StaticResource GhostTemplate}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <local:ProfileCard/>

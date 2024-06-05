@@ -37,8 +37,10 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Humanizer" Version="2.14.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.5" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
+    <PackageReference Include="LightImage.DragDrop" Version="0.5.5" />
+    <PackageReference Include="LightImage.DragDrop.Wpf" Version="0.5.5" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
