@@ -10,6 +10,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 
 
@@ -333,7 +335,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (dropInfo.Data is ProfileCardViewModel && dropInfo.TargetCollection == ProfileCards)
             {
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                //dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
                 dropInfo.Effects = DragDropEffects.Move;
             }
         }
@@ -341,39 +343,66 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         /// <summary>
-        ///     Handles the drop operation when a profile card is dropped onto the target collection.
+        ///     Handles the drop operation for profile cards. This method is called when a profile card is dropped
+        ///     onto the target collection. It reorders the profile cards based on the drop position.
         /// </summary>
-        /// <param name="dropInfo">Information about the drop operation.</param>
-        /// <remarks>
-        ///     This method is called when a profile card is dropped onto the target collection, which is the collection of profile cards displayed in the UI.
-        ///     
-        ///     It first checks if the dropped data is a profile card view model and if the target collection matches the ProfileCards collection.
-        ///     If the source index (the index from which the profile card is dragged) is different from the target index (the index where the profile card is dropped):
-        ///         - It performs bounds checking to ensure that both the source index and target index are within the bounds of the ProfileCards collection.
-        ///         - If the target index exceeds the upper bound of the collection, it sets the target index to the last possible index.
-        ///         - It then moves the profile card from the source index to the target index in the ProfileCards collection.
-        ///         - It asynchronously calls the ReorderProfiles method to update the order of user profiles based on the new order of profile cards in the UI.
-        /// </remarks>
+        /// <param name="dropInfo">Information about the drop event, including the data being dropped and the target collection.</param>
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
             if (dropInfo.Data is ProfileCardViewModel sourceItem && dropInfo.TargetCollection == ProfileCards)
             {
                 var sourceIndex = ProfileCards.IndexOf(sourceItem);
-                var targetIndex = dropInfo.InsertIndex;
+                var targetIndex = GetTargetIndexFromDropInfo(dropInfo);
 
                 if (sourceIndex != targetIndex)
                 {
-                    // OutOfRangeException: Why does this not have self-contained bounds checking?
-                    if (sourceIndex < 0 || sourceIndex > ProfileCards.Count - 1) { return; }
-                    if (targetIndex < 0 || targetIndex > ProfileCards.Count) { return; }
+                    // Check bounds to prevent OutOfRangeException
+                    if (sourceIndex < 0 || sourceIndex >= ProfileCards.Count) return;
+                    if (targetIndex < 0 || targetIndex > ProfileCards.Count) return;
 
-                    // OutOfRangeException: There are two bottom indices apparently but one is OOR? Set target to the last possible index.
-                    if (targetIndex >= ProfileCards.Count) { targetIndex = ProfileCards.Count - 1; }
+                    // Adjust targetIndex to avoid OutOfRangeException
+                    if (targetIndex >= ProfileCards.Count) targetIndex = ProfileCards.Count - 1;
 
                     ProfileCards.Move(sourceIndex, targetIndex);
                     _ = ReorderProfiles();
                 }
             }
+        }
+
+
+
+        /// <summary>
+        ///     Determines the target index for the drop operation based on the drop information.
+        ///     This method calculates the index where the item should be dropped using the visual tree and mouse position.
+        /// </summary>
+        /// <param name="dropInfo">Information about the drop event, including the data being dropped and the target collection.</param>
+        /// <returns>The target index where the item should be inserted. If no valid index is found, returns the count of items in the ItemsControl.</returns>
+        private static int GetTargetIndexFromDropInfo(IDropInfo dropInfo)
+        {
+            var itemsControl = dropInfo.VisualTarget as ItemsControl;
+            if (itemsControl == null) return -1;
+
+            var position = dropInfo.DropPosition;
+            int index = -1;
+
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var itemContainer = (FrameworkElement)itemsControl.ItemContainerGenerator.ContainerFromIndex(i);
+                if (itemContainer != null)
+                {
+                    var bounds = VisualTreeHelper.GetDescendantBounds(itemContainer);
+                    var itemPosition = itemContainer.TransformToAncestor(itemsControl).Transform(new Point(0, 0));
+                    bounds.Offset(itemPosition.X, itemPosition.Y);
+
+                    if (bounds.Contains(position))
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+
+            return index == -1 ? itemsControl.Items.Count : index;
         }
 
 
