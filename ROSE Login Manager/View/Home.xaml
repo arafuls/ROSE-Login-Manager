@@ -5,9 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ROSE_Login_Manager.View"
              xmlns:model="clr-namespace:ROSE_Login_Manager.Model" 
+             xmlns:util="clr-namespace:ROSE_Login_Manager.Resources.Util"
              xmlns:ui="http://schemas.modernwpf.com/2019"
-             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-
+             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop" 
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025">
     <Grid>
@@ -16,39 +17,49 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Left Panel-->
+        <!-- Left Panel -->
         <Border Margin="10 25 5 25">
             <!-- List of Profile Cards -->
-            <ScrollViewer 
-                Name="ProfileScrollViewer" 
-                Style="{StaticResource ScrollViewerStyle}"
-                PanningMode="Both"
-                  PreviewMouseDown="ProfileScrollViewer_PreviewMouseDown"
-                  PreviewMouseMove="ProfileScrollViewer_PreviewMouseMove"
-                  PreviewMouseUp="ProfileScrollViewer_PreviewMouseUp">
+            <util:SmoothScrollViewer 
+                x:Name="ProfileScrollViewer" 
+                Style="{StaticResource ScrollViewerStyle}">
+
+                <!-- Attach SmoothScrollViewerBehavior for smooth scrolling -->
+                <b:Interaction.Behaviors>
+                    <util:SmoothScrollViewerBehavior/>
+                </b:Interaction.Behaviors>
+
+                <!-- ItemsControl for displaying a collection of items -->
                 <ItemsControl 
                     ItemsSource="{Binding ProfileCards}" 
                     dd:DragDrop.IsDragSource="True" 
                     dd:DragDrop.IsDropTarget="True" 
                     dd:DragDrop.DropHandler="{Binding}"
                     dd:DragDrop.DragAdornerTemplate="{StaticResource GhostTemplate}">
+
+                    <!-- Define the template for each item -->
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
+                            <!-- UI representation for each profile card -->
                             <local:ProfileCard/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
+                    
                 </ItemsControl>
-            </ScrollViewer>
+            </util:SmoothScrollViewer>
         </Border>
 
+        
+        
         <!-- Right Panel -->
         <Border Grid.Column="1" Margin="0 0 10 0">
             <StackPanel VerticalAlignment="Center">
+                
                 <local:WebView2Control 
                             x:Name="webView" 
                             SourceUrl="https://www.roseonlinegame.com/launcher.html"/>
+                
                 <Grid>
-                    <!-- Define a row and column for the ProgressBar -->
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -59,6 +70,7 @@
                     <ProgressBar 
                         Minimum="0" Maximum="100" Value="{Binding Progress}"
                         Height="30" Width="780" Margin="10" />
+                    
                     <TextBlock Text="{Binding CurrentFileName}" 
                            VerticalAlignment="Center" HorizontalAlignment="Center" 
                            Foreground="Black" FontSize="12" FontFamily="pack://application:,,,/Resources/Fonts/#semplicita ombra" 
