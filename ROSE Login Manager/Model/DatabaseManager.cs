@@ -86,30 +86,28 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </summary>
         private void VerifySchemaHasOrder()
         {
-            using (SqliteCommand command = _db.CreateCommand())
+            using SqliteCommand command = _db.CreateCommand();
+            bool profileOrderExists = false;
+
+            command.CommandText = "PRAGMA table_info('Profiles')";
+            using (var reader = command.ExecuteReader())
             {
-                bool profileOrderExists = false;
-
-                command.CommandText = "PRAGMA table_info('Profiles')";
-                using (var reader = command.ExecuteReader())
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    string columnName = reader.GetString(1);
+                    if (columnName.Equals("ProfileOrder", StringComparison.OrdinalIgnoreCase))
                     {
-                        string columnName = reader.GetString(1);
-                        if (columnName.Equals("ProfileOrder", StringComparison.OrdinalIgnoreCase))
-                        {
-                            profileOrderExists = true;
-                            break;
-                        }
+                        profileOrderExists = true;
+                        break;
                     }
-                    reader.Close();
                 }
+                reader.Close();
+            }
 
-                if (!profileOrderExists)
-                {
-                    command.CommandText = "ALTER TABLE Profiles ADD COLUMN ProfileOrder INTEGER NOT NULL DEFAULT 0";
-                    command.ExecuteNonQuery();
-                }
+            if (!profileOrderExists)
+            {
+                command.CommandText = "ALTER TABLE Profiles ADD COLUMN ProfileOrder INTEGER NOT NULL DEFAULT 0";
+                command.ExecuteNonQuery();
             }
         }
 

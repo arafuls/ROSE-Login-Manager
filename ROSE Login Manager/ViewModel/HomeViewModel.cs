@@ -219,7 +219,7 @@ namespace ROSE_Login_Manager.ViewModel
             bool display = GlobalVariables.Instance.DisplayEmail;
             bool mask = GlobalVariables.Instance.MaskEmail;
 
-            var sortedProfiles = Profiles.OrderBy(p => p.ProfileOrder);
+            IOrderedEnumerable<UserProfileModel> sortedProfiles = Profiles.OrderBy(p => p.ProfileOrder);
             foreach (UserProfileModel profile in sortedProfiles)
             {
                 ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
@@ -351,8 +351,8 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (dropInfo.Data is ProfileCardViewModel sourceItem && dropInfo.TargetCollection == ProfileCards)
             {
-                var sourceIndex = ProfileCards.IndexOf(sourceItem);
-                var targetIndex = GetTargetIndexFromDropInfo(dropInfo);
+                int sourceIndex = ProfileCards.IndexOf(sourceItem);
+                int targetIndex = GetTargetIndexFromDropInfo(dropInfo);
 
                 if (sourceIndex != targetIndex)
                 {
@@ -379,19 +379,18 @@ namespace ROSE_Login_Manager.ViewModel
         /// <returns>The target index where the item should be inserted. If no valid index is found, returns the count of items in the ItemsControl.</returns>
         private static int GetTargetIndexFromDropInfo(IDropInfo dropInfo)
         {
-            var itemsControl = dropInfo.VisualTarget as ItemsControl;
-            if (itemsControl == null) return -1;
+            if (dropInfo.VisualTarget is not ItemsControl itemsControl) return -1;
 
-            var position = dropInfo.DropPosition;
+            Point position = dropInfo.DropPosition;
             int index = -1;
 
             for (int i = 0; i < itemsControl.Items.Count; i++)
             {
-                var itemContainer = (FrameworkElement)itemsControl.ItemContainerGenerator.ContainerFromIndex(i);
+                FrameworkElement itemContainer = (FrameworkElement)itemsControl.ItemContainerGenerator.ContainerFromIndex(i);
                 if (itemContainer != null)
                 {
-                    var bounds = VisualTreeHelper.GetDescendantBounds(itemContainer);
-                    var itemPosition = itemContainer.TransformToAncestor(itemsControl).Transform(new Point(0, 0));
+                    Rect bounds = VisualTreeHelper.GetDescendantBounds(itemContainer);
+                    Point itemPosition = itemContainer.TransformToAncestor(itemsControl).Transform(new Point(0, 0));
                     bounds.Offset(itemPosition.X, itemPosition.Y);
 
                     if (bounds.Contains(position))
@@ -424,7 +423,7 @@ namespace ROSE_Login_Manager.ViewModel
             {
                 ProfileCardViewModel profileCard = ProfileCards[i];
 
-                var profile = Profiles.FirstOrDefault(p => p.ProfileEmail == profileCard.ProfileEmail);
+                UserProfileModel? profile = Profiles.FirstOrDefault(p => p.ProfileEmail == profileCard.ProfileEmail);
                 if (profile != null)
                 {
                     profile.ProfileOrder = i;
