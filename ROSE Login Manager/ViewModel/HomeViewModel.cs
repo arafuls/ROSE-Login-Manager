@@ -86,12 +86,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             _db = new DatabaseManager();
 
-            WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, LaunchProfile);
-            WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
-            WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
-            WeakReferenceMessenger.Default.Register<ViewChangedMessage>(this, OnViewChangedMessage);
-            WeakReferenceMessenger.Default.Register<GameFolderChanged>(this, OnGameFolderChanged);
-            WeakReferenceMessenger.Default.Register<ProgressRequestMessage>(this, OnProgressRequestMessage);
+            RegisterMessageHandlers();
 
             LoadProfileData();
 
@@ -102,6 +97,21 @@ namespace ROSE_Login_Manager.ViewModel
                 _roseUpdater.RunPatcher();
                 GameFolderChanged = false;
             };
+        }
+
+
+
+        /// <summary>
+        ///     Registers message handlers for various types of messages using the WeakReferenceMessenger.
+        /// </summary>
+        private void RegisterMessageHandlers()
+        {
+            WeakReferenceMessenger.Default.Register<LaunchProfileMessage>(this, LaunchProfile);
+            WeakReferenceMessenger.Default.Register<DatabaseChangedMessage>(this, OnDatabaseChangedReceived);
+            WeakReferenceMessenger.Default.Register<ProgressMessage>(this, OnProgressMessageReceived);
+            WeakReferenceMessenger.Default.Register<ViewChangedMessage>(this, OnViewChangedMessage);
+            WeakReferenceMessenger.Default.Register<GameFolderChanged>(this, OnGameFolderChanged);
+            WeakReferenceMessenger.Default.Register<ProgressRequestMessage>(this, OnProgressRequestMessage);
         }
 
 
