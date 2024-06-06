@@ -107,7 +107,7 @@ namespace ROSE_Login_Manager.Model
         ///     Handles the ROSE install location by attempting to automatically find it.
         /// </summary>
         /// <param name="node">The XML node representing the settings.</param>
-        private void HandleRoseInstallLocation(XmlNode node)
+        private static void HandleRoseInstallLocation(XmlNode node)
         {
             // Attempt to automatically find ROSE install location - Thanks ZeroPoke :D
             if (string.IsNullOrEmpty(GlobalVariables.Instance.RoseGameFolder))
@@ -171,7 +171,7 @@ namespace ROSE_Login_Manager.Model
         /// <param name="key">The key of the setting.</param>
         /// <param name="value">The value of the setting.</param>
         /// <param name="parentNode">The XML node where the setting should be saved.</param>
-        private void SaveSetting(string key, string value, XmlNode parentNode)
+        private static void SaveSetting(string key, string value, XmlNode parentNode)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace ROSE_Login_Manager.Model
         /// <param name="key">The key of the setting.</param>
         /// <param name="value">The value of the setting.</param>
         /// <param name="parentNode">The XML node where the setting should be saved.</param>
-        public void SaveConfigSetting(string key, object value, XmlNode parentNode)
+        public static void SaveConfigSetting(string key, object value, XmlNode parentNode)
         {
             SaveSetting(key, value.ToString(), parentNode);
         }

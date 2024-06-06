@@ -55,8 +55,10 @@ namespace ROSE_Login_Manager.Resources.Util
         private void ScrollViewerLoaded(object sender, RoutedEventArgs e)
         {
             var property = AssociatedObject.GetType().GetProperty("ScrollInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-            var scrollInfo = (IScrollInfo)property.GetValue(AssociatedObject);
-            property.SetValue(AssociatedObject, new ScrollInfoAdapter(scrollInfo));
+            if (property?.GetValue(AssociatedObject) is IScrollInfo scrollInfo)
+            {
+                property?.SetValue(AssociatedObject, new ScrollInfoAdapter(scrollInfo));
+            }
         }
 
         private void OnDragOver(object sender, DragEventArgs e)
@@ -111,18 +113,13 @@ namespace ScrollViewer
     /// <summary>
     ///     ScrollInfoAdapter class adapts the IScrollInfo interface to provide smoother scrolling behavior.
     /// </summary>
-    public class ScrollInfoAdapter : UIElement, IScrollInfo
+    public class ScrollInfoAdapter(IScrollInfo child) : UIElement, IScrollInfo
     {
-        private IScrollInfo _child;
+        private readonly IScrollInfo _child = child;
         private double _computedVerticalOffset = 0;
         private double _computedHorizontalOffset = 0;
         internal const double _scrollLineDelta = 16.0;
         internal const double _mouseWheelDelta = 48.0;
-
-        public ScrollInfoAdapter(IScrollInfo child)
-        {
-            _child = child;
-        }
 
         public bool CanVerticallyScroll
         {
@@ -279,8 +276,10 @@ namespace ScrollViewer
         private void Animate(DependencyProperty property, double targetValue, int duration = 300)
         {
             // Make a smooth animation that starts and ends slowly
-            var keyFramesAnimation = new DoubleAnimationUsingKeyFrames();
-            keyFramesAnimation.Duration = TimeSpan.FromMilliseconds(duration);
+            var keyFramesAnimation = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = TimeSpan.FromMilliseconds(duration)
+            };
             keyFramesAnimation.KeyFrames.Add(
                 new EasingDoubleKeyFrame(
                     targetValue,
