@@ -1,25 +1,42 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Style for the navigation buttons (Image) -->
+    <Style x:Key="NavigationButtonImageStyle" TargetType="Image">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Width" Value="30"/>
+        <Setter Property="Margin" Value="5"/>
+    </Style>
+
+
+
+    <!-- Style for the navigation menu buttons (RadioButton) -->
     <Style x:Key="NavMenuButtonStyle" TargetType="RadioButton">
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,5,0,0"/>
         <Setter Property="Padding" Value="0,5,0,0"/>
+        
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
+                    <!-- Border for the button -->
                     <Border x:Name="Border"
                             Height="50"
                             Width="75"
                             BorderThickness="0"
                             HorizontalAlignment="Right"
                             CornerRadius="20 0 0 20">
+                        <!-- Background of the button -->
                         <Border.Background>
-                            <SolidColorBrush x:Name="BorderBackground"
-                                             Color="#1b1e23"/>
+                            <SolidColorBrush x:Name="BorderBackground" Color="#1b1e23"/>
                         </Border.Background>
 
                         <Grid>
+                            <!-- Indicator for the selected button -->
                             <Border x:Name="Indicator"
                                     Height="35"
                                     Width="4"
@@ -30,22 +47,22 @@
                                     Background="#FFFFFF"
                                     Visibility="Collapsed"
                                     Margin="15 0 0 0"/>
+                            <!-- Content presenter for the button content -->
                             <ContentPresenter/>
                         </Grid>
                     </Border>
 
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver"
-                                 Value="True">
-                            <Setter Property="Visibility"
-                                    TargetName="Indicator"
-                                    Value="Visible"/>
+                        <!-- Trigger for mouse hover -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Visibility" TargetName="Indicator" Value="Visible"/>
                         </Trigger>
-                        
-                        <EventTrigger RoutedEvent="Border.MouseEnter"
-                                      SourceName="Border">
+
+                        <!-- Event trigger for mouse enter -->
+                        <EventTrigger RoutedEvent="Border.MouseEnter" SourceName="Border">
                             <BeginStoryboard>
                                 <Storyboard>
+                                    <!-- Color animation for mouse enter -->
                                     <ColorAnimation Storyboard.TargetName="BorderBackground"
                                                     Storyboard.TargetProperty="Color"
                                                     From="#1b1e23"
@@ -55,10 +72,11 @@
                             </BeginStoryboard>
                         </EventTrigger>
 
-                        <EventTrigger RoutedEvent="Border.MouseLeave"
-                                      SourceName="Border">
+                        <!-- Event trigger for mouse leave -->
+                        <EventTrigger RoutedEvent="Border.MouseLeave" SourceName="Border">
                             <BeginStoryboard>
                                 <Storyboard>
+                                    <!-- Color animation for mouse leave -->
                                     <ColorAnimation Storyboard.TargetName="BorderBackground"
                                                     Storyboard.TargetProperty="Color"
                                                     From="#3E434A"
@@ -68,11 +86,10 @@
                             </BeginStoryboard>
                         </EventTrigger>
 
-                        <Trigger Property="IsChecked"
-                                 Value="True">
-                            <Setter Property="Background"
-                                    TargetName="Border"
-                                    Value="#2c313c" />
+                        <!-- Trigger for button checked state -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <!-- Change background color when checked -->
+                            <Setter Property="Background" TargetName="Border" Value="#2c313c" />
                         </Trigger>
                         
                     </ControlTemplate.Triggers>
@@ -80,4 +97,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
+    
+    
 </ResourceDictionary>

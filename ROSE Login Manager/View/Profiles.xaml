@@ -14,7 +14,7 @@
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0 0 30 0" Height="32">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0 0 30 0" Height="40">
             <Button Command="{Binding AddProfileCommand}" Style="{StaticResource CustomImageButtonStyle}">
                 <Image Source="../Resources/Images/account-multiple-plus.png"/>
             </Button>
