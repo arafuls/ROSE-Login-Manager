@@ -52,7 +52,9 @@ namespace ROSE_Login_Manager.ViewModel
             {
                 if (SetProperty(ref _displayEmailChecked, value))
                 {
-                    if (!value && MaskEmailChecked)
+                    ConfigurationManager.Instance.SaveConfigSetting("DisplayEmail", value, "GeneralSettings");
+
+                    if (!value)
                     {
                         MaskEmailChecked = false;
                     }
@@ -72,7 +74,7 @@ namespace ROSE_Login_Manager.ViewModel
                 {
                     ConfigurationManager.Instance.SaveConfigSetting("MaskEmail", value, "GeneralSettings");
 
-                    if (value && !DisplayEmailChecked)
+                    if (value)
                     {
                         DisplayEmailChecked = true;
                     }
@@ -258,6 +260,7 @@ namespace ROSE_Login_Manager.ViewModel
         /// <returns>The formatted value.</returns>
         private static object FormatTomlValue(object value)
         {
+#pragma warning disable IDE0066 // Convert switch statement to expression
             switch (value)
             {
                 case bool:
@@ -269,6 +272,7 @@ namespace ROSE_Login_Manager.ViewModel
                 default:
                     throw new ArgumentException("Unsupported value type.");
             }
+#pragma warning restore IDE0066 // Convert switch statement to expression
         }
 
 

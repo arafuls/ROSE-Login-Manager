@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="ROSE Online Login Manager" 
         Height="650" Width="1250" 
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:NavigationViewModel/>
@@ -32,8 +32,7 @@
                                         Command="{Binding HomeCommand}"
                                         IsChecked="{Binding IsHomeChecked, Mode=TwoWay}">
                         <Grid>
-                            <Image Source="../Resources/Images/home.png"
-                                   Style="{StaticResource ButtonImage_Style}"/>
+                            <Image Source="../Resources/Images/home.png" Style="{StaticResource NavigationButtonImageStyle}"/>
                         </Grid>
                     </util:NavMenuButton>
                     
@@ -43,8 +42,7 @@
                                         Command="{Binding ProfilesCommand}"
                                         IsChecked="{Binding IsProfilesChecked, Mode=TwoWay}">
                         <Grid>
-                            <Image Source="../Resources/Images/account-multiple.png"
-                                   Style="{StaticResource ButtonImage_Style}"/>
+                            <Image Source="../Resources/Images/account-multiple.png" Style="{StaticResource NavigationButtonImageStyle}"/>
                         </Grid>
                     </util:NavMenuButton>
                 </StackPanel>
@@ -57,8 +55,7 @@
                                         Command="{Binding SettingsCommand}"
                                         IsChecked="{Binding IsSettingsChecked, Mode=TwoWay}">
                         <Grid>
-                            <Image Source="../Resources/Images/cog.png"
-                                   Style="{StaticResource ButtonImage_Style}"/>
+                            <Image Source="../Resources/Images/cog.png" Style="{StaticResource NavigationButtonImageStyle}"/>
                         </Grid>
                     </util:NavMenuButton>
                 </StackPanel>
