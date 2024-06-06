@@ -35,16 +35,71 @@ namespace ROSE_Login_Manager.Resources.Util
     /// </summary>
     public class SmoothScrollViewerBehavior : Behavior<System.Windows.Controls.ScrollViewer>
     {
+        private const double AutoScrollMargin = 20.0;
+        private const double AutoScrollSpeed = 15.0;
+
         protected override void OnAttached()
         {
             base.OnAttached();
             AssociatedObject.Loaded += ScrollViewerLoaded;
+            AssociatedObject.PreviewDragOver += OnDragOver;
         }
 
-        private void ScrollViewerLoaded(object sender, System.Windows.RoutedEventArgs e)
+        protected override void OnDetaching()
+        {
+            base.OnDetaching();
+            AssociatedObject.Loaded -= ScrollViewerLoaded;
+            AssociatedObject.DragOver -= OnDragOver;
+        }
+
+        private void ScrollViewerLoaded(object sender, RoutedEventArgs e)
         {
             var property = AssociatedObject.GetType().GetProperty("ScrollInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-            property.SetValue(AssociatedObject, new ScrollInfoAdapter((IScrollInfo)property.GetValue(AssociatedObject)));
+            var scrollInfo = (IScrollInfo)property.GetValue(AssociatedObject);
+            property.SetValue(AssociatedObject, new ScrollInfoAdapter(scrollInfo));
+        }
+
+        private void OnDragOver(object sender, DragEventArgs e)
+        {
+            AutoScrollIfNeeded(e);
+        }
+
+        private void AutoScrollIfNeeded(DragEventArgs e)
+        {
+            // Get the position of the drag event relative to the scroll viewer
+            var position = e.GetPosition(AssociatedObject);
+
+            // Define the vertical range for triggering scrolling
+            double topThreshold = AutoScrollMargin;
+            double bottomThreshold = AssociatedObject.ActualHeight - AutoScrollMargin;
+
+            // Check if the drag position is within the vertical range
+            if (position.Y <= topThreshold)
+            {
+                ScrollUp();
+            }
+            else if (position.Y >= bottomThreshold)
+            {
+                ScrollDown();
+            }
+        }
+
+        private void ScrollUp()
+        {
+            var adapter = GetScrollInfoAdapter();
+            adapter?.SetVerticalOffset(adapter.VerticalOffset - AutoScrollSpeed);
+        }
+
+        private void ScrollDown()
+        {
+            var adapter = GetScrollInfoAdapter();
+            adapter?.SetVerticalOffset(adapter.VerticalOffset + AutoScrollSpeed);
+        }
+
+        private ScrollInfoAdapter GetScrollInfoAdapter()
+        {
+            var property = AssociatedObject.GetType().GetProperty("ScrollInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+            return property?.GetValue(AssociatedObject) as ScrollInfoAdapter;
         }
     }
 }
@@ -223,16 +278,14 @@ namespace ScrollViewer
         #region not exposed methods
         private void Animate(DependencyProperty property, double targetValue, int duration = 300)
         {
-            //make a smooth animation that starts and ends slowly
+            // Make a smooth animation that starts and ends slowly
             var keyFramesAnimation = new DoubleAnimationUsingKeyFrames();
             keyFramesAnimation.Duration = TimeSpan.FromMilliseconds(duration);
             keyFramesAnimation.KeyFrames.Add(
-                new SplineDoubleKeyFrame(
+                new EasingDoubleKeyFrame(
                     targetValue,
                     KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(duration)),
-                    new KeySpline(0.5, 0.0, 0.5, 1.0)
-                    )
-                );
+                    new QuadraticEase() { EasingMode = EasingMode.EaseInOut }));
 
             BeginAnimation(property, keyFramesAnimation);
         }
