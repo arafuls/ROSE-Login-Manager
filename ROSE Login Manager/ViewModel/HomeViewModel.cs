@@ -5,12 +5,14 @@ using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
+using ROSE_Login_Manager.View;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 
@@ -35,6 +37,8 @@ namespace ROSE_Login_Manager.ViewModel
             set => _gameFolderChanged = value;
         }
 
+        public bool BoolProgress => Progress == 100;
+
         private int _progress;
         public int Progress
         {
@@ -44,6 +48,7 @@ namespace ROSE_Login_Manager.ViewModel
                 if (SetProperty(ref _progress, value))
                 {
                     CurrentFileName = "Verify File Integrity";
+                    OnPropertyChanged(nameof(BoolProgress));
                 }
             }
         }
@@ -80,15 +85,19 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
+        public ICommand LaunchGameCommand { get; }
+
+
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="HomeViewModel"/> class.
         /// </summary>
         public HomeViewModel()
         {
             _db = new DatabaseManager();
+            LaunchGameCommand = new RelayCommand(LaunchGame);
 
             RegisterMessageHandlers();
-
             LoadProfileData();
 
             // Run the patcher if we are certain we are in the right location
@@ -170,6 +179,28 @@ namespace ROSE_Login_Manager.ViewModel
         private void OnDatabaseChangedReceived(object recipient, DatabaseChangedMessage message)
         {
             LoadProfileData();
+        }
+
+
+
+        /// <summary>
+        ///     Launches the ROSE Online game client.
+        /// </summary>
+        /// <param name="obj">An optional parameter passed by the command binding (not used in this method).</param>
+        private void LaunchGame(object obj)
+        {
+            if (GlobalVariables.Instance.RoseGameFolder == null ||
+                GlobalVariables.Instance.RoseGameFolder == string.Empty)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LaunchProfile",
+                    message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return;
+            }
+
+            new Thread(LoginThread).Start();
         }
 
 
@@ -322,6 +353,56 @@ namespace ROSE_Login_Manager.ViewModel
 #pragma warning restore IDE0059
 
                 startInfo.Arguments = string.Empty;
+            }
+        }
+
+
+        /// <summary>
+        ///     Thread method to launch the ROSE Online client.
+        /// </summary>
+        private static void LoginThread()
+        {
+            string arguments = $"--login --server connect.roseonlinegame.com";
+
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = Path.Combine(GlobalVariables.Instance.RoseGameFolder, "trose.exe"),
+                WorkingDirectory = GlobalVariables.Instance.RoseGameFolder,
+                Arguments = arguments,
+                WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
+            };
+
+            if (string.IsNullOrEmpty(startInfo.FileName))
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    message: "TRose.exe could not be found.\n\n" +
+                             "Confirm that the ROSE Online Folder Location is set correctly.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {   // Start the ROSE Online client process
+                Process.Start(startInfo);
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
+            {   // ERROR_FILE_NOT_FOUND
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    message: "trose.exe could not be found.\n\n" +
+                             $"Confirm that trose.exe exists within {startInfo.WorkingDirectory}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {   // Display a generic error message for other exceptions
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    message: ex.Message,
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
         }
 
