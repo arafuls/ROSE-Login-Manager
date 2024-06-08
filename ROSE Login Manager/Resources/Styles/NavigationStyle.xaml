@@ -19,17 +19,17 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,5,0,0"/>
         <Setter Property="Padding" Value="0,5,0,0"/>
-        
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <!-- Border for the button -->
                     <Border x:Name="Border"
-                            Height="50"
-                            Width="75"
-                            BorderThickness="0"
-                            HorizontalAlignment="Right"
-                            CornerRadius="20 0 0 20">
+                        Height="50"
+                        Width="75"
+                        BorderThickness="0"
+                        HorizontalAlignment="Right"
+                        CornerRadius="20 0 0 20">
                         <!-- Background of the button -->
                         <Border.Background>
                             <SolidColorBrush x:Name="BorderBackground" Color="#1b1e23"/>
@@ -38,17 +38,20 @@
                         <Grid>
                             <!-- Indicator for the selected button -->
                             <Border x:Name="Indicator"
-                                    Height="35"
-                                    Width="4"
-                                    CornerRadius="5"
-                                    Opacity=".3"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Center"
-                                    Background="#FFFFFF"
-                                    Visibility="Collapsed"
-                                    Margin="15 0 0 0"/>
+                                Height="35"
+                                Width="4"
+                                CornerRadius="5"
+                                Opacity=".3"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="#FFFFFF"
+                                Visibility="Collapsed"
+                                Margin="15 0 0 0"/>
                             <!-- Content presenter for the button content -->
-                            <ContentPresenter/>
+                            <ContentPresenter Content="{TemplateBinding Content}" 
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
 
@@ -64,10 +67,10 @@
                                 <Storyboard>
                                     <!-- Color animation for mouse enter -->
                                     <ColorAnimation Storyboard.TargetName="BorderBackground"
-                                                    Storyboard.TargetProperty="Color"
-                                                    From="#1b1e23"
-                                                    To="#3E434A"
-                                                    Duration="0:0:0.3"/>
+                                                Storyboard.TargetProperty="Color"
+                                                From="#1b1e23"
+                                                To="#3E434A"
+                                                Duration="0:0:0.3"/>
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
@@ -78,10 +81,10 @@
                                 <Storyboard>
                                     <!-- Color animation for mouse leave -->
                                     <ColorAnimation Storyboard.TargetName="BorderBackground"
-                                                    Storyboard.TargetProperty="Color"
-                                                    From="#3E434A"
-                                                    To="#1b1e23"
-                                                    Duration="0:0:0.3"/>
+                                                Storyboard.TargetProperty="Color"
+                                                From="#3E434A"
+                                                To="#1b1e23"
+                                                Duration="0:0:0.3"/>
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
@@ -91,13 +94,14 @@
                             <!-- Change background color when checked -->
                             <Setter Property="Background" TargetName="Border" Value="#2c313c" />
                         </Trigger>
-                        
+
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-    
-    
-    
+
+
+
+
 </ResourceDictionary>

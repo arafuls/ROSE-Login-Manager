@@ -48,6 +48,16 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+
+        <!-- Apply BitmapScalingMode to the Image -->
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Image Source="{Binding}" 
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 
@@ -95,6 +105,16 @@
                     </ControlTemplate.Triggers>
 
                 </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <!-- Apply BitmapScalingMode to the Image -->
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Image Source="{Binding}" 
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
             </Setter.Value>
         </Setter>
     </Style>

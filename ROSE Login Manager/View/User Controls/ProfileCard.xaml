@@ -27,7 +27,8 @@
                Margin="5"
                Source="../../Resources/Images/account.png" 
                VerticalAlignment="Center" 
-               HorizontalAlignment="Center"/>
+               HorizontalAlignment="Center"
+               RenderOptions.BitmapScalingMode="HighQuality"/>
 
         <!-- Profile Display Grid -->
         <Grid Name="ProfileDisplayGrid" Grid.Column="1">

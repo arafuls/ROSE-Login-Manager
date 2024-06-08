@@ -32,7 +32,9 @@
                                         Command="{Binding HomeCommand}"
                                         IsChecked="{Binding IsHomeChecked, Mode=TwoWay}">
                         <Grid>
-                            <Image Source="../Resources/Images/home.png" Style="{StaticResource NavigationButtonImageStyle}"/>
+                            <Image Source="../Resources/Images/home.png" 
+                                   Style="{StaticResource NavigationButtonImageStyle}"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Grid>
                     </util:NavMenuButton>
                     
@@ -42,7 +44,9 @@
                                         Command="{Binding ProfilesCommand}"
                                         IsChecked="{Binding IsProfilesChecked, Mode=TwoWay}">
                         <Grid>
-                            <Image Source="../Resources/Images/account-multiple.png" Style="{StaticResource NavigationButtonImageStyle}"/>
+                            <Image Source="../Resources/Images/account-multiple.png" 
+                                   Style="{StaticResource NavigationButtonImageStyle}" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Grid>
                     </util:NavMenuButton>
                 </StackPanel>
@@ -55,7 +59,9 @@
                                         Command="{Binding SettingsCommand}"
                                         IsChecked="{Binding IsSettingsChecked, Mode=TwoWay}">
                         <Grid>
-                            <Image Source="../Resources/Images/cog.png" Style="{StaticResource NavigationButtonImageStyle}"/>
+                            <Image Source="../Resources/Images/cog.png" 
+                                   Style="{StaticResource NavigationButtonImageStyle}"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Grid>
                     </util:NavMenuButton>
                 </StackPanel>
