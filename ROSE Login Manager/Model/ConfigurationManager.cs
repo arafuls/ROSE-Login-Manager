@@ -259,6 +259,7 @@ namespace ROSE_Login_Manager.Model
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
+            _doc.Save(_configFile);
         }
 
 
