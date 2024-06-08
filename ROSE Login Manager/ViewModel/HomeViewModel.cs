@@ -5,7 +5,6 @@ using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
-using ROSE_Login_Manager.View;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;

@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 
 
@@ -159,5 +160,28 @@ namespace ROSE_Login_Manager.View
 
             AllowProfileButton = nameIsValid && emailIsValid && passwordIsValid;
         }
+
+        private void ShowPasswordToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            // Update the image source
+            ShowPasswordImage.Source = new BitmapImage(new Uri("pack://application:,,,/ROSE Login Manager;component/Resources/Images/eye-outline.png"));
+
+            // Make the password visible
+            ProfilePasswordTextBoxVisible.Visibility = Visibility.Visible;
+            ProfilePasswordTextBox.Visibility = Visibility.Collapsed;
+            ProfilePasswordTextBoxVisible.Text = ProfilePasswordTextBox.Password;
+        }
+
+        private void ShowPasswordToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Update the image source
+            ShowPasswordImage.Source = new BitmapImage(new Uri("pack://application:,,,/ROSE Login Manager;component/Resources/Images/eye-off-outline.png"));
+
+            // Mask the password
+            ProfilePasswordTextBoxVisible.Visibility = Visibility.Collapsed;
+            ProfilePasswordTextBox.Visibility = Visibility.Visible;
+            ProfilePasswordTextBox.Password = ProfilePasswordTextBoxVisible.Text;
+        }
+
     }
 }

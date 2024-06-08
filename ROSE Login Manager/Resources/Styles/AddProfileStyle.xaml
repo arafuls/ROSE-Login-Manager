@@ -36,6 +36,15 @@
         <Setter Property="Foreground" Value="DarkGray"/>
         <Setter Property="Visibility" Value="Collapsed"/>
     </Style>
+    
+    <Style x:Key="BaseProfileLabelBoxStyle" TargetType="TextBox">
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="2,0,0,0"/>
+        <Setter Property="Foreground" Value="DarkGray"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
 
     <!-- Profile Name TextBlock Style -->
     <Style x:Key="ProfileNameLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseProfileLabelStyle}">
@@ -58,7 +67,7 @@
     </Style>
 
     <!-- Profile Password TextBlock Style -->
-    <Style x:Key="ProfilePasswordLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseProfileLabelStyle}">
+    <Style x:Key="ProfilePasswordBoxVisibleStyle" TargetType="TextBox" BasedOn="{StaticResource BaseProfileLabelBoxStyle}">
         <Style.Triggers>
             <DataTrigger Binding="{Binding Text, ElementName=ProfileEmailTextBox}" Value="">
                 <Setter Property="Visibility" Value="Visible"/>

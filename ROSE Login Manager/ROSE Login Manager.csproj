@@ -20,6 +20,8 @@
     <None Remove="Resources\Images\auto-fix.png" />
     <None Remove="Resources\Images\check-green.png" />
     <None Remove="Resources\Images\cog.png" />
+    <None Remove="Resources\Images\eye-off-outline.png" />
+    <None Remove="Resources\Images\eye-outline.png" />
     <None Remove="Resources\Images\home.png" />
     <None Remove="Resources\Images\magnify.png" />
     <None Remove="Resources\Images\Moldie.ico" />
@@ -57,6 +59,8 @@
     <Resource Include="Resources\Images\account.png" />
     <Resource Include="Resources\Images\check-green.png" />
     <Resource Include="Resources\Images\cog.png" />
+    <Resource Include="Resources\Images\eye-off-outline.png" />
+    <Resource Include="Resources\Images\eye-outline.png" />
     <Resource Include="Resources\Images\home.png" />
     <Resource Include="Resources\Images\magnify.png" />
     <Resource Include="Resources\Images\Moldie.ico" />
