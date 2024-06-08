@@ -50,6 +50,20 @@ namespace ROSE_Login_Manager.View
 
 
         /// <summary>
+        ///     Event handler for the Unloaded event of the UserControl.
+        ///     This method ensures that sensitive data in the password fields is cleared when the UserControl is unloaded.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ProfilePasswordTextBox.Password = string.Empty;
+            ProfilePasswordTextBoxVisible.Text = string.Empty;
+        }
+
+
+
+        /// <summary>
         ///     Attaches event handlers for text changed events of profile name, email, and password fields.
         /// </summary>
         private void AttachEventHandlers()
