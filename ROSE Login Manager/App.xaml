@@ -7,6 +7,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Generic Styling -->
                 <ResourceDictionary Source="Resources/Styles/ImageButtonStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ProgressBarStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ScrollbarStyle.xaml"/>
                 
                 <!-- View Styling -->
