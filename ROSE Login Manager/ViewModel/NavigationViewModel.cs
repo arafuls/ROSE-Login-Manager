@@ -136,7 +136,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (key.EndsWith("ViewModel"))
             {
-                key = string.Concat("Is", key.AsSpan(0, key.Length - "ViewModel".Length), "View");
+                key = string.Concat("Is", key.AsSpan(0, key.Length - "ViewModel".Length), "Checked");
             }
 
             if (!_buttonStates.TryGetValue(key, out var currentValue) || currentValue == value)
@@ -144,16 +144,21 @@ namespace ROSE_Login_Manager.ViewModel
                 return;
             }
 
+            // When setting a button to checked, uncheck all other buttons
             if (value)
             {
-                foreach (var k in _buttonStates.Keys)
+                foreach (var k in _buttonStates.Keys.ToList())
                 {
                     _buttonStates[k] = false;
                 }
             }
 
+            // Update the state of the selected button
             _buttonStates[key] = value;
-            OnPropertyChanged(key);
+            OnPropertyChanged(nameof(IsHomeChecked));
+            OnPropertyChanged(nameof(IsProfilesChecked));
+            OnPropertyChanged(nameof(IsAboutMeChecked));
+            OnPropertyChanged(nameof(IsSettingsChecked));
         }
     }
 }
