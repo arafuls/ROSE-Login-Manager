@@ -74,7 +74,7 @@
 
                     <TextBlock Text="{Binding CurrentFileName}" 
                         VerticalAlignment="Center" HorizontalAlignment="Center" 
-                        Foreground="Black" FontSize="12" FontFamily="pack://application:,,,/Resources/Fonts/#semplicita ombra" 
+                        Foreground="Black" FontSize="12" 
                         Background="Transparent" Grid.Column="0" Grid.ColumnSpan="1"/>
 
                     <!-- Add your button here -->

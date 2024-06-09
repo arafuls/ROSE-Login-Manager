@@ -54,6 +54,17 @@
 
 
                 <StackPanel VerticalAlignment="Bottom" Margin="0 0 0 26">
+                    <!-- About Me View Button -->
+                    <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
+                                        Command="{Binding AboutMeCommand}"
+                                        IsChecked="{Binding IsAboutMeChecked, Mode=TwoWay}">
+                        <Grid>
+                            <Image Source="../Resources/Images/information.png" 
+                                   Style="{StaticResource NavigationButtonImageStyle}"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Grid>
+                    </util:NavMenuButton>
+                    
                     <!-- Settings View Button -->
                     <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding SettingsCommand}"

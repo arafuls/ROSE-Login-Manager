@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="ROSE_Login_Manager.View.AboutMe"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
+             xmlns:local="clr-namespace:ROSE_Login_Manager.ViewModel" 
+             d:DataContext="{d:DesignInstance Type=local:AboutMeViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1025"
+             Style="{StaticResource View_Style}">
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Git Repo -->
+            <Button Style="{StaticResource LinkButtonStyle}"
+                    Click="Git_Button_Click" 
+                    Width="450" Height="60" Margin="0 2" Cursor="Hand" 
+                    Background="#0d1117" BorderThickness="0">
+                <Grid>
+                    <Image Margin="0 0 300 0" Source="../Resources/Images/Git.png" Height="50" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Label Margin="100 0 0 0" Content="GitHub Repository" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="WhiteSmoke" />
+                </Grid>
+            </Button>
+
+            <!-- Forum Post -->
+            <Button Style="{StaticResource LinkButtonStyle}"
+                    Click="ROSE_Button_Click"
+                    Width="450" Height="60" Margin="0 2" Cursor="Hand" BorderThickness="0" >
+                <Grid>
+                    <Image Source="../Resources/Images/ROSE-Header.png"/>
+                    <Border Height="60" Width="450">
+                        <Border.Background>
+                            <StaticResource ResourceKey="LinkButtonGradientBackground"/>
+                        </Border.Background>
+                    </Border>
+                    <Image Margin="0 0 300 0" Source="../Resources/Images/Rose_Online_Logo_Small.png" Height="50" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Label Margin="100 0 0 0" Content="ROSE Forum Post" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="WhiteSmoke" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" />
+                </Grid>
+            </Button>
+
+            <!-- BMC -->
+            <Button Style="{StaticResource LinkButtonStyle}"
+                    Click="BMC_Button_Click" 
+                    Width="450" Height="60" Margin="0 2" Cursor="Hand" 
+                    BorderThickness="0" Background="#ffdd00" >
+                <Grid>
+                    <Image Margin="0 0 300 0" Source="../Resources/Images/bmc-brand-icon.png" Height="50" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <Label Content="Buy Me a Coffee" Margin="100 0 0 0" FontSize="24" FontWeight="ExtraBold" FontFamily="Segoe Script" HorizontalAlignment="Center" VerticalAlignment="Center" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" />
+                </Grid>
+            </Button>
+        </StackPanel>
+
+        <Label Content="Version 1.1.0     -     Discord: bonehead8719" Foreground="WhiteSmoke" Margin="0 0 0 5" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+    </Grid>
+</UserControl>

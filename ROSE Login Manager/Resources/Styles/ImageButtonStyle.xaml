@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:util="clr-namespace:ROSE_Login_Manager.Resources.Util">
 
+    
+    
     <Style x:Key="CustomImageButtonStyle" TargetType="Button">
         <!-- Hide Background and Border -->
         <Setter Property="Background" Value="Transparent"/>
@@ -60,6 +62,7 @@
         </Setter>
     </Style>
 
+    
 
     <Style x:Key="CustomImageToggleButtonStyle" TargetType="ToggleButton">
         <!-- Hide Background and Border -->
@@ -118,4 +121,35 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    
+    
+    <!-- Button Style -->
+    <Style x:Key="LinkButtonStyle" TargetType="Button">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}" />
+                        <Border x:Name="HoverOverlay" Background="White" Opacity="0" />
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.3" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+    <!-- Gradient Background -->
+    <LinearGradientBrush x:Key="LinkButtonGradientBackground" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#80000000" Offset="1.0"/>
+        <GradientStop Color="#00000000" Offset="0.2"/>
+    </LinearGradientBrush>
 </ResourceDictionary>
