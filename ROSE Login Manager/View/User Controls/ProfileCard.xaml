@@ -19,7 +19,19 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.ColumnSpan="2" Background="Gray" CornerRadius="25 2 25 2"/>
+        <Border Grid.ColumnSpan="2" CornerRadius="25 2 25 2">
+            <Border.Background>
+                <ImageBrush Stretch="Fill" ImageSource="../../Resources/Images/ROSE-Header.png"/>
+            </Border.Background>
+        </Border>
+        <Border Grid.ColumnSpan="2" CornerRadius="25 2 25 2">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="2,0" EndPoint="0,1">
+                    <GradientStop Offset="-1" Color="Transparent"/>
+                    <GradientStop Offset="1" Color="#C0000000"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
 
         <!-- Profile Avatar -->
         <Image Name="ProfileAvatar" 
@@ -51,12 +63,21 @@
                 </Grid.RowDefinitions>
 
                 <!-- Profile Name -->
-                <TextBlock Name="ProfileNameTextBlock" 
-                           Grid.Row="0" Grid.Column="0" 
-                           VerticalAlignment="Bottom"
-                           Text="{Binding ProfileName}"
-                           FontSize="14" FontFamily="pack://application:,,,/Resources/Fonts/#League Spartan" 
-                           Foreground="Black"/>
+                <Border>
+                    <TextBlock Name="ProfileNameTextBlock" 
+               Grid.Row="0" Grid.Column="0" 
+               VerticalAlignment="Bottom"
+               Text="{Binding ProfileName}"
+               FontSize="14" FontFamily="pack://application:,,,/Resources/Fonts/#League Spartan">
+                        <TextBlock.Foreground>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Color="#fde357" Offset="0.0" />
+                                <GradientStop Color="#d45b26" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                </Border>
+
 
                 <!-- Profile Email -->
                 <TextBlock Name="ProfileEmailTextBlock" 
@@ -64,7 +85,7 @@
                            Text="{Binding CosmeticEmail}"
                            TextTrimming="CharacterEllipsis" 
                            FontSize="12" 
-                           Foreground="Black">
+                           Foreground="DarkGray">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Visible"/>
