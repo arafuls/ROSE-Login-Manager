@@ -321,8 +321,8 @@ namespace ROSE_Login_Manager.ViewModel
             }
 
             try
-            {   // Start the ROSE Online client process
-                Process.Start(startInfo);
+            {
+                ProcessManager.Instance.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
@@ -383,8 +383,8 @@ namespace ROSE_Login_Manager.ViewModel
             }
 
             try
-            {   // Start the ROSE Online client process
-                Process.Start(startInfo);
+            {
+                ProcessManager.Instance.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND

@@ -345,6 +345,37 @@ namespace ROSE_Login_Manager.Resources.Util
 
 
         /// <summary>
+        ///     Updates the ProfileStatus of a user profile based on the provided email.
+        /// </summary>
+        /// <param name="email">The email of the profile to update.</param>
+        /// <param name="status">The new status of the profile.</param>
+        /// <returns>
+        ///     True if the profile status was updated successfully; otherwise, false.
+        /// </returns>
+        internal bool UpdateProfileStatus(string email, bool status)
+        {
+            using SqliteCommand command = _db.CreateCommand();
+            command.CommandText = @"
+                UPDATE Profiles 
+                SET ProfileStatus = @ProfileStatus
+                WHERE ProfileEmail = @ProfileEmail
+            ";
+
+            command.Parameters.AddWithValue("@ProfileStatus", status);
+            command.Parameters.AddWithValue("@ProfileEmail", email);
+
+            if (ExecuteNonQuery(command))
+            {
+                WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        /// <summary>
         ///     Deletes a user profile from the database based on the provided email.
         /// </summary>
         /// <param name="profileEmail">The email of the profile to delete.</param>
@@ -356,7 +387,6 @@ namespace ROSE_Login_Manager.Resources.Util
         ///     It sends a <see cref="DatabaseChangedMessage"/> using the WeakReferenceMessenger
         ///     if the operation is successful to inform ViewModels that use profile data.
         /// </remarks>
-
         internal bool DeleteProfile(string profileEmail)
         {
             using SqliteCommand command = _db.CreateCommand();
@@ -473,6 +503,44 @@ namespace ROSE_Login_Manager.Resources.Util
             {
                 _db.Dispose();
             }
+        }
+
+
+
+        /// <summary>
+        ///     Clears the status of all user profiles in the database, setting their ProfileStatus to false.
+        /// </summary>
+        /// <remarks>
+        ///     This method opens a transaction to ensure atomicity and consistency when updating profile statuses.
+        ///     It then executes an SQL command to update all profiles' statuses to false.
+        ///     Finally, it commits the transaction to save the changes permanently.
+        ///     If any error occurs during the process, it rolls back the transaction to maintain data integrity.
+        /// </remarks>
+        internal void ClearAllProfileStatus()
+        {
+            _db.Open();
+            using (SqliteTransaction transaction = _db.BeginTransaction())
+            {
+                try
+                {
+                    using (SqliteCommand command = _db.CreateCommand())
+                    {
+                        command.CommandText = "UPDATE Profiles SET ProfileStatus = 0";
+                        command.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    new DialogService().ShowMessageBox(
+                        title: $"{GlobalVariables.APP_NAME} - DatabaseManager::ClearAllProfileStatus",
+                        message: $"SQLite Error {ex.Message}: '{ex.Message}'",
+                        button: MessageBoxButton.OK,
+                        icon: MessageBoxImage.Error);
+                    transaction.Rollback();
+                }
+            }
+            _db.Close();
         }
 
 
