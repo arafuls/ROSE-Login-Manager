@@ -60,6 +60,7 @@ namespace ROSE_Login_Manager.Model
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("RoseGameFolder", GetConfigSetting("RoseGameFolder", generalSettingsNode, "")));
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("DisplayEmail", bool.Parse(GetConfigSetting("DisplayEmail", generalSettingsNode, true))));
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("MaskEmail", bool.Parse(GetConfigSetting("MaskEmail", generalSettingsNode, false))));
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("LaunchClientBehind", bool.Parse(GetConfigSetting("LaunchClientBehind", generalSettingsNode, false))));
                 HandleRoseInstallLocation(generalSettingsNode);
 
                 XmlNode? gameSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/GameSettings");
@@ -144,6 +145,7 @@ namespace ROSE_Login_Manager.Model
                 SaveConfigSetting("RoseGameFolder", "", generalSettings);
                 SaveConfigSetting("DisplayEmail", "False", generalSettings);
                 SaveConfigSetting("MaskEmail", "False", generalSettings);
+                SaveConfigSetting("LaunchClientBehind", "False", generalSettings);
                 HandleRoseInstallLocation(generalSettings);
 
                 XmlElement gameSettings = _doc.CreateElement("GameSettings");
@@ -259,6 +261,7 @@ namespace ROSE_Login_Manager.Model
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
             }
+            _doc.Save(_configFile);
         }
 
 

@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:util="clr-namespace:ROSE_Login_Manager.Resources.Util">
 
+    
+    
     <Style x:Key="CustomImageButtonStyle" TargetType="Button">
         <!-- Hide Background and Border -->
         <Setter Property="Background" Value="Transparent"/>
@@ -48,5 +50,106 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+
+        <!-- Apply BitmapScalingMode to the Image -->
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Image Source="{Binding}" 
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+
+    
+
+    <Style x:Key="CustomImageToggleButtonStyle" TargetType="ToggleButton">
+        <!-- Hide Background and Border -->
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+
+        <!-- Shrink Image OnPress Effect -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+
+                    <Border x:Name="border" RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Triggers -->
+                    <ControlTemplate.Triggers>
+
+                        <!-- Shrink Effect -->
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="False">
+                            <Setter TargetName="border" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+
+                        <!-- State Behavior -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="Gray"/>
+                            <Setter Property="Foreground" Value="LightGray"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <!-- Apply BitmapScalingMode to the Image -->
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Image Source="{Binding}" 
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+    <!-- Button Style -->
+    <Style x:Key="LinkButtonStyle" TargetType="Button">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}" />
+                        <Border x:Name="HoverOverlay" Background="White" Opacity="0" />
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.3" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+    
+    <!-- Gradient Background -->
+    <LinearGradientBrush x:Key="LinkButtonGradientBackground" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#80000000" Offset="1.0"/>
+        <GradientStop Color="#00000000" Offset="0.2"/>
+    </LinearGradientBrush>
 </ResourceDictionary>

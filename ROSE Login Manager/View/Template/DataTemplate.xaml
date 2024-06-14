@@ -18,6 +18,10 @@
         <View:EditProfile/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type ViewModel:AboutMeViewModel}">
+        <View:AboutMe/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type ViewModel:SettingsViewModel}">
         <View:Settings/>
     </DataTemplate>

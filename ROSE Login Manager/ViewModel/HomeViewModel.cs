@@ -5,7 +5,6 @@ using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
-using ROSE_Login_Manager.View;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -322,8 +321,8 @@ namespace ROSE_Login_Manager.ViewModel
             }
 
             try
-            {   // Start the ROSE Online client process
-                Process.Start(startInfo);
+            {
+                ProcessManager.Instance.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
@@ -384,8 +383,8 @@ namespace ROSE_Login_Manager.ViewModel
             }
 
             try
-            {   // Start the ROSE Online client process
-                Process.Start(startInfo);
+            {
+                ProcessManager.Instance.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND

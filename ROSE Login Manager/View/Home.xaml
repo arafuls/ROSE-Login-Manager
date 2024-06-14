@@ -66,18 +66,16 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="100"/>
-                        <!-- Column for the button -->
                     </Grid.ColumnDefinitions>
 
                     <ProgressBar 
-                Minimum="0" Maximum="100" Value="{Binding Progress}"
-                Height="30" Margin="0 10" Grid.Column="0" Grid.ColumnSpan="1" />
-                    <!-- Set Grid.ColumnSpan to 2 -->
+                        Minimum="0" Maximum="100" Value="{Binding Progress}"
+                        Height="30" Margin="0 10" Grid.Column="0" Grid.ColumnSpan="1"/>
 
                     <TextBlock Text="{Binding CurrentFileName}" 
-                   VerticalAlignment="Center" HorizontalAlignment="Center" 
-                   Foreground="Black" FontSize="12" FontFamily="pack://application:,,,/Resources/Fonts/#semplicita ombra" 
-                   Background="Transparent" Grid.Column="0" Grid.ColumnSpan="1"/>
+                        VerticalAlignment="Center" HorizontalAlignment="Center" 
+                        Foreground="Black" FontSize="12" 
+                        Background="Transparent" Grid.Column="0" Grid.ColumnSpan="1"/>
 
                     <!-- Add your button here -->
                     <Button Name="GameClientLaunch" 

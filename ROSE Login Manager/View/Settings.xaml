@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
-             xmlns:local="clr-namespace:ROSE_Login_Manager.ViewModel" d:DataContext="{d:DesignInstance Type=local:SettingsViewModel}"
+             xmlns:local="clr-namespace:ROSE_Login_Manager.ViewModel" 
+             d:DataContext="{d:DesignInstance Type=local:SettingsViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1025"
              Style="{StaticResource View_Style}">
@@ -56,13 +57,13 @@
                     <Label Content="General Settings" Foreground="WhiteSmoke" FontWeight="Bold" Margin="24 10 0 -5" Grid.Row="0"/>
 
                     <!-- Display Email Settings StackPanel -->
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 0" Width="300" Grid.Row="1">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 10" Width="300" Grid.Row="1">
 
-                        <!-- Root Checkbox -->
-                        <CheckBox Content="Display Emails" VerticalContentAlignment="Center" IsChecked="{Binding DisplayEmailChecked}" Margin="0 3" Foreground="WhiteSmoke"/>
-
-                        <!-- Child Checkboxes -->
+                        <!-- Email Display Settings -->
+                        <CheckBox Content="Display Emails" VerticalContentAlignment="Center" IsChecked="{Binding DisplayEmailChecked}" Margin="0" Foreground="WhiteSmoke"/>
                         <CheckBox Content="Mask Emails" VerticalContentAlignment="Center" IsChecked="{Binding MaskEmailChecked}" Margin="20 0 0 0" Foreground="WhiteSmoke"/>
+
+                        <CheckBox Content="Launch Client Behind" VerticalContentAlignment="Center" IsChecked="{Binding LaunchClientBehindChecked}" Margin="0 10 0 0" Foreground="WhiteSmoke"/>
                     </StackPanel>
                 </Grid>
 

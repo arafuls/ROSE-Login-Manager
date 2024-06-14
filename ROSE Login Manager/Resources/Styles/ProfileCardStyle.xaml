@@ -13,22 +13,34 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border" Background="#e6912a" CornerRadius="20 1 20 1"
-                        RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="border" CornerRadius="20 1 20 1" RenderTransformOrigin="0.5,0.5">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Color="#fde357" Offset="0.0" />
+                                <GradientStop Color="#d45b26" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
                         <Border.RenderTransform>
                             <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
                         </Border.RenderTransform>
                         <ContentPresenter Content="{TemplateBinding Content}" 
-                                      HorizontalAlignment="Center" 
-                                      VerticalAlignment="Center"/>
+                                  HorizontalAlignment="Center" 
+                                  VerticalAlignment="Center"/>
                     </Border>
-                    
+
                     <!-- Triggers -->
                     <ControlTemplate.Triggers>
-                        
+
                         <!-- Hover Effect -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#fbdb52"/>
+                            <Setter TargetName="border" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                        <GradientStop Color="#e65100 " Offset="0.0" />
+                                        <GradientStop Color="#ef6c00" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
 
                         <!-- Shrink Effect -->
@@ -46,7 +58,7 @@
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
-                        
+
                         <!-- State Behavior -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Background" Value="Gray"/>
@@ -65,14 +77,19 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border" Background="#e6912a" CornerRadius="15"
-                    RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="border" CornerRadius="20 1 20 1" RenderTransformOrigin="0.5,0.5">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Color="#fde357" Offset="0.0" />
+                                <GradientStop Color="#d45b26" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
                         <Border.RenderTransform>
                             <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
                         </Border.RenderTransform>
                         <ContentPresenter Content="{TemplateBinding Content}" 
-                                  HorizontalAlignment="Center" 
-                                  VerticalAlignment="Center"/>
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center"/>
                     </Border>
 
                     <!-- Triggers -->
@@ -80,7 +97,14 @@
 
                         <!-- Hover Effect -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#fbdb52"/>
+                            <Setter TargetName="border" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0.25,0" EndPoint="0.75,1">
+                                        <GradientStop Color="#e65100 " Offset="0.0" />
+                                        <GradientStop Color="#ef6c00" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
 
                         <!-- Shrink Effect -->

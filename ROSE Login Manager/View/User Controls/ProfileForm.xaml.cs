@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 
 
@@ -44,6 +45,20 @@ namespace ROSE_Login_Manager.View
             Loaded += (s, e) => ProfileNameTextBox.Focus();
 
             WeakReferenceMessenger.Default.Register<ResetPasswordFieldMessage>(this, ResetPasswordField);
+        }
+
+
+
+        /// <summary>
+        ///     Event handler for the Unloaded event of the UserControl.
+        ///     This method ensures that sensitive data in the password fields is cleared when the UserControl is unloaded.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ProfilePasswordTextBox.Password = string.Empty;
+            ProfilePasswordTextBoxVisible.Text = string.Empty;
         }
 
 
@@ -159,5 +174,28 @@ namespace ROSE_Login_Manager.View
 
             AllowProfileButton = nameIsValid && emailIsValid && passwordIsValid;
         }
+
+        private void ShowPasswordToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            // Update the image source
+            ShowPasswordImage.Source = new BitmapImage(new Uri("pack://application:,,,/ROSE Login Manager;component/Resources/Images/eye-outline.png"));
+
+            // Make the password visible
+            ProfilePasswordTextBoxVisible.Visibility = Visibility.Visible;
+            ProfilePasswordTextBox.Visibility = Visibility.Collapsed;
+            ProfilePasswordTextBoxVisible.Text = ProfilePasswordTextBox.Password;
+        }
+
+        private void ShowPasswordToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Update the image source
+            ShowPasswordImage.Source = new BitmapImage(new Uri("pack://application:,,,/ROSE Login Manager;component/Resources/Images/eye-off-outline.png"));
+
+            // Mask the password
+            ProfilePasswordTextBoxVisible.Visibility = Visibility.Collapsed;
+            ProfilePasswordTextBox.Visibility = Visibility.Visible;
+            ProfilePasswordTextBox.Password = ProfilePasswordTextBoxVisible.Text;
+        }
+
     }
 }

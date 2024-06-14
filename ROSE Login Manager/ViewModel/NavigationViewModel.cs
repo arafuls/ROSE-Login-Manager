@@ -14,9 +14,17 @@ namespace ROSE_Login_Manager.ViewModel
     internal class NavigationViewModel : ObservableObject
     {
         private readonly Dictionary<string, object> _viewCache;
+        private readonly Dictionary<string, bool> _buttonStates = new()
+        {
+            { nameof(IsHomeChecked), true },
+            { nameof(IsProfilesChecked), false },
+            { nameof(IsAboutMeChecked), false },
+            { nameof(IsSettingsChecked), false }
+        };
 
 
 
+        #region Accessors
         /// <summary>
         ///     Gets or sets the current view to be displayed in the application.
         /// </summary>
@@ -29,78 +37,34 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
-        /// <summary>
-        ///     Gets or sets a value indicating whether the "Home" button is checked.
-        /// </summary>
-        private bool _isHomeChecked = true;
         public bool IsHomeChecked
         {
-            get => _isHomeChecked;
-            set
-            {
-                if (_isHomeChecked != value)
-                {
-                    _isHomeChecked = value;
-                    if (value)
-                    {
-                        IsProfilesChecked = false;
-                        IsSettingsChecked = false;
-                    }
-                    OnPropertyChanged(nameof(IsHomeChecked));
-                }
-            }
+            get => _buttonStates[nameof(IsHomeChecked)];
+            set => SetCheckedState(nameof(IsHomeChecked), value);
         }
 
-
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether the "Profiles" button is checked.
-        /// </summary>
-        private bool _isProfilesChecked;
         public bool IsProfilesChecked
         {
-            get => _isProfilesChecked;
-            set
-            {
-                if (_isProfilesChecked != value)
-                {
-                    _isProfilesChecked = value;
-                    if (value)
-                    {
-                        IsHomeChecked = false;
-                        IsSettingsChecked = false;
-                    }
-                    OnPropertyChanged(nameof(IsProfilesChecked));
-                }
-            }
+            get => _buttonStates[nameof(IsProfilesChecked)];
+            set => SetCheckedState(nameof(IsProfilesChecked), value);
         }
 
+        public bool IsAboutMeChecked
+        {
+            get => _buttonStates[nameof(IsAboutMeChecked)];
+            set => SetCheckedState(nameof(IsAboutMeChecked), value);
+        }
 
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether the "Settings" button is checked.
-        /// </summary>
-        private bool _isSettingsChecked;
         public bool IsSettingsChecked
         {
-            get => _isSettingsChecked;
-            set
-            {
-                if (_isSettingsChecked != value)
-                {
-                    _isSettingsChecked = value;
-                    if (value)
-                    {
-                        IsHomeChecked = false;
-                        IsProfilesChecked = false;
-                    }
-                    OnPropertyChanged(nameof(IsSettingsChecked));
-                }
-            }
+            get => _buttonStates[nameof(IsSettingsChecked)];
+            set => SetCheckedState(nameof(IsSettingsChecked), value);
         }
+        #endregion Accessors
 
 
 
+        #region ICommand
         public ICommand HomeCommand { get; }
         private void Home(object obj) => NavigateToView<HomeViewModel>();
 
@@ -111,8 +75,14 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
+        public ICommand AboutMeCommand { get; }
+        private void AboutMe(object obj) => NavigateToView<AboutMeViewModel>();
+
+
+
         public ICommand SettingsCommand { get; }
         private void Settings(object obj) => NavigateToView<SettingsViewModel>();
+        #endregion
 
 
 
@@ -125,6 +95,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             HomeCommand = new RelayCommand(Home);
             ProfilesCommand = new RelayCommand(Profiles);
+            AboutMeCommand = new RelayCommand(AboutMe);
             SettingsCommand = new RelayCommand(Settings);
 
             NavigateToView<HomeViewModel>();
@@ -148,20 +119,46 @@ namespace ROSE_Login_Manager.ViewModel
 
             // Update the checked state of the corresponding navigation button
             CurrentView = value;
-            switch (typeName)
-            {
-                case nameof(HomeViewModel):
-                    IsHomeChecked = true;
-                    break;
-                case nameof(ProfilesViewModel):
-                    IsProfilesChecked = true;
-                    break;
-                case nameof(SettingsViewModel):
-                    IsSettingsChecked = true;
-                    break;
-            }
+            SetCheckedState($"Is{typeName}Checked", true);
 
             WeakReferenceMessenger.Default.Send(new ViewChangedMessage(typeName));
+        }
+
+
+
+        /// <summary>
+        ///     Updates the checked state of a button. If the key corresponds to a ViewModel,
+        ///     it is transformed to the corresponding View key before updating.
+        /// </summary>
+        /// <param name="key">The key representing the button state.</param>
+        /// <param name="value">The new checked state value.</param>
+        private void SetCheckedState(string key, bool value)
+        {
+            if (key.EndsWith("ViewModel"))
+            {
+                key = string.Concat("Is", key.AsSpan(0, key.Length - "ViewModel".Length), "Checked");
+            }
+
+            if (!_buttonStates.TryGetValue(key, out var currentValue) || currentValue == value)
+            {
+                return;
+            }
+
+            // When setting a button to checked, uncheck all other buttons
+            if (value)
+            {
+                foreach (var k in _buttonStates.Keys.ToList())
+                {
+                    _buttonStates[k] = false;
+                }
+            }
+
+            // Update the state of the selected button
+            _buttonStates[key] = value;
+            OnPropertyChanged(nameof(IsHomeChecked));
+            OnPropertyChanged(nameof(IsProfilesChecked));
+            OnPropertyChanged(nameof(IsAboutMeChecked));
+            OnPropertyChanged(nameof(IsSettingsChecked));
         }
     }
 }
