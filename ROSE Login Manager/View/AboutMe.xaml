@@ -13,8 +13,8 @@
             <!-- Git Repo -->
             <Button Style="{StaticResource LinkButtonStyle}"
                     Click="Git_Button_Click" 
-                    Width="450" Height="60" Margin="0 2" Cursor="Hand" 
-                    Background="#0d1117" BorderThickness="0">
+                    Width="450" Height="60" Cursor="Hand" 
+                    Background="#0d1117" BorderThickness="0" Margin="0 25">
                 <Grid>
                     <Image Margin="0 0 300 0" Source="../Resources/Images/Git.png" Height="50" RenderOptions.BitmapScalingMode="HighQuality" />
                     <Label Margin="100 0 0 0" Content="GitHub Repository" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="WhiteSmoke" />
@@ -24,7 +24,7 @@
             <!-- Forum Post -->
             <Button Style="{StaticResource LinkButtonStyle}"
                     Click="ROSE_Button_Click"
-                    Width="450" Height="60" Margin="0 2" Cursor="Hand" BorderThickness="0" >
+                    Width="450" Height="60" Cursor="Hand" BorderThickness="0" Margin="0 25">
                 <Grid>
                     <Image Source="../Resources/Images/ROSE-Header.png"/>
                     <Border Height="60" Width="450">
@@ -40,8 +40,8 @@
             <!-- BMC -->
             <Button Style="{StaticResource LinkButtonStyle}"
                     Click="BMC_Button_Click" 
-                    Width="450" Height="60" Margin="0 2" Cursor="Hand" 
-                    BorderThickness="0" Background="#ffdd00" >
+                    Width="450" Height="60" Cursor="Hand" 
+                    BorderThickness="0" Background="#ffdd00" Margin="0 25">
                 <Grid>
                     <Image Margin="0 0 300 0" Source="../Resources/Images/bmc-brand-icon.png" Height="50" RenderOptions.BitmapScalingMode="HighQuality" />
                     <Label Content="Buy Me a Coffee" Margin="100 0 0 0" FontSize="24" FontWeight="ExtraBold" FontFamily="Segoe Script" HorizontalAlignment="Center" VerticalAlignment="Center" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" />
