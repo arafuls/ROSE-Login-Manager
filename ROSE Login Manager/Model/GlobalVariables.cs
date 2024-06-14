@@ -39,6 +39,13 @@ namespace ROSE_Login_Manager.Model
             set => SetProperty(ref _maskEmail, value);
         }
 
+        private bool _launchClientBehind;
+        public bool LaunchClientBehind
+        {
+            get => _launchClientBehind;
+            set => SetProperty(ref _launchClientBehind, value);
+        }
+
         private bool _skipPlanetCutscene;
         public bool SkipPlanetCutscene
         {

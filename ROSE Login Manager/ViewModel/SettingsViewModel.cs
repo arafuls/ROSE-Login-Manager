@@ -84,6 +84,19 @@ namespace ROSE_Login_Manager.ViewModel
             }
         }
 
+        private bool _launchClientBehindChecked;
+        public bool LaunchClientBehindChecked
+        {
+            get => _launchClientBehindChecked;
+            set
+            {
+                if (SetProperty(ref _launchClientBehindChecked, value))
+                {
+                    ConfigurationManager.Instance.SaveConfigSetting("LaunchClientBehind", value, "GeneralSettings");
+                }
+            }
+        }
+
         private bool _skipPlanetCutscene;
         public bool SkipPlanetCutscene
         {
@@ -149,6 +162,8 @@ namespace ROSE_Login_Manager.ViewModel
 
             _displayEmailChecked = GlobalVariables.Instance.DisplayEmail;
             _maskEmailChecked = GlobalVariables.Instance.MaskEmail;
+            _launchClientBehindChecked = GlobalVariables.Instance.LaunchClientBehind;
+
             _skipPlanetCutscene = GlobalVariables.Instance.SkipPlanetCutscene;
             _selectedLoginScreen = GlobalVariables.Instance.LoginScreen;
         }
