@@ -3,6 +3,7 @@ using ROSE_Login_Manager.Resources.Util;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
@@ -265,7 +266,6 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                // Handle the exception using DialogService
                 new DialogService().ShowMessageBox(
                     title: $"{GlobalVariables.APP_NAME} - MoveToBackground Error",
                     message: $"Failed to move process to background: {ex.Message}",
@@ -327,7 +327,11 @@ namespace ROSE_Login_Manager.Services
             }
             else
             {
-                Console.WriteLine($"Process {process.ProcessName} does not have a main window handle.");
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Process Manager Error",
+                    message: $"Process {process.ProcessName} does not have a main window handle.",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
         }
         #endregion

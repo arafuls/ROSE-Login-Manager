@@ -3,6 +3,7 @@ using ROSE_Login_Manager.Services.Memory_Scanner;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 
 
 
@@ -100,16 +101,49 @@ namespace ROSE_Login_Manager.Services
         /// <returns><see langword="true"/> if the character name is successfully retrieved; otherwise, <see langword="false"/>.</returns>
         private bool GetCharacterName()
         {
-            const int bufferSize = 16; // Adjust as needed
+            const int bufferSize = 17; // Adjust as needed
             byte[] buffer = new byte[bufferSize];
 
-            if (ReadProcessMemory(_process.Handle, CHAR_NAME_ADDRESS, buffer, buffer.Length, out int bytesRead) && bytesRead > 0)
+            try
             {
-                string characterName = Encoding.ASCII.GetString(buffer).TrimEnd('\0');
-                _characterInfo.CharacterName = characterName;
-                return true;
+                if (_process == null || _process.HasExited)
+                {
+                    return false;
+                }
+
+                if (ReadProcessMemory(_process.Handle, CHAR_NAME_ADDRESS, buffer, buffer.Length, out int bytesRead) && bytesRead > 0)
+                {
+                    string characterName = Encoding.ASCII.GetString(buffer).TrimEnd('\0');
+                    _characterInfo.CharacterName = characterName;
+                    return true;
+                }
+                else
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    new DialogService().ShowMessageBox(
+                        title: $"{GlobalVariables.APP_NAME} - Character Name Address Error",
+                        message: $"Failed to read process memory. Error code: {error}",
+                        button: MessageBoxButton.OK,
+                        icon: MessageBoxImage.Error);
+                }
             }
-            int error = Marshal.GetLastWin32Error();
+            catch (InvalidOperationException ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Character Name Address Error",
+                    message: $"Error accessing process {_process.Id}: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Character Name Address Error",
+                    message: $"Error in GetCharacterName: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
+
             return false;
         }
 
