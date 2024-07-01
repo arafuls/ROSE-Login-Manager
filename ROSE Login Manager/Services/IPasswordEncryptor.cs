@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using ROSE_Login_Manager.Model;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
+using System.Windows;
 
 
 
@@ -36,29 +38,49 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The encrypted bytes representing the password.</returns>
         public byte[] Encrypt(SecureString password, byte[] iv)
         {
-            byte[] encrypted;
-
-            // Create a new instance of the AES algorithm.
-            using (Aes aes = Aes.Create())
+            try
             {
-                // Ensure that the block size matches the IV size (16 bytes).
-                aes.BlockSize = 128;
+                byte[] encrypted;
 
-                // Create an encryptor to perform the stream transform.
-                ICryptoTransform encryptor = aes.CreateEncryptor(HWIDGenerator.GetHWID(), iv);
-
-                // Encrypt the password.
-                using MemoryStream memoryStream = new();
-                using CryptoStream cryptoStream = new(memoryStream, encryptor, CryptoStreamMode.Write);
-                using (StreamWriter streamWriter = new(cryptoStream))
+                // Create a new instance of the AES algorithm.
+                using (Aes aes = Aes.Create())
                 {
-                    // Convert SecureString to string and write it to the stream.
-                    streamWriter.Write(SecureStringExtensions.ConvertSecureStringToString(password));
-                }
-                encrypted = memoryStream.ToArray();
-            }
+                    aes.BlockSize = 128; // Ensure that the block size matches the IV size (16 bytes).
 
-            return encrypted;
+                    // Create an encryptor to perform the stream transform.
+                    ICryptoTransform encryptor = aes.CreateEncryptor(HWIDGenerator.GetHWID(), iv);
+
+                    // Encrypt the password.
+                    using MemoryStream memoryStream = new();
+                    using CryptoStream cryptoStream = new(memoryStream, encryptor, CryptoStreamMode.Write);
+                    using (StreamWriter streamWriter = new(cryptoStream))
+                    {
+                        // Convert SecureString to string and write it to the stream.
+                        streamWriter.Write(SecureStringExtensions.ConvertSecureStringToString(password));
+                    }
+                    encrypted = memoryStream.ToArray();
+                }
+
+                return encrypted;
+            }
+            catch (CryptographicException ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Encryption Error",
+                    message: $"Encryption error: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Encryption Error",
+                    message: $"Error encrypting password: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                throw;
+            }
         }
 
 
@@ -71,30 +93,48 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The decrypted plain text string.</returns>
         public static string Decrypt(byte[] cipherText, byte[] iv)
         {
-            string plaintext = string.Empty;
-
-            // Create a new instance of the AES algorithm.
-            using (Aes aes = Aes.Create())
+            try
             {
-                // Ensure that the block size matches the IV size (16 bytes).
-                aes.BlockSize = 128;
+                string plaintext = string.Empty;
 
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), iv);
+                // Create a new instance of the AES algorithm.
+                using (Aes aes = Aes.Create())
+                {
+                    // Ensure that the block size matches the IV size (16 bytes).
+                    aes.BlockSize = 128;
 
-                // Decrypt the cipher text.
-                using MemoryStream memoryStream = new(cipherText);
-                using CryptoStream cryptoStream = new(memoryStream, decryptor, CryptoStreamMode.Read);
-                using StreamReader reader = new(cryptoStream);
-                plaintext = reader.ReadToEnd();
+                    // Create a decryptor to perform the stream transform.
+                    ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), iv);
+
+                    // Decrypt the cipher text.
+                    using MemoryStream memoryStream = new(cipherText);
+                    using CryptoStream cryptoStream = new(memoryStream, decryptor, CryptoStreamMode.Read);
+                    using StreamReader reader = new(cryptoStream);
+                    plaintext = reader.ReadToEnd();
+                }
+
+                return plaintext;
             }
-
-            return plaintext;
+            catch (CryptographicException ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Decryption Error",
+                    message: $"Decryption error: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Decryption Error",
+                    message: $"Error decrypting cipher text: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+                throw;
+            }
         }
     }
-
-
-
 
 
 

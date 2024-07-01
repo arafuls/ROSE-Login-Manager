@@ -192,7 +192,7 @@ namespace ROSE_Login_Manager.ViewModel
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LaunchProfile",
+                    title: $"{GlobalVariables.APP_NAME} - Launch Profile Error",
                     message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -215,7 +215,7 @@ namespace ROSE_Login_Manager.ViewModel
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LaunchProfile",
+                    title: $"{GlobalVariables.APP_NAME} - Launch Profile Error",
                     message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -312,7 +312,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    title: $"{GlobalVariables.APP_NAME} - Login Thread Error",
                     message: "TRose.exe could not be found.\n\n" +
                              "Confirm that the ROSE Online Folder Location is set correctly.",
                     button: MessageBoxButton.OK,
@@ -327,7 +327,7 @@ namespace ROSE_Login_Manager.ViewModel
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    title: $"{GlobalVariables.APP_NAME} - Login Thread Error",
                     message: "trose.exe could not be found.\n\n" +
                              $"Confirm that trose.exe exists within {startInfo.WorkingDirectory}",
                     button: MessageBoxButton.OK,
@@ -336,7 +336,7 @@ namespace ROSE_Login_Manager.ViewModel
             catch (Exception ex)
             {   // Display a generic error message for other exceptions
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    title: $"{GlobalVariables.APP_NAME} - Login Thread Error",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -374,7 +374,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    title: $"{GlobalVariables.APP_NAME} - Login Thread Error",
                     message: "TRose.exe could not be found.\n\n" +
                              "Confirm that the ROSE Online Folder Location is set correctly.",
                     button: MessageBoxButton.OK,
@@ -389,7 +389,7 @@ namespace ROSE_Login_Manager.ViewModel
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    title: $"{GlobalVariables.APP_NAME} - Login Thread Error",
                     message: "trose.exe could not be found.\n\n" +
                              $"Confirm that trose.exe exists within {startInfo.WorkingDirectory}",
                     button: MessageBoxButton.OK,
@@ -398,7 +398,7 @@ namespace ROSE_Login_Manager.ViewModel
             catch (Exception ex)
             {   // Display a generic error message for other exceptions
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
+                    title: $"{GlobalVariables.APP_NAME} - Login Thread Error",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

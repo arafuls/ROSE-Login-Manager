@@ -233,7 +233,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (string.IsNullOrEmpty(filePath))
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - GlobalVariables::UpdateTomlFile",
+                    title: $"{GlobalVariables.APP_NAME} - Update Toml File Error",
                     message: "Failed to locate rose.toml",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -245,19 +245,14 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (tomlTable.TryGetValue(section, out var sectionTableObj) && sectionTableObj is TomlTable sectionTable)
             {
-                // Update the value of the specified key
-                sectionTable[key] = FormatTomlValue(value);
-
-                // Serialize the updated TOML table back to string
-                string updatedTomlContent = Toml.FromModel(tomlTable);
-
-                // Write the updated content back to the file
-                File.WriteAllText(filePath, updatedTomlContent);
+                sectionTable[key] = FormatTomlValue(value);             // Update the value of the specified key
+                string updatedTomlContent = Toml.FromModel(tomlTable);  // Serialize the updated TOML table back to string
+                File.WriteAllText(filePath, updatedTomlContent);        // Write the updated content back to the file
             }
             else
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - GlobalVariables::UpdateTomlFile",
+                    title: $"{GlobalVariables.APP_NAME} - Update Toml File Error",
                     message: $"Failed to update {key} within rose.toml",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -275,19 +270,32 @@ namespace ROSE_Login_Manager.ViewModel
         /// <returns>The formatted value.</returns>
         private static object FormatTomlValue(object value)
         {
-#pragma warning disable IDE0066 // Convert switch statement to expression
-            switch (value)
+            try
             {
-                case bool:
-                    return (bool)value;
-                case int:
-                    return (int)value;
-                case string:
-                    return $"'{value}'";
-                default:
-                    throw new ArgumentException("Unsupported value type.");
+                #pragma warning disable IDE0066 // Convert switch statement to expression
+                switch (value)
+                {
+                    case bool:
+                        return (bool)value;
+                    case int:
+                        return (int)value;
+                    case string:
+                        return $"'{value}'";
+                    default:
+                        throw new ArgumentException("Unsupported value type.");
+                }
+                #pragma warning restore IDE0066 // Convert switch statement to expression
             }
-#pragma warning restore IDE0066 // Convert switch statement to expression
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Toml Formatter Error",
+                    message: $"Failed to format TOML value: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+
+                return null;
+            }
         }
 
 

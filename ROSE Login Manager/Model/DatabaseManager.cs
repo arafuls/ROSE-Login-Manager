@@ -151,7 +151,7 @@ namespace ROSE_Login_Manager.Resources.Util
             catch (SqliteException ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager::ExecuteNonQuery",
+                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager Error",
                     message: $"SQLite Error {ex.SqliteErrorCode}: '{ex.Message}'",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -160,7 +160,7 @@ namespace ROSE_Login_Manager.Resources.Util
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager::ExecuteNonQuery",
+                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager Error",
                     message: $"An error occurred: {ex.Message}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -533,7 +533,7 @@ namespace ROSE_Login_Manager.Resources.Util
                 catch (Exception ex)
                 {
                     new DialogService().ShowMessageBox(
-                        title: $"{GlobalVariables.APP_NAME} - DatabaseManager::ClearAllProfileStatus",
+                        title: $"{GlobalVariables.APP_NAME} - DatabaseManager Error",
                         message: $"SQLite Error {ex.Message}: '{ex.Message}'",
                         button: MessageBoxButton.OK,
                         icon: MessageBoxImage.Error);

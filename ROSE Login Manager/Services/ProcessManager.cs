@@ -2,6 +2,7 @@
 using ROSE_Login_Manager.Resources.Util;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows;
 
 
 
@@ -229,6 +230,7 @@ namespace ROSE_Login_Manager.Services
 
 
         #region Methods to Move Process Window
+
         /// <summary>
         ///     Moves the main window of the specified process to the background.
         /// </summary>
@@ -240,24 +242,36 @@ namespace ROSE_Login_Manager.Services
             int maxAttempts = 50;
             int delay = 100; // Polling interval in milliseconds
 
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            try
             {
-                hWnd = FindMainWindowHandle(process!.Id);
-                if (hWnd != IntPtr.Zero)
+                for (int attempt = 0; attempt < maxAttempts; attempt++)
                 {
-                    break;
+                    hWnd = FindMainWindowHandle(process.Id);
+                    if (hWnd != IntPtr.Zero)
+                    {
+                        break;
+                    }
+                    Thread.Sleep(delay);
                 }
-                Thread.Sleep(delay);
-            }
 
-            if (hWnd == IntPtr.Zero)
+                if (hWnd == IntPtr.Zero)
+                {
+                    throw new Exception("Failed to find the main window of the process.");
+                }
+
+                // Move the process window behind your application's window
+                IntPtr mainAppHandle = Process.GetCurrentProcess().MainWindowHandle;
+                SetWindowPos(hWnd, mainAppHandle, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+            }
+            catch (Exception ex)
             {
-                throw new Exception("Failed to find the main window of the process.");
+                // Handle the exception using DialogService
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - MoveToBackground Error",
+                    message: $"Failed to move process to background: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
             }
-
-            // Move the process window behind your application's window
-            IntPtr mainAppHandle = Process.GetCurrentProcess().MainWindowHandle;
-            SetWindowPos(hWnd, mainAppHandle, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
         }
 
 

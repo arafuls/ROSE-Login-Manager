@@ -54,7 +54,7 @@ namespace ROSE_Login_Manager.Services
                 catch (Exception ex)
                 {
                     new DialogService().ShowMessageBox(
-                        title: $"{GlobalVariables.APP_NAME} - RoseUpdater::UpdaterIsLatestAndExists",
+                        title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
                         message: $"Error validating updater: {ex.Message}",
                         button: MessageBoxButton.OK,
                         icon: MessageBoxImage.Error);
@@ -232,33 +232,52 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task UpdateLocalFiles(List<(Uri, RemoteManifestFileEntry)> files)
         {
-            // Create a dictionary from the remote manifest entries for quick lookup by file path
-            Dictionary<string, RemoteManifestFileEntry> remoteFilePaths = RemoteManifest.Files.ToDictionary(file => file.SourcePath);
-
-            LocalManifest newLocalManifest = GetLocalManifest();
-
-            int totalFiles = files.Count;
-            int _processedFiles = 0;
-
-            // Transform each loop iteration into a task and run them concurrently
-            var tasks = files.Select(async file =>
+            try
             {
-                if (await DownloadFile(remoteFilePaths[file.Item2.SourcePath]))
+                // Create a dictionary from the remote manifest entries for quick lookup by file path
+                Dictionary<string, RemoteManifestFileEntry> remoteFilePaths = RemoteManifest.Files.ToDictionary(file => file.SourcePath);
+
+                LocalManifest newLocalManifest = GetLocalManifest();
+
+                int totalFiles = files.Count;
+                int _processedFiles = 0;
+
+                // Transform each loop iteration into a task and run them concurrently
+                var tasks = files.Select(async file =>
                 {
-                    lock (newLocalManifest) // Ensure thread safety when accessing newLocalManifest
+                    if (await DownloadFile(remoteFilePaths[file.Item2.SourcePath]))
                     {
-                        newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                        lock (newLocalManifest) // Ensure thread safety when accessing newLocalManifest
+                        {
+                            newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                        }
                     }
-                }
 
-                int processedFiles = Interlocked.Increment(ref _processedFiles);
-                int progressPercentage = (processedFiles * 100) / totalFiles;
+                    int processedFiles = Interlocked.Increment(ref _processedFiles);
+                    int progressPercentage = (processedFiles * 100) / totalFiles;
 
-                WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
-            });
+                    WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
+                });
 
-            await Task.WhenAll(tasks);
-            _ = SaveLocalManifest(newLocalManifest);
+                await Task.WhenAll(tasks);
+                _ = SaveLocalManifest(newLocalManifest);
+            }
+            catch (FileNotFoundException ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
+                    message: $"Bita executable not found: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                new DialogService().ShowMessageBox(
+                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
+                    message: $"Error updating local files: {ex.Message}",
+                    button: MessageBoxButton.OK,
+                    icon: MessageBoxImage.Error);
+            }
         }
 
 
@@ -333,13 +352,17 @@ namespace ROSE_Login_Manager.Services
 
                 process.Start();
                 await process.WaitForExitAsync().ConfigureAwait(false);
-
+                
                 return process.ExitCode == 0;
+            }
+            catch (FileNotFoundException)
+            {
+                throw; // Re-throw the FileNotFoundException to handle it higher up
             }
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - RoseUpdater::DownloadFileWithBitaAsync",
+                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
                     message: $"Error running bita: {ex.Message}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -407,7 +430,7 @@ namespace ROSE_Login_Manager.Services
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - RoseUpdater::SaveLocalManifest",
+                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
                     message: $"Failed to save local manifest to {localManifestPath}: {ex.Message}",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

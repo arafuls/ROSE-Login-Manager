@@ -72,7 +72,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::LoadConfig",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
                     message: "Error loading config: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -158,7 +158,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::CreateConfig",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
                     message: "Error creating configuration file: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -204,7 +204,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::SaveSetting",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
                     message: "Error saving setting: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -256,7 +256,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::SaveConfigSetting",
+                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
                     message: "Error saving setting: " + ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

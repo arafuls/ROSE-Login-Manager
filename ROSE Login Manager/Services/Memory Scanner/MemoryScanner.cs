@@ -9,7 +9,7 @@ using System.Text;
 namespace ROSE_Login_Manager.Services
 {
     /// <summary>
-    ///     Provides methods to scan memory of a specified process for a given signature.
+    ///     Provides methods to scan memory of a specgzified process for a given signature.
     /// </summary>
     internal class MemoryScanner : IDisposable
     {
@@ -30,18 +30,7 @@ namespace ROSE_Login_Manager.Services
         /// <param name="process">The process to scan.</param>
         public MemoryScanner(Process process)
         {
-            try
-            {
-                _process = process ?? throw new ArgumentNullException(nameof(process));
-            }
-            catch (ArgumentNullException ex)
-            {
-                // TODO: Log the exception or handle it, ArgumentNullException in MemoryScanner constructor
-            }
-            catch (Exception ex)
-            {
-                // TODO: Log the exception or handle it, Exception in MemoryScanner constructor
-            }
+            _process = process ?? throw new ArgumentNullException(nameof(process));
         }
 
 
