@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+
 
 namespace ROSE_Login_Manager.Model
 {
@@ -48,6 +45,14 @@ namespace ROSE_Login_Manager.Model
             return $"{CharacterName} ({JobTitle}) - Level {Level}";
         }
 
+        /// <summary>
+        ///     Checks if the stored data for job title, character name, and level are valid.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> If all conditions are met: job title is not null or empty,
+        ///   character name is not null or empty, and level is greater than zero;
+        ///   otherwise, <c>false</c>.
+        /// </returns>
         public bool ValidData()
         {
             if (string.IsNullOrEmpty(JobTitle) || string.IsNullOrEmpty(CharacterName) || 0 == Level)

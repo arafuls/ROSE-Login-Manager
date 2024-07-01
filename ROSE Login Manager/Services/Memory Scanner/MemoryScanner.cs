@@ -1,21 +1,13 @@
 ﻿using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services.Memory_Scanner;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows;
+
+
 
 namespace ROSE_Login_Manager.Services
 {
-    
-
-
-
     /// <summary>
     ///     Provides methods to scan memory of a specified process for a given signature.
     /// </summary>
@@ -32,6 +24,10 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="MemoryScanner"/> class with the specified process.
+        /// </summary>
+        /// <param name="process">The process to scan.</param>
         public MemoryScanner(Process process)
         {
             try
@@ -50,7 +46,11 @@ namespace ROSE_Login_Manager.Services
 
 
 
-        #region IDisposable
+        #region IDisposable Implementation
+
+        /// <summary>
+        ///     Releases all resources used by the <see cref="MemoryScanner"/> object.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -79,6 +79,10 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Scans the character information signature in the process memory.
+        /// </summary>
+        /// <returns>The scanned character information.</returns>
         public CharacterInfo ScanCharacterInfoSignature()
         {
             if (!GetCharacterName()) { return _characterInfo; }
@@ -91,6 +95,10 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Retrieves the character name from the specified memory address.
+        /// </summary>
+        /// <returns><see langword="true"/> if the character name is successfully retrieved; otherwise, <see langword="false"/>.</returns>
         private bool GetCharacterName()
         {
             const int bufferSize = 16; // Adjust as needed
@@ -107,6 +115,12 @@ namespace ROSE_Login_Manager.Services
         }
 
 
+
+        /// <summary>
+        ///     Scans the process memory for a given signature.
+        /// </summary>
+        /// <param name="signature">The signature to scan for.</param>
+        /// <returns>The memory address where the signature is found, or IntPtr.Zero if not found.</returns>
         private IntPtr ScanMemory(byte[] signature)
         {
             IntPtr currentAddress = IntPtr.Zero;
@@ -153,6 +167,13 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Checks if the given buffer at the specified start index matches the signature.
+        /// </summary>
+        /// <param name="buffer">The buffer to check.</param>
+        /// <param name="startIndex">The start index in the buffer.</param>
+        /// <param name="signature">The signature to match.</param>
+        /// <returns><see langword="true"/> if the buffer matches the signature; otherwise, <see langword="false"/>.</returns>
         private bool IsValidMatch(byte[] buffer, int startIndex, byte[] signature)
         {
             if (startIndex + signature.Length + 3 > buffer.Length)
@@ -178,6 +199,11 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Converts a hexadecimal string signature into a byte array.
+        /// </summary>
+        /// <param name="signature">The hexadecimal string signature.</param>
+        /// <returns>The byte array representation of the signature.</returns>
         private byte[] ConvertStringToBytes(string signature)
         {
             string[] parts = signature.Split(' ');
@@ -198,7 +224,9 @@ namespace ROSE_Login_Manager.Services
             return bytes;
         }
 
+         
 
+        #region Native Methods, Structs, and Variables
 
         [DllImport("kernel32.dll")]
         static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
@@ -250,5 +278,6 @@ namespace ROSE_Login_Manager.Services
             MEM_MAPPED = 0x40000,
             MEM_PRIVATE = 0x20000
         }
+        #endregion
     }
 }

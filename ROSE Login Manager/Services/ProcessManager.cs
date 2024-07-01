@@ -1,9 +1,7 @@
 ﻿using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
-using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows;
 
 
 
@@ -16,6 +14,12 @@ namespace ROSE_Login_Manager.Services
     {
         #region Native Methods
 
+        /// <summary>
+        ///     Sets the text of the specified window's title bar.
+        /// </summary>
+        /// <param name="hWnd">A handle to the window whose text is to be set.</param>
+        /// <param name="lpString">The new title or text for the window.</param>
+        /// <returns><see langword="true"/> if the function succeeds, otherwise <see langword="false"/>.</returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool SetWindowText(IntPtr hWnd, string lpString);
 
@@ -80,7 +84,6 @@ namespace ROSE_Login_Manager.Services
         /// <returns>True to continue enumeration; otherwise, false to stop.</returns>
         private delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
 
-        // Constants
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOMOVE = 0x0002;
         #endregion
@@ -189,6 +192,10 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Launches the ROSE Online game client using the specified start information.
+        /// </summary>
+        /// <param name="startInfo">ProcessStartInfo containing the information to start the ROSE client.</param>
         public void LaunchROSE(ProcessStartInfo startInfo)
         {
             try
@@ -198,8 +205,8 @@ namespace ROSE_Login_Manager.Services
 
                 if (arguments.Length == 3)
                 {
-                    // TODO: Figure out how to determine active profile info from active process
-                    //       not launched from this Login Manager.
+                    // TODO: Determine how to handle profiles launched outside this Login Manager context
+                    //       where specific profile info may not be accessible directly.
                 }
                 else if (process != null)
                 {
@@ -292,6 +299,11 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Changes the title of the main window of the specified process.
+        /// </summary>
+        /// <param name="process">The process whose title is to be changed.</param>
+        /// <param name="newTitle">The new title to set for the process.</param>
         public static void ChangeProcessTitle(Process process, string newTitle)
         {
             IntPtr mainWindowHandle = process.MainWindowHandle;
@@ -309,16 +321,19 @@ namespace ROSE_Login_Manager.Services
 
 
 
+        /// <summary>
+        ///     Finds active processes data and updates the window titles based on character information.
+        /// </summary>
         private void FindProcessesData()
         {
+            // Take a snapshot of active processes to avoid concurrency issues
             var activeProcessesSnapshot = _activeProcesses.ToList(); // Take a snapshot
 
             foreach (ActiveProcessInfo activeProcess in activeProcessesSnapshot)
             {
-                using MemoryScanner memscan = new MemoryScanner(activeProcess.Process);
+                using MemoryScanner memscan = new(activeProcess.Process);
 
                 CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
-
                 if (charInfo.ValidData())
                 {
                     ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
