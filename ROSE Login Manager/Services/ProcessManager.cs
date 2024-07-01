@@ -3,6 +3,7 @@ using ROSE_Login_Manager.Resources.Util;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows;
 
 
 
@@ -14,6 +15,12 @@ namespace ROSE_Login_Manager.Services
     public class ProcessManager  // Make sure this is `public` so it can be accessed from other namespaces
     {
         #region Native Methods
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool SetWindowText(IntPtr hWnd, string lpString);
+
+
+
         /// <summary>
         ///     Finds a window by its class name or window name.
         /// </summary>
@@ -22,6 +29,8 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A handle to the window if found; otherwise, IntPtr.Zero.</returns>
         [DllImport("user32.dll", SetLastError = true)]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+
 
         /// <summary>
         ///     Changes the position, size, and Z order of a child, pop-up, or top-level window.
@@ -37,6 +46,8 @@ namespace ROSE_Login_Manager.Services
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
+
+
         /// <summary>
         ///     Retrieves the identifier of the thread that created the specified window and optionally the process identifier.
         /// </summary>
@@ -45,6 +56,8 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The identifier of the thread that created the window.</returns>
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+
 
         /// <summary>
         ///     Enumerates all non-child windows associated with a thread.
@@ -56,6 +69,8 @@ namespace ROSE_Login_Manager.Services
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool EnumThreadWindows(uint dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+
+
 
         /// <summary>
         /// Delegate type used for the callback function called by EnumThreadWindows for each window associated with the thread.
@@ -70,7 +85,9 @@ namespace ROSE_Login_Manager.Services
         private const uint SWP_NOMOVE = 0x0002;
         #endregion
 
-        private readonly Dictionary<int, string> _activeProcesses = [];
+
+
+        private readonly List<ActiveProcessInfo> _activeProcesses = [];
         private readonly Timer _cleanupTimer;
         private readonly DatabaseManager _db = new();
 
@@ -81,8 +98,10 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="processId">The process ID of the active process.</param>
         /// <param name="email">The email associated with the active process.</param>
-        private class ActiveProcessInfo(int processId, string email)
+        private class ActiveProcessInfo(Process process, int processId, string email)
         {
+            public CharacterInfo CharacterInfo { get; set; }
+            public Process Process { get; set; } = process;
             public int ProcessId { get; set; } = processId;
             public string Email { get; set; } = email;
         }
@@ -102,8 +121,9 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         private ProcessManager()
         {
-            // Initialize and configure the timer to call the TimerCallback method every 5 seconds (5000 ms)
-            _cleanupTimer = new Timer(TimerCallback, null, 0, 5000);
+            // Initialize and configure the timer to call the TimerCallback method
+            const int ELAPSED_TIME_MILLISECONDS = 10000;
+            _cleanupTimer = new Timer(TimerCallback, null, 0, ELAPSED_TIME_MILLISECONDS);
 
             HandleExistingTRoseProcesses();
         }
@@ -112,7 +132,10 @@ namespace ROSE_Login_Manager.Services
 
         private void TimerCallback(object o)
         {
+            // TODO: Scan for trose processes not already found
+
             CleanUpExitedProcesses();
+            FindProcessesData();
         }
 
 
@@ -130,9 +153,8 @@ namespace ROSE_Login_Manager.Services
                 foreach (Process process in existingProcesses)
                 {   
                     // Add the PID of each existing trose process to the active processes list
-                    _activeProcesses.Add(process.Id, "");
-
-                    // TODO: Find a way to determine which profile is in use at this time
+                    // TODO: Determine used email if possible
+                    _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
                 }
             }
             catch (Exception ex)
@@ -148,20 +170,19 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         public void CleanUpExitedProcesses()
         {
-            // Iterate over a copy of the active process IDs to avoid issues with modification during enumeration
-            foreach (int processId in _activeProcesses.Keys.ToList())
+            // Iterate over a copy of the active processes list to avoid issues with modification during enumeration
+            foreach (var activeProcess in _activeProcesses.ToList())
             {
+                int processId = activeProcess.ProcessId;
+
                 try
                 {
                     Process.GetProcessById(processId);
                 }
                 catch (ArgumentException)
                 {
-                    if (_activeProcesses.TryGetValue(processId, out string email))
-                    {
-                        _activeProcesses.Remove(processId);
-                        _db.UpdateProfileStatus(email, false);
-                    }
+                    _activeProcesses.Remove(activeProcess);
+                    _db.UpdateProfileStatus(activeProcess.Email, false);
                 }
             }
         }
@@ -183,7 +204,7 @@ namespace ROSE_Login_Manager.Services
                 else if (process != null)
                 {
                     string emailArg = arguments.ElementAtOrDefault(4) ?? throw new ArgumentException("The process arguments are missing in ProcessStartInfo.");
-                    _activeProcesses.Add(process.Id, emailArg);
+                    _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, emailArg));
                     _db.UpdateProfileStatus(emailArg, true);
                 }
 
@@ -268,6 +289,41 @@ namespace ROSE_Login_Manager.Services
             }, IntPtr.Zero);
             return hWnd;
         }
+
+
+
+        public static void ChangeProcessTitle(Process process, string newTitle)
+        {
+            IntPtr mainWindowHandle = process.MainWindowHandle;
+            if (mainWindowHandle != IntPtr.Zero)
+            {
+                SetWindowText(mainWindowHandle, newTitle);
+            }
+            else
+            {
+                Console.WriteLine($"Process {process.ProcessName} does not have a main window handle.");
+            }
+        }
         #endregion
+
+
+
+
+        private void FindProcessesData()
+        {
+            var activeProcessesSnapshot = _activeProcesses.ToList(); // Take a snapshot
+
+            foreach (ActiveProcessInfo activeProcess in activeProcessesSnapshot)
+            {
+                using MemoryScanner memscan = new MemoryScanner(activeProcess.Process);
+
+                CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
+
+                if (charInfo.ValidData())
+                {
+                    ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
+                }
+            }
+        }
     }
 }
