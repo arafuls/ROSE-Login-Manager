@@ -69,15 +69,25 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Scans the character information signature in the process memory.
+        ///     Scans the game's memory to retrieve character information, including the character name and job level.
         /// </summary>
-        /// <returns>The scanned character information.</returns>
+        /// <returns>
+        ///     A <see cref="CharacterInfo"/> object containing the scanned character's information if successful;
+        ///     otherwise, returns an empty <see cref="CharacterInfo"/> object.
+        /// </returns>
         public CharacterInfo ScanCharacterInfoSignature()
         {
-            if (!GetCharacterName()) { return _characterInfo; }
+            bool success = true;
+
+            success = GetCharacterName();
 
             byte[] jobLevelSignature = ConvertStringToBytes(JOB_LEVEL_SIGNATURE);
-            ScanMemory(jobLevelSignature);
+            success = ScanMemory(jobLevelSignature) != IntPtr.Zero;
+
+            if (!success)
+            {
+                return new CharacterInfo();
+            }
 
             return _characterInfo;
         }
