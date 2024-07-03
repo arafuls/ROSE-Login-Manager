@@ -96,6 +96,8 @@ namespace ROSE_Login_Manager.Services
         private readonly Timer _cleanupTimer;
         private readonly DatabaseManager _db = new();
 
+        const uint ELAPSED_TIME_MILLISECONDS = 10000;
+
 
 
         /// <summary>
@@ -126,8 +128,6 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         private ProcessManager()
         {
-            // Initialize and configure the timer to call the TimerCallback method
-            const int ELAPSED_TIME_MILLISECONDS = 10000;
             _cleanupTimer = new Timer(TimerCallback, null, 0, ELAPSED_TIME_MILLISECONDS);
 
             HandleExistingTRoseProcesses();
@@ -340,12 +340,15 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Finds active processes data and updates the window titles based on character information.
+        ///     Finds and processes data for active processes, scanning for character information signatures
+        ///     and updating the process titles with the character data if found and valid.
         /// </summary>
         private void FindProcessesData()
         {
-            // Take a snapshot of active processes to avoid concurrency issues
-            var activeProcessesSnapshot = _activeProcesses.ToList(); // Take a snapshot
+            if (GlobalVariables.Instance.ToggleCharDataScanning == false) { return; }
+
+            // Take a snapshot of active processes to avoid concurrency issues during iteration
+            var activeProcessesSnapshot = _activeProcesses.ToList();
 
             foreach (ActiveProcessInfo activeProcess in activeProcessesSnapshot)
             {

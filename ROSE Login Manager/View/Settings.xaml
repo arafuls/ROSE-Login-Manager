@@ -30,17 +30,20 @@
                         </Image.Style>
                     </Image>
                     <TextBox Text="{Binding RoseGameFolderPath, UpdateSourceTrigger=PropertyChanged}"
-                            Height="20" Width="300" Margin="5 0" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged"/>
+                            Height="20" Width="300" Margin="5 0" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged"
+                            ToolTip="The reference path to the ROSE Online Game Folder."/>
                     <!-- Folder Search Button -->
                     <Button Command="{Binding GameFolderSearchCommand}" 
                             Style="{StaticResource CustomImageButtonStyle}" 
-                            Height="24" Width="24">
+                            Height="24" Width="24"
+                            ToolTip="Opens the folder search dialog window.">
                         <Image Source="../Resources/Images/magnify.png"/>
                     </Button>
                     <!-- Auto-Fix Button -->
                     <Button Command="{Binding FindGameFolderCommand}" 
                             Style="{StaticResource CustomImageButtonStyle}" 
-                            Height="24" Width="24" Margin="5 0">
+                            Height="24" Width="24" Margin="5 0"
+                            ToolTip="Attempts to automatically locate the ROSE Online Game Folder.">
                         <Image Source="../Resources/Images/refresh-auto.png"/>
                     </Button>
                 </StackPanel>
@@ -55,15 +58,16 @@
                     </Grid.RowDefinitions>
 
                     <Label Content="General Settings" Foreground="WhiteSmoke" FontWeight="Bold" Margin="24 10 0 -5" Grid.Row="0"/>
-
-                    <!-- Display Email Settings StackPanel -->
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 10" Width="300" Grid.Row="1">
 
                         <!-- Email Display Settings -->
-                        <CheckBox Content="Display Emails" VerticalContentAlignment="Center" IsChecked="{Binding DisplayEmailChecked}" Margin="0" Foreground="WhiteSmoke"/>
-                        <CheckBox Content="Mask Emails" VerticalContentAlignment="Center" IsChecked="{Binding MaskEmailChecked}" Margin="20 0 0 0" Foreground="WhiteSmoke"/>
+                        <CheckBox Content="Display Emails" VerticalContentAlignment="Center" IsChecked="{Binding DisplayEmailChecked}" Margin="0 2 0 0" Foreground="WhiteSmoke"
+                                  ToolTip="Displays the email address associated with your character profiles."/>
+                        <CheckBox Content="Mask Emails" VerticalContentAlignment="Center" IsChecked="{Binding MaskEmailChecked}" Margin="20 3 0 0" Foreground="WhiteSmoke"
+                                  ToolTip="Masks part of your displayed emails with asterisks."/>
 
-                        <CheckBox Content="Launch Client Behind" VerticalContentAlignment="Center" IsChecked="{Binding LaunchClientBehindChecked}" Margin="0 10 0 0" Foreground="WhiteSmoke"/>
+                        <CheckBox Content="Launch Client Behind" VerticalContentAlignment="Center" IsChecked="{Binding LaunchClientBehindChecked}" Margin="0 10 0 0" Foreground="WhiteSmoke"
+                                  ToolTip="Launches the ROSE Client behind the Login Manager."/>
                     </StackPanel>
                 </Grid>
 
@@ -77,16 +81,38 @@
                     </Grid.RowDefinitions>
 
                     <Label Content="Game Settings" Foreground="WhiteSmoke" FontWeight="Bold" Margin="24 10 0 -5" Grid.Row="0"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 10" Width="300" Grid.Row="1">
+                        <!-- Skip Planet Cutscene -->
+                        <CheckBox Content="Skip Planet Cutscene" VerticalContentAlignment="Center" IsChecked="{Binding SkipPlanetCutscene}" Margin="0 2" Foreground="WhiteSmoke"
+                                  ToolTip="Skips the cutscene when traveling to another planet."/>
 
-                    <!-- Display Email Settings StackPanel -->
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 0" Width="300" Grid.Row="1">
+                        <!-- Login Scene -->
+                        <StackPanel ToolTip="Sets the default login scene.">
+                            <Label Content="Login Scene" Foreground="WhiteSmoke" Margin="-4 0 0 -3"/>
+                            <ComboBox Width="150" Margin="1 0 0 0" HorizontalAlignment="Left" ItemsSource="{Binding LoginScreenOptions}" SelectedItem="{Binding SelectedLoginScreen}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
 
-                        <!-- Root Checkbox -->
-                        <CheckBox Content="Skip Planet Cutscene" VerticalContentAlignment="Center" IsChecked="{Binding SkipPlanetCutscene}" Margin="0 3" Foreground="WhiteSmoke"/>
 
-                        <!--  -->
-                        <Label Content="Login Screen" Foreground="WhiteSmoke" Margin="0 0 0 -3"/>
-                        <ComboBox Width="150" Margin="1 0 0 0" HorizontalAlignment="Left" ItemsSource="{Binding LoginScreenOptions}" SelectedItem="{Binding SelectedLoginScreen}"/>
+
+                <!-- Client Settings -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Content="Client Settings" Foreground="WhiteSmoke" FontWeight="Bold" Margin="24 10 0 -5" Grid.Row="0"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 10" Width="300" Grid.Row="1">
+                        <!-- -->
+                        <CheckBox Content="Overwrite Window Title with Character Data" VerticalContentAlignment="Center" IsChecked="{Binding ToggleCharDataScanning}" Margin="0 2" Foreground="WhiteSmoke">
+                            <CheckBox.ToolTip>
+                                <ToolTip>
+                                    <TextBlock Text="Enable to set the ROSE Client's Window Title to show as: {Character Name} ({Class}) - Level {XYZ}" />
+                                </ToolTip>
+                            </CheckBox.ToolTip>
+                        </CheckBox>
                     </StackPanel>
                 </Grid>
 

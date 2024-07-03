@@ -60,6 +60,13 @@ namespace ROSE_Login_Manager.Model
             set => SetProperty(ref _loginScreen, value);
         }
 
+        private bool _toggleCharDataScanning;
+        public bool ToggleCharDataScanning
+        {
+            get => _toggleCharDataScanning;
+            set => SetProperty(ref _toggleCharDataScanning, value);
+        }
+
         private readonly string _appPath;
         public string AppPath
         {
@@ -143,7 +150,7 @@ namespace ROSE_Login_Manager.Model
             catch (Exception ex)
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{APP_NAME} - SettingsViewModel::ContainsRoseExec",
+                    title: $"{APP_NAME} - Game Executable Search Error",
                     message: ex.Message,
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);
@@ -172,7 +179,7 @@ namespace ROSE_Login_Manager.Model
             else
             {
                 new DialogService().ShowMessageBox(
-                    title: $"{APP_NAME} - GlobalVariables::HandleSettingChanged",
+                    title: $"{APP_NAME} - Handle Setting Changed Error",
                     message: "Unknown setting changed.",
                     button: MessageBoxButton.OK,
                     icon: MessageBoxImage.Error);

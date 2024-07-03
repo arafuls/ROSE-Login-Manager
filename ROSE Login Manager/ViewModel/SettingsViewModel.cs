@@ -126,6 +126,19 @@ namespace ROSE_Login_Manager.ViewModel
                 }
             }
         }
+
+        private bool _toggleCharDataScanning;
+        public bool ToggleCharDataScanning
+        {
+            get => _toggleCharDataScanning;
+            set
+            {
+                if (SetProperty(ref _toggleCharDataScanning, value))
+                {
+                    ConfigurationManager.Instance.SaveConfigSetting("ToggleCharDataScanning", value, "ClientSettings");
+                }
+            }
+        }
         #endregion
 
 
@@ -157,6 +170,7 @@ namespace ROSE_Login_Manager.ViewModel
         /// </summary>
         private void InitializeAccessors()
         {
+            // General Settings
             _roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
             _isPathValidImage = GlobalVariables.Instance.ContainsRoseExec(RoseGameFolderPath);
 
@@ -164,8 +178,12 @@ namespace ROSE_Login_Manager.ViewModel
             _maskEmailChecked = GlobalVariables.Instance.MaskEmail;
             _launchClientBehindChecked = GlobalVariables.Instance.LaunchClientBehind;
 
+            // Game Settings
             _skipPlanetCutscene = GlobalVariables.Instance.SkipPlanetCutscene;
             _selectedLoginScreen = GlobalVariables.Instance.LoginScreen;
+
+            // Client Settings
+            _toggleCharDataScanning = GlobalVariables.Instance.ToggleCharDataScanning;
         }
 
 

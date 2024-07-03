@@ -48,7 +48,8 @@ namespace ROSE_Login_Manager.Model
 
 
         /// <summary>
-        ///     Loads configuration settings from the XML file.
+        ///     Loads the configuration settings from the config file and sends the settings
+        ///     to the application via the WeakReferenceMessenger.
         /// </summary>
         public void LoadConfig()
         {
@@ -66,6 +67,9 @@ namespace ROSE_Login_Manager.Model
                 XmlNode? gameSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/GameSettings");
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("SkipPlanetCutscene", bool.Parse(GetConfigSetting("SkipPlanetCutscene", gameSettingsNode, false))));
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("LoginScreen", GetConfigSetting("LoginScreen", gameSettingsNode, "Random")));
+
+                XmlNode? clientSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/ClientSettings");
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("ToggleCharDataScanning", bool.Parse(GetConfigSetting("ToggleCharDataScanning", clientSettingsNode, false))));
 
                 _doc.Save(_configFile);
             }
@@ -152,6 +156,10 @@ namespace ROSE_Login_Manager.Model
                 root.AppendChild(gameSettings);
                 SaveConfigSetting("SkipPlanetCutscene", "False", gameSettings);
                 SaveConfigSetting("LoginScreen", "Random", gameSettings);
+
+                XmlElement clientSettings = _doc.CreateElement("ClientSettings");
+                root.AppendChild(clientSettings);
+                SaveConfigSetting("ToggleCharDataScanning", "False", clientSettings);
 
                 _doc.Save(_configFile);
             }
