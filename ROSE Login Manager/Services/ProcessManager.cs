@@ -96,7 +96,7 @@ namespace ROSE_Login_Manager.Services
         private readonly Timer _cleanupTimer;
         private readonly DatabaseManager _db = new();
 
-        const uint ELAPSED_TIME_MILLISECONDS = 10000;
+        const uint ELAPSED_TIME_MILLISECONDS = 30000;
 
 
 
