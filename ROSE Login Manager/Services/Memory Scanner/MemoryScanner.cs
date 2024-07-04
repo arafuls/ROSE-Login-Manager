@@ -14,7 +14,7 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal class MemoryScanner : IDisposable
     {
-        private static readonly IntPtr CHAR_NAME_ADDRESS = new(0x7FF758C15CE0);
+        private static readonly IntPtr CHAR_NAME_ADDRESS = new(0x00007FF64C0F5CE0);
 
         private const string JOB_LEVEL_SIGNATURE = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
 
@@ -78,14 +78,8 @@ namespace ROSE_Login_Manager.Services
         /// </returns>
         public CharacterInfo ScanCharacterInfoSignature()
         {
-            bool success = true;
-
-            success = GetCharacterName();
-
             byte[] jobLevelSignature = ConvertStringToBytes(JOB_LEVEL_SIGNATURE);
-            success = ScanMemory(jobLevelSignature) != IntPtr.Zero;
-
-            if (!success)
+            if (!GetCharacterName() || (ScanMemory(jobLevelSignature) == IntPtr.Zero))
             {
                 return new CharacterInfo();
             }
