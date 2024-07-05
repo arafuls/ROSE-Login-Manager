@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 
 
@@ -17,14 +10,14 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
     /// </summary>
     internal static class SignatureValidators
     {
-        private static readonly string[] ValidJobTitles = 
-        { 
-            "Visitor", 
-            "Dealer",   "Bourg",    "Artisan", 
-            "Hawker",   "Raider",   "Scout", 
-            "Muse",     "Mage",     "Cleric", 
-            "Soldier",  "Champion", "Knight" 
-        };
+        private static readonly string[] ValidJobTitles =
+        [
+            "Visitor",
+            "Dealer",   "Bourg",    "Artisan",
+            "Hawker",   "Raider",   "Scout",
+            "Muse",     "Mage",     "Cleric",
+            "Soldier",  "Champion", "Knight"
+        ];
 
         private const ushort MAX_LEVEL = 250;
 
@@ -42,7 +35,7 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
         ///     - The job title as a string if found;
         ///     - The level as an integer if valid and within bounds.
         /// </returns>
-        public static (bool IsValid, string? JobTitle, int Level) IsValidJobLevelSignature(byte[] buffer, int startIndex, byte[] signature)
+        public static (string JobTitle, int Level) IsValidJobLevelSignature(byte[] buffer, int startIndex, byte[] signature)
         {
             // Convert the portion of the buffer to a string based on the provided startIndex and signature length
             string foundString = Encoding.ASCII.GetString(buffer, startIndex, signature.Length);
@@ -60,12 +53,12 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
 
                     if (int.TryParse(levelStr, out int level) && level > 0 && level <= MAX_LEVEL)
                     {
-                        return (true, jobTitle, level); // Valid job level signature found
+                        return (jobTitle, level); // Valid job level signature found
                     }
                 }
             }
 
-            return (false, null, 0); // No valid job level signature found
+            return ("", 0); // No valid job level signature found
         }
     }
 }

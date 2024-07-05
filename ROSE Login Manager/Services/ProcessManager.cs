@@ -3,7 +3,6 @@ using ROSE_Login_Manager.Resources.Util;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 
@@ -12,7 +11,7 @@ namespace ROSE_Login_Manager.Services
     /// <summary>
     ///     Manages the processes related to the ROSE Online client and their associated user profiles.
     /// </summary>
-    public class ProcessManager  // Make sure this is `public` so it can be accessed from other namespaces
+    public partial class ProcessManager  // Make sure this is `public` so it can be accessed from other namespaces
     {
         #region Native Methods
 
@@ -23,18 +22,8 @@ namespace ROSE_Login_Manager.Services
         /// <param name="lpString">The new title or text for the window.</param>
         /// <returns><see langword="true"/> if the function succeeds, otherwise <see langword="false"/>.</returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetWindowText(IntPtr hWnd, string lpString);
-
-
-
-        /// <summary>
-        ///     Finds a window by its class name or window name.
-        /// </summary>
-        /// <param name="lpClassName">The class name of the window (optional).</param>
-        /// <param name="lpWindowName">The title of the window (optional).</param>
-        /// <returns>A handle to the window if found; otherwise, IntPtr.Zero.</returns>
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
 
 
@@ -49,19 +38,9 @@ namespace ROSE_Login_Manager.Services
         /// <param name="cy">New height of the window.</param>
         /// <param name="uFlags">Window positioning flags.</param>
         /// <returns>True if the function succeeds; otherwise, false.</returns>
-        [DllImport("user32.dll")]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-
-
-        /// <summary>
-        ///     Retrieves the identifier of the thread that created the specified window and optionally the process identifier.
-        /// </summary>
-        /// <param name="hWnd">Handle to the window.</param>
-        /// <param name="lpdwProcessId">Output parameter that receives the process ID.</param>
-        /// <returns>The identifier of the thread that created the window.</returns>
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
 
 
@@ -72,9 +51,9 @@ namespace ROSE_Login_Manager.Services
         /// <param name="lpfn">Pointer to an application-defined callback function.</param>
         /// <param name="lParam">Application-defined value to be passed to the callback function.</param>
         /// <returns>True if the function succeeds; otherwise, false.</returns>
-        [DllImport("user32.dll")]
+        [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool EnumThreadWindows(uint dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+        private static partial bool EnumThreadWindows(uint dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
 
 
 
@@ -86,8 +65,6 @@ namespace ROSE_Login_Manager.Services
         /// <returns>True to continue enumeration; otherwise, false to stop.</returns>
         private delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
 
-        private const uint SWP_NOSIZE = 0x0001;
-        private const uint SWP_NOMOVE = 0x0002;
         #endregion
 
 
@@ -95,8 +72,11 @@ namespace ROSE_Login_Manager.Services
         private readonly List<ActiveProcessInfo> _activeProcesses = [];
         private readonly Timer _cleanupTimer;
         private readonly DatabaseManager _db = new();
+        private readonly Mutex _findProcessesMutex = new();
 
-        const uint ELAPSED_TIME_MILLISECONDS = 30000;
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOMOVE = 0x0002;
+        private const uint ELAPSED_TIME_MILLISECONDS = 30000;
 
 
 
@@ -138,9 +118,8 @@ namespace ROSE_Login_Manager.Services
         private void TimerCallback(object o)
         {
             // TODO: Scan for trose processes not already found
-
-            CleanUpExitedProcesses();
             FindProcessesData();
+            CleanUpExitedProcesses();
         }
 
 
@@ -156,7 +135,7 @@ namespace ROSE_Login_Manager.Services
             {
                 Process[] existingProcesses = Process.GetProcessesByName("trose");
                 foreach (Process process in existingProcesses)
-                {   
+                {
                     // Add the PID of each existing trose process to the active processes list
                     // TODO: Determine used email if possible
                     _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
@@ -340,26 +319,33 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Finds and processes data for active processes, scanning for character information signatures
-        ///     and updating the process titles with the character data if found and valid.
+        ///     Finds and processes data for active processes associated with the ROSE Online client.
+        ///     Scans for character information signatures and updates process titles with valid character data.
         /// </summary>
-        private void FindProcessesData()
+        public void FindProcessesData()
         {
-            if (GlobalVariables.Instance.ToggleCharDataScanning == false) { return; }
+            if (!_findProcessesMutex.WaitOne(TimeSpan.Zero))
+                return;
 
-            // Take a snapshot of active processes to avoid concurrency issues during iteration
-            var activeProcessesSnapshot = _activeProcesses.ToList();
-
-            foreach (ActiveProcessInfo activeProcess in activeProcessesSnapshot)
+            try
             {
-                using MemoryScanner memscan = new(activeProcess.Process);
+                if (!GlobalVariables.Instance.ToggleCharDataScanning)
+                    return;
 
-                CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
-                if (charInfo.ValidData())
+                foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
                 {
-                    ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
+                    using MemoryScanner memscan = new(activeProcess.Process);
+
+                    CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
+                    if (charInfo.ValidData())
+                        ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
                 }
             }
+            finally
+            {
+                _findProcessesMutex.ReleaseMutex();
+            }
         }
+
     }
 }

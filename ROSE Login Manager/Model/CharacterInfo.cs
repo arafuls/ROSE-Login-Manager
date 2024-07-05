@@ -40,7 +40,7 @@ namespace ROSE_Login_Manager.Model
         ///     Returns a string representation of the <see cref="CharacterInfo"/> struct.
         /// </summary>
         /// <returns>A string that represents the character information.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"{CharacterName} ({JobTitle}) - Level {Level}";
         }
@@ -53,7 +53,7 @@ namespace ROSE_Login_Manager.Model
         ///   character name is not null or empty, and level is greater than zero;
         ///   otherwise, <c>false</c>.
         /// </returns>
-        public bool ValidData()
+        public readonly bool ValidData()
         {
             if (string.IsNullOrEmpty(JobTitle) || string.IsNullOrEmpty(CharacterName) || 0 == Level)
             {

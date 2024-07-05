@@ -12,15 +12,14 @@ namespace ROSE_Login_Manager.Services
     /// <summary>
     ///     Provides methods to scan memory of a specgzified process for a given signature.
     /// </summary>
-    internal class MemoryScanner : IDisposable
+    internal partial class MemoryScanner : IDisposable
     {
         private static readonly IntPtr CHAR_NAME_ADDRESS = new(0x00007FF64C0F5CE0);
+        private static readonly string JOB_LEVEL_SIGNATURE = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
 
-        private const string JOB_LEVEL_SIGNATURE = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
+        private readonly Process _process;
 
-        private static Process _process;
         private bool disposed = false;
-
         private CharacterInfo _characterInfo = new();
 
 
@@ -151,7 +150,8 @@ namespace ROSE_Login_Manager.Services
         private IntPtr ScanMemory(byte[] signature)
         {
             IntPtr currentAddress = IntPtr.Zero;
-            const int chunkSize = 8192; // Adjusted chunk size for performance
+            const int chunkSize = 4096; // Adjusted chunk size for performance
+            byte[] buffer = new byte[chunkSize]; // Reusable buffer
 
             while (VirtualQueryEx(_process.Handle, currentAddress, out MEMORY_BASIC_INFORMATION mbi, (uint)Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION))) != 0)
             {
@@ -163,16 +163,16 @@ namespace ROSE_Login_Manager.Services
                     long regionSize = mbi.RegionSize.ToInt64();
                     long remainingSize = regionSize;
 
+                    // Read and scan in chunks
                     while (remainingSize > 0)
                     {
                         int bufferSize = (int)Math.Min(remainingSize, chunkSize);
-                        byte[] buffer = new byte[bufferSize];
 
                         // Read the process memory into the buffer
-                        if (ReadProcessMemory(_process.Handle, new IntPtr(baseAddress), buffer, buffer.Length, out int bytesRead) && bytesRead > 0)
+                        if (ReadProcessMemory(_process.Handle, new IntPtr(baseAddress), buffer, bufferSize, out int bytesRead) && bytesRead > 0)
                         {
                             // Scan the buffer for the signature
-                            for (int i = 0; i <= bufferSize - signature.Length; i++)
+                            for (int i = 0; i <= bytesRead - signature.Length; i++)
                             {
                                 if (IsValidMatch(buffer, i, signature))
                                 {
@@ -216,10 +216,10 @@ namespace ROSE_Login_Manager.Services
 
             if (signature.SequenceEqual(ConvertStringToBytes(JOB_LEVEL_SIGNATURE)))
             {
-                var result = SignatureValidators.IsValidJobLevelSignature(buffer, startIndex, signature);
-                _characterInfo.JobTitle = result.JobTitle;
-                _characterInfo.Level = result.Level;
-            }    
+                var (JobTitle, Level) = SignatureValidators.IsValidJobLevelSignature(buffer, startIndex, signature);
+                _characterInfo.JobTitle = JobTitle;
+                _characterInfo.Level = Level;
+            }
 
             return true;
         }
@@ -231,7 +231,7 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="signature">The hexadecimal string signature.</param>
         /// <returns>The byte array representation of the signature.</returns>
-        private byte[] ConvertStringToBytes(string signature)
+        private static byte[] ConvertStringToBytes(string signature)
         {
             string[] parts = signature.Split(' ');
             byte[] bytes = new byte[parts.Length];
@@ -251,18 +251,19 @@ namespace ROSE_Login_Manager.Services
             return bytes;
         }
 
-         
+
 
         #region Native Methods, Structs, and Variables
 
-        [DllImport("kernel32.dll")]
-        static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+        [LibraryImport("kernel32.dll")]
+        public static partial IntPtr OpenProcess(uint dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead);
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In, Out] byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead);
 
-        [DllImport("kernel32.dll")]
-        private static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
+        [LibraryImport("kernel32.dll")]
+        private static partial int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct MEMORY_BASIC_INFORMATION

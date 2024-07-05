@@ -352,7 +352,7 @@ namespace ROSE_Login_Manager.Services
 
                 process.Start();
                 await process.WaitForExitAsync().ConfigureAwait(false);
-                
+
                 return process.ExitCode == 0;
             }
             catch (FileNotFoundException)

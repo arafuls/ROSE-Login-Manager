@@ -290,7 +290,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             try
             {
-                #pragma warning disable IDE0066 // Convert switch statement to expression
+#pragma warning disable IDE0066 // Convert switch statement to expression
                 switch (value)
                 {
                     case bool:
@@ -302,7 +302,7 @@ namespace ROSE_Login_Manager.ViewModel
                     default:
                         throw new ArgumentException("Unsupported value type.");
                 }
-                #pragma warning restore IDE0066 // Convert switch statement to expression
+#pragma warning restore IDE0066 // Convert switch statement to expression
             }
             catch (Exception ex)
             {
