@@ -58,7 +58,24 @@ namespace ROSE_Login_Manager
             _ = ConfigurationManager.Instance;
             _ = ProcessManager.Instance;
 
-            ProcessManager.Instance.HandleExistingTRoseProcesses();
+            // Subscribe to handle unhandled exceptions on the UI (Dispatcher) thread.
+            // This ensures that any unhandled exceptions occurring on the UI thread are caught and logged.
+            Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+        }
+
+
+
+        /// <summary>
+        ///     Handles unhandled exceptions occurring in the Dispatcher thread.
+        ///     Logs the exception using NLog at the Fatal level.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">DispatcherUnhandledExceptionEventArgs that contains the event data.</param>
+        private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Exception? ex = e.Exception;
+            LogManager.GetCurrentClassLogger().Fatal(ex, "Unhandled Dispatcher Exception occurred");
+            e.Handled = true; // Mark the exception as handled to prevent application shutdown
         }
 
 

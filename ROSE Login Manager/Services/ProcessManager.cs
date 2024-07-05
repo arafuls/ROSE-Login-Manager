@@ -25,7 +25,9 @@ namespace ROSE_Login_Manager.Services
         /// <returns><see langword="true"/> if the function succeeds, otherwise <see langword="false"/>.</returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
+#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
         private static extern bool SetWindowText(IntPtr hWnd, string lpString);
+#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
 
 
 
@@ -71,9 +73,12 @@ namespace ROSE_Login_Manager.Services
 
 
 
-        private readonly List<ActiveProcessInfo> _activeProcesses = [];
+#pragma warning disable IDE0052 // Remove unread private members if they are not used elsewhere
         private readonly Timer _cleanupTimer;
-        private readonly DatabaseManager _db = new();
+#pragma warning restore IDE0052 // Remove unread private members if they are not used elsewhere
+
+        private static readonly List<ActiveProcessInfo> _activeProcesses = [];
+        private static readonly DatabaseManager _db = new();
         private readonly Mutex _findProcessesMutex = new();
 
         private const uint SWP_NOSIZE = 0x0001;
@@ -83,16 +88,57 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Represents information about an active process, including its process ID and associated email.
+        ///     Represents information about an active process, including its process ID, associated email, and process exit handling.
         /// </summary>
-        /// <param name="processId">The process ID of the active process.</param>
-        /// <param name="email">The email associated with the active process.</param>
-        private class ActiveProcessInfo(Process process, int processId, string email)
+        private class ActiveProcessInfo
         {
             public CharacterInfo CharacterInfo { get; set; }
-            public Process Process { get; set; } = process;
-            public int ProcessId { get; set; } = processId;
-            public string Email { get; set; } = email;
+            public Process Process { get; set; }
+            public int ProcessId { get; set; }
+            public string Email { get; set; }
+            public EventHandler ProcessExited; // Event handler for process exit
+
+            public ActiveProcessInfo(Process process, int processId, string email)
+            {
+                Process = process;
+                ProcessId = processId;
+                Email = email;
+
+                // Subscribe to the process exited event
+                ProcessExited = (sender, e) =>
+                {
+                    OnProcessExited();
+                };
+
+                Process.EnableRaisingEvents = true;
+                Process.Exited += ProcessExited;
+            }
+
+            /// <summary>
+            /// Event handler called when the associated process exits.
+            /// </summary>
+            private void OnProcessExited()
+            {
+                try
+                {
+                    // Ensure thread-safe access to _activeProcesses list
+                    lock (_activeProcesses)
+                    {
+                        // Find the ActiveProcessInfo object corresponding to the exited process
+                        ActiveProcessInfo? activeProcess = _activeProcesses.FirstOrDefault(p => p.ProcessId == ProcessId);
+                        if (activeProcess != null)
+                        {
+                            // Remove the exited process from the active processes list
+                            _activeProcesses.Remove(activeProcess);
+                            _db.UpdateProfileStatus(Email, false);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.GetCurrentClassLogger().Error($"Error cleaning up after process {ProcessId}: {ex.Message}");
+                }
+            }
         }
 
 
