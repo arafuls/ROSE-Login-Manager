@@ -157,40 +157,47 @@ namespace ROSE_Login_Manager.Services
             const int chunkSize = 4096; // Adjusted chunk size for performance
             byte[] buffer = new byte[chunkSize]; // Reusable buffer
 
-            while (VirtualQueryEx(_process.Handle, currentAddress, out MEMORY_BASIC_INFORMATION mbi, (uint)Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION))) != 0)
+            try
             {
-                // Check if the memory region is committed and has the necessary protection
-                if (mbi.State == AllocationState.MEM_COMMIT &&
-                    (mbi.Protect == AllocationProtect.PAGE_READWRITE || mbi.Protect == AllocationProtect.PAGE_READONLY))
+                while (VirtualQueryEx(_process.Handle, currentAddress, out MEMORY_BASIC_INFORMATION mbi, (uint)Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION))) != 0)
                 {
-                    long baseAddress = mbi.BaseAddress.ToInt64();
-                    long regionSize = mbi.RegionSize.ToInt64();
-                    long remainingSize = regionSize;
-
-                    // Read and scan in chunks
-                    while (remainingSize > 0)
+                    // Check if the memory region is committed and has the necessary protection
+                    if (mbi.State == AllocationState.MEM_COMMIT &&
+                        (mbi.Protect == AllocationProtect.PAGE_READWRITE || mbi.Protect == AllocationProtect.PAGE_READONLY))
                     {
-                        int bufferSize = (int)Math.Min(remainingSize, chunkSize);
+                        long baseAddress = mbi.BaseAddress.ToInt64();
+                        long regionSize = mbi.RegionSize.ToInt64();
+                        long remainingSize = regionSize;
 
-                        // Read the process memory into the buffer
-                        if (ReadProcessMemory(_process.Handle, new IntPtr(baseAddress), buffer, bufferSize, out int bytesRead) && bytesRead > 0)
+                        // Read and scan in chunks
+                        while (remainingSize > 0)
                         {
-                            // Scan the buffer for the signature
-                            for (int i = 0; i <= bytesRead - signature.Length; i++)
+                            int bufferSize = (int)Math.Min(remainingSize, chunkSize);
+
+                            // Read the process memory into the buffer
+                            if (ReadProcessMemory(_process.Handle, new IntPtr(baseAddress), buffer, bufferSize, out int bytesRead) && bytesRead > 0)
                             {
-                                if (IsValidMatch(buffer, i, signature))
+                                // Scan the buffer for the signature
+                                for (int i = 0; i <= bytesRead - signature.Length; i++)
                                 {
-                                    return new IntPtr(baseAddress + i);
+                                    if (IsValidMatch(buffer, i, signature))
+                                    {
+                                        return new IntPtr(baseAddress + i);
+                                    }
                                 }
                             }
+
+                            remainingSize -= bufferSize;
+                            baseAddress += bufferSize;
                         }
-
-                        remainingSize -= bufferSize;
-                        baseAddress += bufferSize;
                     }
-                }
 
-                currentAddress = new IntPtr(mbi.BaseAddress.ToInt64() + mbi.RegionSize.ToInt64());
+                    currentAddress = new IntPtr(mbi.BaseAddress.ToInt64() + mbi.RegionSize.ToInt64());
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO: Proper logger
             }
 
             return IntPtr.Zero;

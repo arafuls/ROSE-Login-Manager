@@ -1,5 +1,6 @@
 ﻿using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -117,7 +118,6 @@ namespace ROSE_Login_Manager.Services
 
         private void TimerCallback(object o)
         {
-            // TODO: Scan for trose processes not already found
             FindProcessesData();
             CleanUpExitedProcesses();
         }
@@ -137,13 +137,12 @@ namespace ROSE_Login_Manager.Services
                 foreach (Process process in existingProcesses)
                 {
                     // Add the PID of each existing trose process to the active processes list
-                    // TODO: Determine used email if possible
                     _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
                 }
             }
             catch (Exception ex)
-            {   // Handle or log any exceptions as needed
-                Console.WriteLine($"An error occurred while handling existing trose processes: {ex.Message}");
+            {   
+                // TODO: Proper logging
             }
         }
 
@@ -337,6 +336,7 @@ namespace ROSE_Login_Manager.Services
                     string email = memscan.ScanActiveEmailSignature();
                     if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
                     {
+                        activeProcess.Email = email;
                         _db.UpdateProfileStatus(email, true);
                     }
 
