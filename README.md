@@ -27,8 +27,6 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
 
 ![Main Menu Screenshot](https://i.imgur.com/RRNh0fU.png)
 
-![Profile List Screenshot](https://i.imgur.com/lHiB0RH.png)
-
 ![Settings View Screenshot](https://i.imgur.com/uFm6xzd.png)
 
 ![DB Screenshot](https://i.imgur.com/rGvelwA.png)
