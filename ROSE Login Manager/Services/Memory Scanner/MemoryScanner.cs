@@ -3,6 +3,7 @@ using ROSE_Login_Manager.Services.Memory_Scanner;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 
@@ -14,8 +15,9 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal partial class MemoryScanner : IDisposable
     {
-        private static readonly IntPtr CHAR_NAME_ADDRESS = new(0x00007FF64C0F5CE0);
-        private static readonly string JOB_LEVEL_SIGNATURE = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
+        private static readonly IntPtr CHAR_NAME_ADDRESS    = new(0x00007FF64C0F5CE0);
+        private static readonly string JOB_LEVEL_SIGNATURE  = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
+        private static readonly string LOGIN_STR_SIGNATURE  = "2D 2D 73 65 72 76 65 72 20 63 6F 6E 6E 65 63 74 2E 72 6F 73 65 6F 6E 6C 69 6E 65 67 61 6D 65 2E 63 6F 6D 20 2D 2D 75 73 65 72 6E 61 6D 65 20";
 
         private readonly Process _process;
 
@@ -77,8 +79,8 @@ namespace ROSE_Login_Manager.Services
         /// </returns>
         public CharacterInfo ScanCharacterInfoSignature()
         {
-            byte[] jobLevelSignature = ConvertStringToBytes(JOB_LEVEL_SIGNATURE);
-            if (!GetCharacterName() || (ScanMemory(jobLevelSignature) == IntPtr.Zero))
+            byte[] signature = ConvertStringToBytes(JOB_LEVEL_SIGNATURE);
+            if (!GetCharacterName() || (ScanMemory(signature) == IntPtr.Zero))
             {
                 return new CharacterInfo();
             }
@@ -89,12 +91,31 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
+        ///     Scans the memory of the current process for the active email signature.
+        /// </summary>
+        /// <returns>
+        ///     The email address if found; otherwise, an empty string.
+        /// </returns>
+        public string ScanActiveEmailSignature()
+        {
+            byte[] signature = ConvertStringToBytes(LOGIN_STR_SIGNATURE);
+            if (ScanMemory(signature) == IntPtr.Zero)
+            {
+                return string.Empty;
+            }
+
+            return _characterInfo.AccountEmail;
+        }
+
+
+
+        /// <summary>
         ///     Retrieves the character name from the specified memory address.
         /// </summary>
         /// <returns><see langword="true"/> if the character name is successfully retrieved; otherwise, <see langword="false"/>.</returns>
         private bool GetCharacterName()
         {
-            const int bufferSize = 17; // Adjust as needed
+            const int bufferSize = 17;
             byte[] buffer = new byte[bufferSize];
 
             try
@@ -110,31 +131,14 @@ namespace ROSE_Login_Manager.Services
                     _characterInfo.CharacterName = characterName;
                     return true;
                 }
-                else
-                {
-                    int error = Marshal.GetLastWin32Error();
-                    new DialogService().ShowMessageBox(
-                        title: $"{GlobalVariables.APP_NAME} - Character Name Address Error",
-                        message: $"Failed to read process memory. Error code: {error}",
-                        button: MessageBoxButton.OK,
-                        icon: MessageBoxImage.Error);
-                }
             }
             catch (InvalidOperationException ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Character Name Address Error",
-                    message: $"Error accessing process {_process.Id}: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                // TODO: Proper logging
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Character Name Address Error",
-                    message: $"Error in GetCharacterName: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                // TODO: Proper logging
             }
 
             return false;
@@ -195,12 +199,22 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Checks if the given buffer at the specified start index matches the signature.
+        ///     Validates if a given signature matches a specific pattern in the provided buffer starting from the specified index.
         /// </summary>
-        /// <param name="buffer">The buffer to check.</param>
-        /// <param name="startIndex">The start index in the buffer.</param>
-        /// <param name="signature">The signature to match.</param>
-        /// <returns><see langword="true"/> if the buffer matches the signature; otherwise, <see langword="false"/>.</returns>
+        /// <param name="buffer">The byte array buffer to search within.</param>
+        /// <param name="startIndex">The starting index in the buffer to check for the signature.</param>
+        /// <param name="signature">The byte array signature to match against.</param>
+        /// <returns>
+        ///     True if the signature matches the pattern in the buffer; otherwise, false.
+        /// </returns>
+        /// <remarks>
+        ///     This method checks if the signature matches a specific pattern in the buffer starting from the given index. 
+        ///     It performs the following steps:
+        ///     1. Validates that the buffer has enough length to accommodate the signature plus additional bytes.
+        ///     2. Compares each byte in the signature with the corresponding byte in the buffer, ignoring null bytes.
+        ///     3. If the signature matches the job level signature, it validates the job title and level and updates the character info.
+        ///     4. If the signature matches the login string signature, it validates the login email and updates the character info.
+        /// </remarks>
         private bool IsValidMatch(byte[] buffer, int startIndex, byte[] signature)
         {
             if (startIndex + signature.Length + 3 > buffer.Length)
@@ -219,6 +233,11 @@ namespace ROSE_Login_Manager.Services
                 var (JobTitle, Level) = SignatureValidators.IsValidJobLevelSignature(buffer, startIndex, signature);
                 _characterInfo.JobTitle = JobTitle;
                 _characterInfo.Level = Level;
+            }
+            else if (signature.SequenceEqual(ConvertStringToBytes(LOGIN_STR_SIGNATURE)))
+            {
+                string foundEmail = SignatureValidators.IsValidLoginEmailSignature(buffer, startIndex, signature);
+                _characterInfo.AccountEmail = foundEmail;
             }
 
             return true;

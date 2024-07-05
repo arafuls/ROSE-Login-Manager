@@ -35,12 +35,10 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
         ///     - The job title as a string if found;
         ///     - The level as an integer if valid and within bounds.
         /// </returns>
-        public static (string JobTitle, int Level) IsValidJobLevelSignature(byte[] buffer, int startIndex, byte[] signature)
+        internal static (string JobTitle, int Level) IsValidJobLevelSignature(byte[] buffer, int startIndex, byte[] signature)
         {
-            // Convert the portion of the buffer to a string based on the provided startIndex and signature length
             string foundString = Encoding.ASCII.GetString(buffer, startIndex, signature.Length);
 
-            // Iterate through each valid job title to check if the foundString matches the job level signature criteria
             foreach (var jobTitle in ValidJobTitles)
             {
                 // Create a regex pattern dynamically for the current jobTitle
@@ -59,6 +57,37 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
             }
 
             return ("", 0); // No valid job level signature found
+        }
+
+
+
+        /// <summary>
+        ///     Validates and extracts a login email address from a specified buffer starting from the given index.
+        /// </summary>
+        /// <param name="buffer">The byte array buffer to search within.</param>
+        /// <param name="startIndex">The starting index in the buffer to check for the signature.</param>
+        /// <param name="signature">The byte array signature to match against.</param>
+        /// <returns>
+        ///     The extracted email address if a valid match is found; otherwise, an empty string.
+        /// </returns>
+        internal static string IsValidLoginEmailSignature(byte[] buffer, int startIndex, byte[] signature)
+        {
+            string foundString = Encoding.ASCII.GetString(buffer, startIndex + signature.Length, 320);
+
+            Regex regex = new(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\
+                                    x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[
+                                    a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]
+                                    |[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1
+                                    -9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[
+                                    \x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+
+            Match match = regex.Match(foundString);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+
+            return string.Empty;
         }
     }
 }

@@ -466,6 +466,32 @@ namespace ROSE_Login_Manager.Resources.Util
 
             return profileIV;
         }
+
+
+
+        /// <summary>
+        ///     Checks if an email exists in the database.
+        /// </summary>
+        /// <param name="email">The email to check.</param>
+        /// <returns>True if the email exists; otherwise, false.</returns>
+        internal bool EmailExists(string email)
+        {
+            string query = "SELECT COUNT(*) FROM Profiles WHERE ProfileEmail = @Email";
+            bool emailExists = false;
+
+            _db.Open();
+            using (SqliteCommand command = _db.CreateCommand())
+            {
+                command.CommandText = query;
+                command.Parameters.AddWithValue("@Email", email);
+
+                int count = Convert.ToInt32(command.ExecuteScalar());
+                emailExists = count > 0;
+            }
+            _db.Close();
+
+            return emailExists;
+        }
         #endregion
 
 

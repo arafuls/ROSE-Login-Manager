@@ -319,30 +319,42 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Finds and processes data for active processes associated with the ROSE Online client.
-        ///     Scans for character information signatures and updates process titles with valid character data.
+        ///     Scans active processes for signatures in game process memory
         /// </summary>
         public void FindProcessesData()
         {
+            // Return if scanning setting is turned off
+            if (!GlobalVariables.Instance.ToggleCharDataScanning)
+                return;
+
+            // Attempt to acquire the mutex immediately; return if not acquired
             if (!_findProcessesMutex.WaitOne(TimeSpan.Zero))
                 return;
 
             try
             {
-                if (!GlobalVariables.Instance.ToggleCharDataScanning)
-                    return;
-
                 foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
                 {
                     using MemoryScanner memscan = new(activeProcess.Process);
 
+                    // If an email is found and it exists in the database, update the profile status to active
+                    string email = memscan.ScanActiveEmailSignature();
+                    if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
+                    {
+                        _db.UpdateProfileStatus(email, true);
+                    }
+
+                    // If valid character data is found, change the process title to reflect the character info
                     CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
                     if (charInfo.ValidData())
+                    {
                         ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
+                    }
                 }
             }
             finally
             {
+                // Release the mutex to allow other threads to acquire it
                 _findProcessesMutex.ReleaseMutex();
             }
         }

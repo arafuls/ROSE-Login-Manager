@@ -24,16 +24,23 @@ namespace ROSE_Login_Manager.Model
         public string CharacterName { get; set; }
 
         /// <summary>
+        ///     Gets or sets the email of the account.
+        /// </summary>
+        public string AccountEmail { get; set; }
+
+        /// <summary>
         ///     Initializes a new instance of the <see cref="CharacterInfo"/> struct.
         /// </summary>
         /// <param name="jobTitle">The job title of the character.</param>
         /// <param name="level">The level of the character.</param>
         /// <param name="characterName">The name of the character.</param>
-        public CharacterInfo(string jobTitle, int level, string characterName)
+        /// <param name="AccountEmail">The email of the account.</param>
+        public CharacterInfo(string jobTitle, int level, string characterName, string accountEmail)
         {
             JobTitle = jobTitle;
             Level = level;
             CharacterName = characterName;
+            AccountEmail = accountEmail;
         }
 
         /// <summary>

@@ -109,7 +109,11 @@
                         <CheckBox Content="Overwrite Window Title with Character Data" VerticalContentAlignment="Center" IsChecked="{Binding ToggleCharDataScanning}" Margin="0 2" Foreground="WhiteSmoke">
                             <CheckBox.ToolTip>
                                 <ToolTip>
-                                    <TextBlock Text="Enable to set the ROSE Client's Window Title to show as: {Character Name} ({Class}) - Level {XYZ}" />
+                                    <TextBlock>
+                                        <Run Text="Enable to set the ROSE Client's window title to the active character data. (Eg. Ghidorah (Artisan) - Level 130)"/>
+                                        <LineBreak/>
+                                        <Run Text="This setting can be toggled on and off without needing to restart the manager or the game clients."/>
+                                    </TextBlock>
                                 </ToolTip>
                             </CheckBox.ToolTip>
                         </CheckBox>
