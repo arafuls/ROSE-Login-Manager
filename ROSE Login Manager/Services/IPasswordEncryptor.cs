@@ -1,10 +1,8 @@
 ﻿using NLog;
-using ROSE_Login_Manager.Model;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
-using System.Windows;
 
 
 

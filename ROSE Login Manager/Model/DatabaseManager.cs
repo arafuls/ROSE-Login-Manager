@@ -2,7 +2,6 @@
 using Microsoft.Data.Sqlite;
 using NLog;
 using ROSE_Login_Manager.Model;
-using ROSE_Login_Manager.Services;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;

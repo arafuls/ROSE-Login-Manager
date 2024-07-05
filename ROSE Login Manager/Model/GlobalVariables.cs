@@ -2,10 +2,8 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
 using NLog;
-using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
-using System.Windows;
 
 
 

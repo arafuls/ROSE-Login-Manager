@@ -7,7 +7,6 @@ using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Windows;
 
 
 

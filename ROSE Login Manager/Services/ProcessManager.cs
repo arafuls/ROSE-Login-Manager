@@ -1,10 +1,8 @@
 ﻿using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
-using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows;
 
 
 

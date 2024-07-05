@@ -386,7 +386,7 @@ namespace ROSE_Login_Manager.ViewModel
                 LogManager.GetCurrentClassLogger().Error(ex);
             }
             catch (Exception ex)
-            {   
+            {
                 LogManager.GetCurrentClassLogger().Error(ex);
             }
         }

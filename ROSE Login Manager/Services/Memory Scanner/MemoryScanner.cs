@@ -4,8 +4,6 @@ using ROSE_Login_Manager.Services.Memory_Scanner;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Windows;
 
 
 
@@ -16,9 +14,9 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal partial class MemoryScanner : IDisposable
     {
-        private static readonly IntPtr CHAR_NAME_ADDRESS    = new(0x00007FF64C0F5CE0);
-        private static readonly string JOB_LEVEL_SIGNATURE  = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
-        private static readonly string LOGIN_STR_SIGNATURE  = "2D 2D 73 65 72 76 65 72 20 63 6F 6E 6E 65 63 74 2E 72 6F 73 65 6F 6E 6C 69 6E 65 67 61 6D 65 2E 63 6F 6D 20 2D 2D 75 73 65 72 6E 61 6D 65 20";
+        private static readonly IntPtr CHAR_NAME_ADDRESS = new(0x00007FF64C0F5CE0);
+        private static readonly string JOB_LEVEL_SIGNATURE = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
+        private static readonly string LOGIN_STR_SIGNATURE = "2D 2D 73 65 72 76 65 72 20 63 6F 6E 6E 65 63 74 2E 72 6F 73 65 6F 6E 6C 69 6E 65 67 61 6D 65 2E 63 6F 6D 20 2D 2D 75 73 65 72 6E 61 6D 65 20";
 
         private readonly Process _process;
 
