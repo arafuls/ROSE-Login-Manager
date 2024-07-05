@@ -323,10 +323,6 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         public void FindProcessesData()
         {
-            // Return if scanning setting is turned off
-            if (!GlobalVariables.Instance.ToggleCharDataScanning)
-                return;
-
             // Attempt to acquire the mutex immediately; return if not acquired
             if (!_findProcessesMutex.WaitOne(TimeSpan.Zero))
                 return;
@@ -344,11 +340,13 @@ namespace ROSE_Login_Manager.Services
                         _db.UpdateProfileStatus(email, true);
                     }
 
-                    // If valid character data is found, change the process title to reflect the character info
-                    CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
-                    if (charInfo.ValidData())
+                    if (GlobalVariables.Instance.ToggleCharDataScanning)
                     {
-                        ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
+                        CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
+                        if (charInfo.ValidData())
+                        {
+                            ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
+                        }
                     }
                 }
             }
