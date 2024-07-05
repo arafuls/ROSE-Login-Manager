@@ -1,4 +1,5 @@
-﻿using ROSE_Login_Manager.Model;
+﻿using NLog;
+using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using System;
 using System.Diagnostics;
@@ -141,8 +142,8 @@ namespace ROSE_Login_Manager.Services
                 }
             }
             catch (Exception ex)
-            {   
-                // TODO: Proper logging
+            {
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -173,9 +174,12 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Launches the ROSE Online game client using the specified start information.
+        ///     Launches the ROSE Online game client process with the provided start information.
+        ///     Updates the profile status in the database and optionally moves the client process
+        ///     to the background based on application settings.
         /// </summary>
-        /// <param name="startInfo">ProcessStartInfo containing the information to start the ROSE client.</param>
+        /// <param name="startInfo">ProcessStartInfo object containing information to start the client process.</param>
+        /// <exception cref="ArgumentException">Thrown when the process arguments are missing in <paramref name="startInfo"/>.</exception>
         public void LaunchROSE(ProcessStartInfo startInfo)
         {
             try
@@ -183,12 +187,8 @@ namespace ROSE_Login_Manager.Services
                 string[] arguments = startInfo.Arguments.Split(" ");
                 Process? process = Process.Start(startInfo);
 
-                if (arguments.Length == 3)
-                {
-                    // TODO: Determine how to handle profiles launched outside this Login Manager context
-                    //       where specific profile info may not be accessible directly.
-                }
-                else if (process != null)
+                // The process was launched with additional arguments, assuming they are login credentials
+                if (arguments.Length > 3 && process != null)
                 {
                     string emailArg = arguments.ElementAtOrDefault(4) ?? throw new ArgumentException("The process arguments are missing in ProcessStartInfo.");
                     _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, emailArg));
@@ -202,7 +202,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred in LaunchROSE: {ex.Message}");
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -216,7 +216,6 @@ namespace ROSE_Login_Manager.Services
         /// <param name="process">The process whose main window should be moved.</param>
         private static void MoveToBackground(Process process)
         {
-            // Wait for the process to initialize its main window
             IntPtr hWnd = IntPtr.Zero;
             int maxAttempts = 50;
             int delay = 100; // Polling interval in milliseconds
@@ -244,11 +243,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - MoveToBackground Error",
-                    message: $"Failed to move process to background: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -305,11 +300,7 @@ namespace ROSE_Login_Manager.Services
             }
             else
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Process Manager Error",
-                    message: $"Process {process.ProcessName} does not have a main window handle.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error($"Process {process.ProcessName} does not have a main window handle.");
             }
         }
         #endregion

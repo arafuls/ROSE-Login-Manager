@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Newtonsoft.Json;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services.Infrastructure;
 using ROSE_Login_Manager.Services.Rose_Updater;
@@ -53,11 +54,7 @@ namespace ROSE_Login_Manager.Services
                 }
                 catch (Exception ex)
                 {
-                    new DialogService().ShowMessageBox(
-                        title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
-                        message: $"Error validating updater: {ex.Message}",
-                        button: MessageBoxButton.OK,
-                        icon: MessageBoxImage.Error);
+                    LogManager.GetCurrentClassLogger().Error(ex);
                     return false;
                 }
             }
@@ -264,19 +261,11 @@ namespace ROSE_Login_Manager.Services
             }
             catch (FileNotFoundException ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
-                    message: $"Bita executable not found: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
-                    message: $"Error updating local files: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -361,11 +350,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
-                    message: $"Error running bita: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 return false;
             }
         }
@@ -429,11 +414,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Rose Updater Error",
-                    message: $"Failed to save local manifest to {localManifestPath}: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 throw;
             }
         }

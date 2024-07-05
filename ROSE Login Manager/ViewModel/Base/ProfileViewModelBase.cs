@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
@@ -97,11 +98,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (string.IsNullOrEmpty(ProfileName) || string.IsNullOrEmpty(ProfileEmail) || ProfilePassword == null || ProfilePassword.Length < 8)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Error Creating Profile",
-                    message: "Verify all data fields have been completed and password has 8 or more characters.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error("Verify all data fields have been completed and password has 8 or more characters.");
                 return false;
             }
 
@@ -110,22 +107,14 @@ namespace ROSE_Login_Manager.ViewModel
             // For new profiles, check for email collision directly
             if (isNewProfile && db.PotentialRecordCollision(ProfileEmail))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Duplicate Profile Email",
-                    message: "This profile email is already in use. Each profile must have a unique email address.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Exclamation);
+                LogManager.GetCurrentClassLogger().Error("This profile email is already in use. Each profile must have a unique email address.");
                 return false;
             }
 
             // For updating profiles, check for email collision only if the email has changed
             if (!isNewProfile && ProfileEmail != ExistingEmail && db.PotentialRecordCollision(ProfileEmail))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Duplicate Profile Email",
-                    message: "This profile email is already in use. Each profile must have a unique email address.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Exclamation);
+                LogManager.GetCurrentClassLogger().Error("This profile email is already in use. Each profile must have a unique email address.");
                 return false;
             }
 

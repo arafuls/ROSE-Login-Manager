@@ -1,4 +1,5 @@
-﻿using ROSE_Login_Manager.Model;
+﻿using NLog;
+using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services.Memory_Scanner;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -131,14 +132,18 @@ namespace ROSE_Login_Manager.Services
                     _characterInfo.CharacterName = characterName;
                     return true;
                 }
+                else
+                {
+                    LogManager.GetCurrentClassLogger().Error($"Failed to read process memory.");
+                }
             }
             catch (InvalidOperationException ex)
             {
-                // TODO: Proper logging
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
             catch (Exception ex)
             {
-                // TODO: Proper logging
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
 
             return false;
@@ -197,7 +202,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                // TODO: Proper logger
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
 
             return IntPtr.Zero;

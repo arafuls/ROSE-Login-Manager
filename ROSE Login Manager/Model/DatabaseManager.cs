@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Data.Sqlite;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
 using System.Collections.ObjectModel;
@@ -150,20 +151,12 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (SqliteException ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager Error",
-                    message: $"SQLite Error {ex.SqliteErrorCode}: '{ex.Message}'",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 result = false;
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - DatabaseManager Error",
-                    message: $"An error occurred: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 result = false;
             }
             finally
@@ -558,15 +551,40 @@ namespace ROSE_Login_Manager.Resources.Util
                 }
                 catch (Exception ex)
                 {
-                    new DialogService().ShowMessageBox(
-                        title: $"{GlobalVariables.APP_NAME} - DatabaseManager Error",
-                        message: $"SQLite Error {ex.Message}: '{ex.Message}'",
-                        button: MessageBoxButton.OK,
-                        icon: MessageBoxImage.Error);
+                    LogManager.GetCurrentClassLogger().Error(ex);
                     transaction.Rollback();
                 }
             }
             _db.Close();
+        }
+
+
+
+        /// <summary>
+        ///     Retrieves the ProfileStatus from the database based on the provided email.
+        /// </summary>
+        /// <param name="email">The email associated with the profile.</param>
+        /// <returns>The ProfileStatus corresponding to the provided email. Returns false if the email is not found.</returns>
+        internal bool GetProfileStatusByEmail(string email)
+        {
+            bool profileStatus = false;
+
+            _db.Open();
+            using (SqliteCommand command = _db.CreateCommand())
+            {
+                command.CommandText = "SELECT ProfileStatus FROM Profiles WHERE ProfileEmail = @Email";
+                command.Parameters.AddWithValue("@Email", email);
+
+                // Execute the query to fetch the ProfileStatus
+                object? result = command.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    profileStatus = Convert.ToBoolean(result);
+                }
+            }
+            _db.Close();
+
+            return profileStatus;
         }
 
 

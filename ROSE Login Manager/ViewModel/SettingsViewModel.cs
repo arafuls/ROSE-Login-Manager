@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
@@ -250,11 +251,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (string.IsNullOrEmpty(filePath))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Update Toml File Error",
-                    message: "Failed to locate rose.toml",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error("Failed to locate rose.toml");
                 return;
             }
 
@@ -269,11 +266,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
             else
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Update Toml File Error",
-                    message: $"Failed to update {key} within rose.toml",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error($"Failed to update {key} within rose.toml");
                 return;
             }
         }
@@ -306,12 +299,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Toml Formatter Error",
-                    message: $"Failed to format TOML value: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
-
+                LogManager.GetCurrentClassLogger().Error(ex);
                 return null;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
+using NLog;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
@@ -149,11 +150,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{APP_NAME} - Game Executable Search Error",
-                    message: ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 return false;
             }
         }
@@ -178,11 +175,7 @@ namespace ROSE_Login_Manager.Model
             }
             else
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{APP_NAME} - Handle Setting Changed Error",
-                    message: "Unknown setting changed.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error($"Unknown setting changed: {0}, {1}", message.Key, message.Value);
             }
 
         }
@@ -210,7 +203,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading registry: {ex.Message}");
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
 
             return null;

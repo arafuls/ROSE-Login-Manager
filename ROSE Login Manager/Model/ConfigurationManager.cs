@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
@@ -75,11 +76,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
-                    message: "Error loading config: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -165,11 +162,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
-                    message: "Error creating configuration file: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -211,11 +204,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
-                    message: "Error saving setting: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
         }
 
@@ -263,11 +252,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager Error",
-                    message: "Error saving setting: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
             }
             _doc.Save(_configFile);
         }

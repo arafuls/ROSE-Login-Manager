@@ -1,6 +1,10 @@
-﻿using ROSE_Login_Manager.Model;
+﻿using NLog.Config;
+using NLog.Targets;
+using NLog;
+using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
 using System.Windows;
+using System.IO;
 
 
 
@@ -21,7 +25,7 @@ namespace ROSE_Login_Manager
         /// <param name="e">Information about the startup event.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            const string mutexName = "ROSE_Login_Manager_Mutex"; // Replace with your application name
+            const string mutexName = "ROSE_Login_Manager_Mutex";
 
             // Attempt to create a new mutex
             _mutex = new Mutex(true, mutexName, out bool createdNew);
@@ -29,11 +33,7 @@ namespace ROSE_Login_Manager
             // If the mutex already exists, exit the application
             if (!createdNew)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - App OnStartup",
-                    message: "Another instance of the application is already running.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Information);
+                LogManager.GetCurrentClassLogger().Fatal("Another instance of the ROSE Login Manager is already running.");
                 _mutex.Dispose();
                 _mutex = null;
                 Environment.Exit(1);
@@ -41,6 +41,17 @@ namespace ROSE_Login_Manager
 
             // Continue with application initialization
             base.OnStartup(e);
+
+            // NLog configuration
+            var config = new LoggingConfiguration();
+            var fileTarget = new FileTarget("file")
+            {
+                FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "logs", "${shortdate}.log"),
+                Layout = "${longdate} ${uppercase:${level}} ${message}"
+            };
+            config.AddTarget(fileTarget);
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, fileTarget);
+            LogManager.Configuration = config;
 
             // Instantiate Singletons
             _ = GlobalVariables.Instance;
@@ -58,9 +69,11 @@ namespace ROSE_Login_Manager
         /// <param name="e">Information about the exit event.</param>
         protected override void OnExit(ExitEventArgs e)
         {
-            // Release the mutex when the application exits
+            LogManager.Shutdown();
+
             _mutex?.ReleaseMutex();
             _mutex?.Dispose();
+
             base.OnExit(e);
         }
     }

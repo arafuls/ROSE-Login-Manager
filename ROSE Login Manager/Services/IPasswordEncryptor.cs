@@ -1,4 +1,5 @@
-﻿using ROSE_Login_Manager.Model;
+﻿using NLog;
+using ROSE_Login_Manager.Model;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -65,20 +66,12 @@ namespace ROSE_Login_Manager.Services
             }
             catch (CryptographicException ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Encryption Error",
-                    message: $"Encryption error: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 throw;
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Encryption Error",
-                    message: $"Error encrypting password: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 throw;
             }
         }
@@ -117,20 +110,12 @@ namespace ROSE_Login_Manager.Services
             }
             catch (CryptographicException ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Decryption Error",
-                    message: $"Decryption error: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 throw;
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Decryption Error",
-                    message: $"Error decrypting cipher text: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                LogManager.GetCurrentClassLogger().Error(ex);
                 throw;
             }
         }
