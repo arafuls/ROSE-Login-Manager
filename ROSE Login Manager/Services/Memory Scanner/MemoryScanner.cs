@@ -1,6 +1,5 @@
 ﻿using NLog;
-using ROSE_Login_Manager.Model;
-using ROSE_Login_Manager.Services.Memory_Scanner;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,33 +9,36 @@ using System.Text;
 namespace ROSE_Login_Manager.Services
 {
     /// <summary>
-    ///     Provides methods to scan memory of a specgzified process for a given signature.
+    ///     Provides functionality to scan and read memory from a specified process.
+    ///     This class allows you to open and close handles to processes, read memory, and retrieve specific data.
+    ///     It handles memory access errors gracefully and supports resource cleanup through the <see cref="IDisposable"/> interface.
     /// </summary>
     internal partial class MemoryScanner : IDisposable
     {
-        private static readonly IntPtr CHAR_NAME_ADDRESS = new(0x00007FF64C0F5CE0);
-        private static readonly string JOB_LEVEL_SIGNATURE = "?? ?? ?? ?? ?? ?? ?? 20 2D 20 4C 65 76 65 6C 20 ?? ?? ??";
-        private static readonly string LOGIN_STR_SIGNATURE = "2D 2D 73 65 72 76 65 72 20 63 6F 6E 6E 65 63 74 2E 72 6F 73 65 6F 6E 6C 69 6E 65 67 61 6D 65 2E 63 6F 6D 20 2D 2D 75 73 65 72 6E 61 6D 65 20";
+        private const uint PROCESS_QUERY_INFORMATION = 0x0400;
+        private const uint PROCESS_VM_READ = 0x0010;
 
-        private readonly Process _process;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private bool disposed = false;
-        private CharacterInfo _characterInfo = new();
+        private readonly Process _process; // The process from which memory will be scanned.
+        private readonly IntPtr _baseAddress; // The base address of the process's memory from which scanning starts.
+        private bool _disposed = false; // Indicates whether the object has been disposed.
 
 
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="MemoryScanner"/> class with the specified process.
         /// </summary>
-        /// <param name="process">The process to scan.</param>
+        /// <param name="process">The process from which memory will be scanned. Must not be <see langword="null"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="process"/> parameter is <see langword="null"/>.</exception>
         public MemoryScanner(Process process)
         {
             _process = process ?? throw new ArgumentNullException(nameof(process));
+            _baseAddress = GetBaseAddress(process);
         }
 
 
-
-        #region IDisposable Implementation
+        #region IDisposable Implementation & Deconstructor
 
         /// <summary>
         ///     Releases all resources used by the <see cref="MemoryScanner"/> object.
@@ -47,9 +49,15 @@ namespace ROSE_Login_Manager.Services
             GC.SuppressFinalize(this);
         }
 
+
+
+        /// <summary>
+        ///     Releases the resources used by the <see cref="MemoryScanner"/> object.
+        /// </summary>
+        /// <param name="disposing">Indicates whether to release both managed and unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -57,10 +65,15 @@ namespace ROSE_Login_Manager.Services
                 }
 
                 // Dispose unmanaged resources
-                disposed = true;
+                _disposed = true;
             }
         }
 
+
+
+        /// <summary>
+        ///     Finalizer for the <see cref="MemoryScanner"/> class to ensure unmanaged resources are released.
+        /// </summary>
         ~MemoryScanner()
         {
             Dispose(false);
@@ -69,220 +82,262 @@ namespace ROSE_Login_Manager.Services
 
 
 
-        /// <summary>
-        ///     Scans the game's memory to retrieve character information, including the character name and job level.
-        /// </summary>
-        /// <returns>
-        ///     A <see cref="CharacterInfo"/> object containing the scanned character's information if successful;
-        ///     otherwise, returns an empty <see cref="CharacterInfo"/> object.
-        /// </returns>
-        public CharacterInfo ScanCharacterInfoSignature()
-        {
-            byte[] signature = ConvertStringToBytes(JOB_LEVEL_SIGNATURE);
-            if (!GetCharacterName() || (ScanMemory(signature) == IntPtr.Zero))
-            {
-                return new CharacterInfo();
-            }
+        #region Memory Access Methods
 
-            return _characterInfo;
+        /// <summary>
+        ///     Opens a handle to the process with the specified access rights.
+        /// </summary>
+        /// <param name="desiredAccess">The access rights to request for the process handle.</param>
+        /// <returns>The handle to the process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the process handle cannot be opened.</exception>
+        private IntPtr OpenProcessHandle(uint desiredAccess)
+        {
+            IntPtr processHandle = OpenProcess(desiredAccess, false, _process.Id);
+            if (processHandle == IntPtr.Zero)
+            {
+                var errorCode = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException($"Failed to open process. Error code: {errorCode}");
+            }
+            return processHandle;
         }
 
 
 
         /// <summary>
-        ///     Scans the memory of the current process for the active email signature.
+        ///     Closes the handle to the process if it is valid.
         /// </summary>
-        /// <returns>
-        ///     The email address if found; otherwise, an empty string.
-        /// </returns>
-        public string ScanActiveEmailSignature()
+        /// <param name="handle">The handle to the process to be closed.</param>
+        private static void CloseProcessHandle(IntPtr handle)
         {
-            byte[] signature = ConvertStringToBytes(LOGIN_STR_SIGNATURE);
-            if (ScanMemory(signature) == IntPtr.Zero)
+            if (handle != IntPtr.Zero)
             {
-                return string.Empty;
+                CloseHandle(handle);
             }
-
-            return _characterInfo.AccountEmail;
         }
 
 
 
         /// <summary>
-        ///     Retrieves the character name from the specified memory address.
+        ///     Reads a specified number of bytes from the memory of the process at a given address.
         /// </summary>
-        /// <returns><see langword="true"/> if the character name is successfully retrieved; otherwise, <see langword="false"/>.</returns>
-        private bool GetCharacterName()
+        /// <param name="address">The address in the process memory to read from.</param>
+        /// <param name="length">The number of bytes to read.</param>
+        /// <returns>A byte array containing the data read from memory.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the memory cannot be read correctly.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown when access to the memory is denied.</exception>
+        /// <exception cref="Win32Exception">Thrown when a Win32 error occurs while reading memory.</exception>
+        private byte[] ReadMemory(IntPtr address, int length)
         {
-            const int bufferSize = 17;
-            byte[] buffer = new byte[bufferSize];
+            IntPtr processHandle = IntPtr.Zero;
+            byte[] buffer = new byte[length];
 
             try
             {
-                if (_process == null || _process.HasExited)
+                processHandle = OpenProcessHandle(PROCESS_VM_READ);
+                if (!ReadProcessMemory(processHandle, address, buffer, buffer.Length, out int bytesRead) || bytesRead != length)
                 {
-                    return false;
-                }
-
-                if (ReadProcessMemory(_process.Handle, CHAR_NAME_ADDRESS, buffer, buffer.Length, out int bytesRead) && bytesRead > 0)
-                {
-                    string characterName = Encoding.ASCII.GetString(buffer).TrimEnd('\0');
-                    _characterInfo.CharacterName = characterName;
-                    return true;
-                }
-                else
-                {
-                    LogManager.GetCurrentClassLogger().Error($"Failed to read process memory.");
+                    var errorMessage = $"Failed to read {length} bytes from address {address}.";
+                    Logger.Error(errorMessage);
+                    throw new InvalidOperationException(errorMessage);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (UnauthorizedAccessException ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "Access denied while reading memory from address {Address}: {Message}", address, ex.Message);
+                throw;
+            }
+            catch (Win32Exception ex)
+            {
+                Logger.Error(ex, "Win32 error while reading memory from address {Address}: {Message}", address, ex.Message);
+                throw;
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "An unexpected error occurred while reading memory from address {Address}: {Message}", address, ex.Message);
+                throw;
+            }
+            finally
+            {
+                CloseProcessHandle(processHandle);
             }
 
-            return false;
+            return buffer;
         }
 
 
 
         /// <summary>
-        ///     Scans the process memory for a given signature.
+        ///     Gets the base address of the first module in the specified process.
         /// </summary>
-        /// <param name="signature">The signature to scan for.</param>
-        /// <returns>The memory address where the signature is found, or IntPtr.Zero if not found.</returns>
-        private IntPtr ScanMemory(byte[] signature)
+        /// <param name="process">The process from which to retrieve the base address.</param>
+        /// <returns>The base address of the first module in the process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the process handle cannot be opened or modules cannot be enumerated.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown when access to the process is denied.</exception>
+        /// <exception cref="Win32Exception">Thrown when a Win32 error occurs while interacting with the process.</exception>
+        private static IntPtr GetBaseAddress(Process process)
         {
-            IntPtr currentAddress = IntPtr.Zero;
-            const int chunkSize = 4096; // Adjusted chunk size for performance
-            byte[] buffer = new byte[chunkSize]; // Reusable buffer
+            IntPtr processHandle = IntPtr.Zero;
 
             try
             {
-                while (VirtualQueryEx(_process.Handle, currentAddress, out MEMORY_BASIC_INFORMATION mbi, (uint)Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION))) != 0)
+                processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, process.Id);
+                if (processHandle == IntPtr.Zero)
                 {
-                    // Check if the memory region is committed and has the necessary protection
-                    if (mbi.State == AllocationState.MEM_COMMIT &&
-                        (mbi.Protect == AllocationProtect.PAGE_READWRITE || mbi.Protect == AllocationProtect.PAGE_READONLY))
-                    {
-                        long baseAddress = mbi.BaseAddress.ToInt64();
-                        long regionSize = mbi.RegionSize.ToInt64();
-                        long remainingSize = regionSize;
-
-                        // Read and scan in chunks
-                        while (remainingSize > 0)
-                        {
-                            int bufferSize = (int)Math.Min(remainingSize, chunkSize);
-
-                            // Read the process memory into the buffer
-                            if (ReadProcessMemory(_process.Handle, new IntPtr(baseAddress), buffer, bufferSize, out int bytesRead) && bytesRead > 0)
-                            {
-                                // Scan the buffer for the signature
-                                for (int i = 0; i <= bytesRead - signature.Length; i++)
-                                {
-                                    if (IsValidMatch(buffer, i, signature))
-                                    {
-                                        return new IntPtr(baseAddress + i);
-                                    }
-                                }
-                            }
-
-                            remainingSize -= bufferSize;
-                            baseAddress += bufferSize;
-                        }
-                    }
-
-                    currentAddress = new IntPtr(mbi.BaseAddress.ToInt64() + mbi.RegionSize.ToInt64());
+                    var errorCode = Marshal.GetLastWin32Error();
+                    throw new InvalidOperationException($"Failed to open process. Error code: {errorCode}");
                 }
-            }
-            catch (Exception ex)
-            {
-                LogManager.GetCurrentClassLogger().Error(ex);
-            }
 
-            return IntPtr.Zero;
-        }
-
-
-
-        /// <summary>
-        ///     Validates if a given signature matches a specific pattern in the provided buffer starting from the specified index.
-        /// </summary>
-        /// <param name="buffer">The byte array buffer to search within.</param>
-        /// <param name="startIndex">The starting index in the buffer to check for the signature.</param>
-        /// <param name="signature">The byte array signature to match against.</param>
-        /// <returns>
-        ///     True if the signature matches the pattern in the buffer; otherwise, false.
-        /// </returns>
-        /// <remarks>
-        ///     This method checks if the signature matches a specific pattern in the buffer starting from the given index. 
-        ///     It performs the following steps:
-        ///     1. Validates that the buffer has enough length to accommodate the signature plus additional bytes.
-        ///     2. Compares each byte in the signature with the corresponding byte in the buffer, ignoring null bytes.
-        ///     3. If the signature matches the job level signature, it validates the job title and level and updates the character info.
-        ///     4. If the signature matches the login string signature, it validates the login email and updates the character info.
-        /// </remarks>
-        private bool IsValidMatch(byte[] buffer, int startIndex, byte[] signature)
-        {
-            if (startIndex + signature.Length + 3 > buffer.Length)
-                return false;
-
-            for (int j = 0; j < signature.Length; j++)
-            {
-                if (signature[j] != 0x00 && buffer[startIndex + j] != signature[j])
+                IntPtr[] moduleHandles = new IntPtr[1024];
+                if (EnumProcessModules(processHandle, moduleHandles, (uint)(IntPtr.Size * moduleHandles.Length), out uint bytesNeeded))
                 {
-                    return false;
-                }
-            }
-
-            if (signature.SequenceEqual(ConvertStringToBytes(JOB_LEVEL_SIGNATURE)))
-            {
-                var (JobTitle, Level) = SignatureValidators.IsValidJobLevelSignature(buffer, startIndex, signature);
-                _characterInfo.JobTitle = JobTitle;
-                _characterInfo.Level = Level;
-            }
-            else if (signature.SequenceEqual(ConvertStringToBytes(LOGIN_STR_SIGNATURE)))
-            {
-                string foundEmail = SignatureValidators.IsValidLoginEmailSignature(buffer, startIndex, signature);
-                _characterInfo.AccountEmail = foundEmail;
-            }
-
-            return true;
-        }
-
-
-
-        /// <summary>
-        ///     Converts a hexadecimal string signature into a byte array.
-        /// </summary>
-        /// <param name="signature">The hexadecimal string signature.</param>
-        /// <returns>The byte array representation of the signature.</returns>
-        private static byte[] ConvertStringToBytes(string signature)
-        {
-            string[] parts = signature.Split(' ');
-            byte[] bytes = new byte[parts.Length];
-
-            for (int i = 0; i < parts.Length; i++)
-            {
-                if (parts[i].Contains('?'))
-                {
-                    bytes[i] = 0x00; // Wildcard Byte
+                    IntPtr baseAddress = moduleHandles[0];
+                    return baseAddress;
                 }
                 else
                 {
-                    bytes[i] = Convert.ToByte(parts[i], 16);
+                    var errorCode = Marshal.GetLastWin32Error();
+                    throw new InvalidOperationException($"Failed to enumerate process modules. Error code: {errorCode}");
                 }
             }
-
-            return bytes;
+            catch (UnauthorizedAccessException ex)
+            {
+                Logger.Error(ex, "Access denied: {Message}", ex.Message);
+                throw;
+            }
+            catch (Win32Exception ex)
+            {
+                Logger.Error(ex, "Win32 error: {Message}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "An unexpected error occurred: {Message}", ex.Message);
+                throw;
+            }
+            finally
+            {
+                if (processHandle != IntPtr.Zero)
+                {
+                    CloseHandle(processHandle);
+                }
+            }
         }
+
+
+
+        /// <summary>
+        ///     Applies an offset to a base address to calculate a new address.
+        /// </summary>
+        /// <param name="baseAddress">The base address to which the offset is added.</param>
+        /// <param name="offset">The offset to add to the base address.</param>
+        /// <returns>The new address calculated by adding the offset to the base address.</returns>
+        private static IntPtr ApplyOffset(IntPtr baseAddress, int offset)
+        {
+            return new IntPtr(baseAddress.ToInt64() + offset);
+        }
+
+
+
+        /// <summary>
+        ///     Reads a pointer (8 bytes) from memory and returns it as an IntPtr.
+        /// </summary>
+        /// <param name="address">The address in memory from which to read the pointer.</param>
+        /// <returns>The pointer read from memory as an IntPtr.</returns>
+        public IntPtr ReadPointerFromMemory(IntPtr address)
+        {
+            byte[] buffer = ReadMemory(address, 8);
+            return new IntPtr(BitConverter.ToInt64(buffer, 0));
+        }
+
+
+
+
+        /// <summary>
+        ///     Reads a string of a specified length from memory and converts it to a string.
+        /// </summary>
+        /// <param name="address">The address in memory from which to read the string.</param>
+        /// <param name="length">The length of the string to read from memory.</param>
+        /// <returns>The string read from memory.</returns>
+        public string ReadStringFromMemory(IntPtr address, int length)
+        {
+            byte[] buffer = ReadMemory(address, length);
+            return Encoding.ASCII.GetString(buffer).TrimEnd('\0');
+        }
+
+        #endregion
+
+
+
+        #region Get Character Name Methods
+
+        /// <summary>
+        ///     Gets the character's name based on the character length.
+        ///     Determines the offset to use based on the length and retrieves the name.
+        /// </summary>
+        /// <returns>The character's name as a string.</returns>
+        public string GetCharacterName()
+        {
+            int length = GetCharacterLength();
+            int baseOffset;
+
+            if (length <= 15)
+            {
+                baseOffset = 0x159EF28;
+            }
+            else
+            {
+                baseOffset = 0x159EF80;
+            }
+
+            return GetCharacterNameFromOffset(baseOffset, 0x09A8);
+        }
+
+
+
+        /// <summary>
+        ///     Retrieves the character's name from a given base offset and name offset.
+        ///     Reads the name from memory based on the calculated address.
+        /// </summary>
+        /// <param name="baseOffset">The base offset used to calculate the starting address.</param>
+        /// <param name="nameOffset">The offset added to the base address to locate the character's name.</param>
+        /// <returns>The character's name as a string.</returns>
+        private string GetCharacterNameFromOffset(int baseOffset, int nameOffset)
+        {
+            IntPtr address = ApplyOffset(_baseAddress, baseOffset);
+            address = ReadPointerFromMemory(address);
+            address = ApplyOffset(address, nameOffset);
+            return ReadStringFromMemory(address, 16);
+        }
+
+
+
+        /// <summary>
+        ///     Gets the length of the character's name.
+        ///     Reads a byte from memory to determine the length of the name.
+        /// </summary>
+        /// <returns>The length of the character's name as an integer.</returns>
+        private int GetCharacterLength()
+        {
+            int offset = 0x015AC990;
+            IntPtr address = ApplyOffset(_baseAddress, offset);
+
+            byte[] buffer = ReadMemory(address, 1);
+            return buffer[0];
+        }
+        #endregion
 
 
 
         #region Native Methods, Structs, and Variables
+
+        [LibraryImport("psapi.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool EnumProcessModules(IntPtr hProcess, [Out] IntPtr[] lphModule, uint cb, out uint lpcbNeeded);
+
+
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool CloseHandle(IntPtr hObject);
 
         [LibraryImport("kernel32.dll")]
         public static partial IntPtr OpenProcess(uint dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);

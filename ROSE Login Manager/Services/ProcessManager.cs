@@ -15,6 +15,9 @@ namespace ROSE_Login_Manager.Services
     {
         #region Native Methods
 
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOMOVE = 0x0002;
+
         /// <summary>
         ///     Sets the text of the specified window's title bar.
         /// </summary>
@@ -69,8 +72,6 @@ namespace ROSE_Login_Manager.Services
 
         #endregion
 
-
-
 #pragma warning disable IDE0052 // Remove unread private members if they are not used elsewhere
         private readonly Timer _cleanupTimer;
 #pragma warning restore IDE0052 // Remove unread private members if they are not used elsewhere
@@ -79,9 +80,7 @@ namespace ROSE_Login_Manager.Services
         private static readonly DatabaseManager _db = new();
         private readonly Mutex _findProcessesMutex = new();
 
-        private const uint SWP_NOSIZE = 0x0001;
-        private const uint SWP_NOMOVE = 0x0002;
-        private const uint ELAPSED_TIME_MILLISECONDS = 30000;
+        private const uint ELAPSED_TIME_MILLISECONDS = 1000;
 
 
 
@@ -129,6 +128,7 @@ namespace ROSE_Login_Manager.Services
                             // Remove the exited process from the active processes list
                             _activeProcesses.Remove(activeProcess);
                             _db.UpdateProfileStatus(Email, false);
+                            LogManager.GetCurrentClassLogger().Info($"{activeProcess.CharacterInfo.CharacterName} | Process {activeProcess.ProcessId} has exited.");
                         }
                     }
                 }
@@ -172,7 +172,7 @@ namespace ROSE_Login_Manager.Services
         /// <summary>
         ///     Handles existing TRose processes by updating profile statuses and adding them to the active processes list.
         /// </summary>
-        public void HandleExistingTRoseProcesses()
+        public static void HandleExistingTRoseProcesses()
         {
             _db.ClearAllProfileStatus();
 
@@ -368,19 +368,24 @@ namespace ROSE_Login_Manager.Services
                     using MemoryScanner memscan = new(activeProcess.Process);
 
                     // If an email is found and it exists in the database, update the profile status to active
-                    string email = memscan.ScanActiveEmailSignature();
-                    if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
-                    {
-                        activeProcess.Email = email;
-                        _db.UpdateProfileStatus(email, true);
-                    }
+                    //string email = memscan.ScanActiveEmailSignature();
+                    //if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
+                    //{
+                    //    activeProcess.Email = email;
+                    //    _db.UpdateProfileStatus(email, true);
+                    //}
+                    //
 
                     if (GlobalVariables.Instance.ToggleCharDataScanning)
                     {
-                        CharacterInfo charInfo = memscan.ScanCharacterInfoSignature();
-                        if (charInfo.ValidData())
+                        CharacterInfo characterInfo = new()
                         {
-                            ChangeProcessTitle(activeProcess.Process, charInfo.ToString());
+                            CharacterName = memscan.GetCharacterName()
+                        };
+
+                        if (characterInfo.IsValid())
+                        {
+                            ChangeProcessTitle(activeProcess.Process, characterInfo.ToString());
                         }
                     }
                 }
