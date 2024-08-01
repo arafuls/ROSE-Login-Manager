@@ -275,10 +275,9 @@ namespace ROSE_Login_Manager.Services
         /// </returns>
         public string GetActiveEmail()
         {
-            IntPtr address = ApplyOffset(_baseAddress, 0x015A50B8);
+            IntPtr address = ApplyOffset(_baseAddress, 0x015B7C10);
             address = ReadPointerFromMemory(address);
-            address = ApplyOffset(address, 0x0454);
-            return SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 400));
+            return SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 320));
         }
 
         #endregion
