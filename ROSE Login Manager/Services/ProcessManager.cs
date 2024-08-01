@@ -11,7 +11,7 @@ namespace ROSE_Login_Manager.Services
     /// <summary>
     ///     Manages the processes related to the ROSE Online client and their associated user profiles.
     /// </summary>
-    public partial class ProcessManager  // Make sure this is `public` so it can be accessed from other namespaces
+    public partial class ProcessManager
     {
         #region Native Methods
 
@@ -72,10 +72,13 @@ namespace ROSE_Login_Manager.Services
 
         #endregion
 
-#pragma warning disable IDE0052 // Remove unread private members if they are not used elsewhere
-        private readonly Timer _cleanupTimer;
-#pragma warning restore IDE0052 // Remove unread private members if they are not used elsewhere
 
+
+#pragma warning disable IDE0052
+        private readonly Timer _cleanupTimer;
+#pragma warning restore IDE0052
+
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly List<ActiveProcessInfo> _activeProcesses = [];
         private static readonly DatabaseManager _db = new();
         private readonly Mutex _findProcessesMutex = new();
@@ -128,7 +131,7 @@ namespace ROSE_Login_Manager.Services
                             // Remove the exited process from the active processes list
                             _activeProcesses.Remove(activeProcess);
                             _db.UpdateProfileStatus(Email, false);
-                            LogManager.GetCurrentClassLogger().Info($"{activeProcess.CharacterInfo.CharacterName} | Process {activeProcess.ProcessId} has exited.");
+                            Logger.Info($"Process {activeProcess.ProcessId} has exited.");
                         }
                     }
                 }
@@ -163,7 +166,7 @@ namespace ROSE_Login_Manager.Services
 
         private void TimerCallback(object o)
         {
-            FindProcessesData();
+            FindProcessData();
             CleanUpExitedProcesses();
         }
 
@@ -187,7 +190,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "An exception occured during method HandleExistingTRoseProcesses.");
             }
         }
 
@@ -199,7 +202,7 @@ namespace ROSE_Login_Manager.Services
         public void CleanUpExitedProcesses()
         {
             // Iterate over a copy of the active processes list to avoid issues with modification during enumeration
-            foreach (var activeProcess in _activeProcesses.ToList())
+            foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
             {
                 int processId = activeProcess.ProcessId;
 
@@ -211,6 +214,8 @@ namespace ROSE_Login_Manager.Services
                 {
                     _activeProcesses.Remove(activeProcess);
                     _db.UpdateProfileStatus(activeProcess.Email, false);
+
+                    Logger.Info($"Process {processId} exited due to clean up.");
                 }
             }
         }
@@ -224,8 +229,10 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="startInfo">ProcessStartInfo object containing information to start the client process.</param>
         /// <exception cref="ArgumentException">Thrown when the process arguments are missing in <paramref name="startInfo"/>.</exception>
-        public void LaunchROSE(ProcessStartInfo startInfo)
+        public static void LaunchROSE(ProcessStartInfo startInfo)
         {
+            Logger.Info("Attempting to launch ROSE Online client.");
+
             try
             {
                 string[] arguments = startInfo.Arguments.Split(" ");
@@ -237,6 +244,8 @@ namespace ROSE_Login_Manager.Services
                     string emailArg = arguments.ElementAtOrDefault(4) ?? throw new ArgumentException("The process arguments are missing in ProcessStartInfo.");
                     _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, emailArg));
                     _db.UpdateProfileStatus(emailArg, true);
+
+                    Logger.Info($"ROSE Online client process {process.Id} has started.");
                 }
 
                 if (GlobalVariables.Instance.LaunchClientBehind && process != null)
@@ -246,7 +255,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "An exception occured while launching ROSE Online client.");
             }
         }
 
@@ -260,6 +269,8 @@ namespace ROSE_Login_Manager.Services
         /// <param name="process">The process whose main window should be moved.</param>
         private static void MoveToBackground(Process process)
         {
+            Logger.Debug($"Moving process {process.Id} to background.");
+
             IntPtr hWnd = IntPtr.Zero;
             int maxAttempts = 50;
             int delay = 100; // Polling interval in milliseconds
@@ -278,7 +289,8 @@ namespace ROSE_Login_Manager.Services
 
                 if (hWnd == IntPtr.Zero)
                 {
-                    throw new Exception("Failed to find the main window of the process.");
+                    string message = $"Failed to find the main window of process {process.Id}.";
+                    throw new Exception(message);
                 }
 
                 // Move the process window behind your application's window
@@ -287,7 +299,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "Unable to move process window to background.");
             }
         }
 
@@ -323,7 +335,7 @@ namespace ROSE_Login_Manager.Services
             EnumThreadWindows(threadId, (hWndEnum, lParam) =>
             {
                 hWnd = hWndEnum;
-                return false; // Stop enumeration
+                return false;
             }, IntPtr.Zero);
             return hWnd;
         }
@@ -337,6 +349,8 @@ namespace ROSE_Login_Manager.Services
         /// <param name="newTitle">The new title to set for the process.</param>
         public static void ChangeProcessTitle(Process process, string newTitle)
         {
+            Logger.Debug($"Changing title of process {process.ProcessName} to '{newTitle}'.");
+
             IntPtr mainWindowHandle = process.MainWindowHandle;
             if (mainWindowHandle != IntPtr.Zero)
             {
@@ -344,7 +358,7 @@ namespace ROSE_Login_Manager.Services
             }
             else
             {
-                LogManager.GetCurrentClassLogger().Error($"Process {process.ProcessName} does not have a main window handle.");
+                Logger.Warn($"Process {process.ProcessName} does not have a main window handle.");
             }
         }
         #endregion
@@ -355,11 +369,13 @@ namespace ROSE_Login_Manager.Services
         /// <summary>
         ///     Scans active processes for signatures in game process memory
         /// </summary>
-        public void FindProcessesData()
+        public void FindProcessData()
         {
             // Attempt to acquire the mutex immediately; return if not acquired
             if (!_findProcessesMutex.WaitOne(TimeSpan.Zero))
+            {
                 return;
+            }
 
             try
             {
@@ -368,13 +384,13 @@ namespace ROSE_Login_Manager.Services
                     using MemoryScanner memscan = new(activeProcess.Process);
 
                     // If an email is found and it exists in the database, update the profile status to active
-                    //string email = memscan.ScanActiveEmailSignature();
-                    //if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
-                    //{
-                    //    activeProcess.Email = email;
-                    //    _db.UpdateProfileStatus(email, true);
-                    //}
-                    //
+                    string email = memscan.GetActiveEmail();
+                    if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
+                    {
+                        activeProcess.Email = email;
+                        _db.UpdateProfileStatus(email, true);
+                        Logger.Debug($"Email found and updated for process {activeProcess.ProcessId}.");
+                    }
 
                     if (GlobalVariables.Instance.ToggleCharDataScanning)
                     {

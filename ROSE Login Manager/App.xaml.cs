@@ -15,6 +15,7 @@ namespace ROSE_Login_Manager
     /// </summary>
     public partial class App : Application
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static Mutex? _mutex = null;
 
 
@@ -33,25 +34,16 @@ namespace ROSE_Login_Manager
             // If the mutex already exists, exit the application
             if (!createdNew)
             {
-                LogManager.GetCurrentClassLogger().Fatal("Another instance of the ROSE Login Manager is already running.");
+                Logger.Fatal("Another instance of the ROSE Login Manager is already running.");
+
                 _mutex.Dispose();
                 _mutex = null;
                 Environment.Exit(1);
             }
 
-            // Continue with application initialization
             base.OnStartup(e);
 
-            // NLog configuration
-            var config = new LoggingConfiguration();
-            var fileTarget = new FileTarget("file")
-            {
-                FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "logs", "${shortdate}.log"),
-                Layout = "${longdate} ${uppercase:${level}} ${message}"
-            };
-            config.AddTarget(fileTarget);
-            config.AddRule(LogLevel.Trace, LogLevel.Fatal, fileTarget);
-            LogManager.Configuration = config;
+            ConfigureLogging();
 
             // Instantiate Singletons
             _ = GlobalVariables.Instance;
@@ -76,6 +68,36 @@ namespace ROSE_Login_Manager
             Exception? ex = e.Exception;
             LogManager.GetCurrentClassLogger().Fatal(ex, "Unhandled Dispatcher Exception occurred");
             e.Handled = true; // Mark the exception as handled to prevent application shutdown
+        }
+
+
+
+        /// <summary>
+        ///     Configures the logging settings for the application.
+        /// </summary>
+        /// <remarks>
+        ///     This method sets up a logging configuration that writes log entries to a file. 
+        ///     The log files are saved in a directory specified by the application's name in the user's 
+        ///     application data folder, with the filename format based on the current date.
+        ///     
+        ///     The configuration includes:
+        ///     - A <see cref="FileTarget"/> that specifies the file path and format of log entries.
+        ///     - A log rule that logs messages from <see cref="LogLevel.Trace"/> to <see cref="LogLevel.Fatal"/>.
+        ///     
+        ///     The log layout is formatted to include the date, log level, and message, with the level 
+        ///     converted to uppercase.
+        /// </remarks>
+        private static void ConfigureLogging()
+        {
+            var config = new LoggingConfiguration();
+            var fileTarget = new FileTarget("file")
+            {
+                FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "logs", "${shortdate}.log"),
+                Layout = "${longdate} ${uppercase:${level}} ${message}"
+            };
+            config.AddTarget(fileTarget);
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, fileTarget);
+            LogManager.Configuration = config;
         }
 
 

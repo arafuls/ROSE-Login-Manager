@@ -1,4 +1,5 @@
 ﻿using NLog;
+using ROSE_Login_Manager.Services.Memory_Scanner;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -15,9 +16,6 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal partial class MemoryScanner : IDisposable
     {
-        private const uint PROCESS_QUERY_INFORMATION = 0x0400;
-        private const uint PROCESS_VM_READ = 0x0010;
-
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly Process _process; // The process from which memory will be scanned.
@@ -36,6 +34,7 @@ namespace ROSE_Login_Manager.Services
             _process = process ?? throw new ArgumentNullException(nameof(process));
             _baseAddress = GetBaseAddress(process);
         }
+
 
 
         #region IDisposable Implementation & Deconstructor
@@ -96,6 +95,7 @@ namespace ROSE_Login_Manager.Services
             if (processHandle == IntPtr.Zero)
             {
                 var errorCode = Marshal.GetLastWin32Error();
+                Logger.Error($"Failed to open process with ID {_process.Id}. Error code: {errorCode}.");
                 throw new InvalidOperationException($"Failed to open process. Error code: {errorCode}");
             }
             return processHandle;
@@ -128,6 +128,7 @@ namespace ROSE_Login_Manager.Services
         /// <exception cref="Win32Exception">Thrown when a Win32 error occurs while reading memory.</exception>
         private byte[] ReadMemory(IntPtr address, int length)
         {
+            // TODO: Find a way to determine if user is in avatar selection to prevent scanning
             IntPtr processHandle = IntPtr.Zero;
             byte[] buffer = new byte[length];
 
@@ -136,24 +137,22 @@ namespace ROSE_Login_Manager.Services
                 processHandle = OpenProcessHandle(PROCESS_VM_READ);
                 if (!ReadProcessMemory(processHandle, address, buffer, buffer.Length, out int bytesRead) || bytesRead != length)
                 {
-                    var errorMessage = $"Failed to read {length} bytes from address {address}.";
-                    Logger.Error(errorMessage);
-                    throw new InvalidOperationException(errorMessage);
+                    Logger.Warn($"Failed to read {length} bytes from address {address}.");
+
+                    // Fail silently, this could be caused by attempting to scan while in avatar selection
+                    //throw new InvalidOperationException(errorMessage);
                 }
             }
-            catch (UnauthorizedAccessException ex)
+            catch (Exception ex) when (ex is UnauthorizedAccessException || ex is Win32Exception)
             {
-                Logger.Error(ex, "Access denied while reading memory from address {Address}: {Message}", address, ex.Message);
-                throw;
-            }
-            catch (Win32Exception ex)
-            {
-                Logger.Error(ex, "Win32 error while reading memory from address {Address}: {Message}", address, ex.Message);
+                // Handle specific exceptions
+                Logger.Error(ex, $"Exception occurred while reading memory from address {address}.");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An unexpected error occurred while reading memory from address {Address}: {Message}", address, ex.Message);
+                // Handle any other exceptions
+                Logger.Error(ex, $"An unexpected error occurred while reading memory from address {address}.");
                 throw;
             }
             finally
@@ -183,35 +182,32 @@ namespace ROSE_Login_Manager.Services
                 processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, process.Id);
                 if (processHandle == IntPtr.Zero)
                 {
-                    var errorCode = Marshal.GetLastWin32Error();
-                    throw new InvalidOperationException($"Failed to open process. Error code: {errorCode}");
+                    throw new InvalidOperationException($"Failed to open process. Error code: {Marshal.GetLastWin32Error()}");
                 }
 
                 IntPtr[] moduleHandles = new IntPtr[1024];
-                if (EnumProcessModules(processHandle, moduleHandles, (uint)(IntPtr.Size * moduleHandles.Length), out uint bytesNeeded))
+                if (!EnumProcessModules(processHandle, moduleHandles, (uint)IntPtr.Size, out uint bytesNeeded))
                 {
-                    IntPtr baseAddress = moduleHandles[0];
-                    return baseAddress;
+                    throw new InvalidOperationException($"Failed to enumerate process modules. Error code: {Marshal.GetLastWin32Error()}");
                 }
-                else
+
+                if (bytesNeeded == 0)
                 {
-                    var errorCode = Marshal.GetLastWin32Error();
-                    throw new InvalidOperationException($"Failed to enumerate process modules. Error code: {errorCode}");
+                    throw new InvalidOperationException($"No modules found for the process {process.ProcessName}:{process.Id}.");
                 }
+
+                return moduleHandles[0]; // Return base address of the main executable
             }
-            catch (UnauthorizedAccessException ex)
+            catch (Exception ex) when (ex is UnauthorizedAccessException || ex is Win32Exception)
             {
-                Logger.Error(ex, "Access denied: {Message}", ex.Message);
-                throw;
-            }
-            catch (Win32Exception ex)
-            {
-                Logger.Error(ex, "Win32 error: {Message}", ex.Message);
+                // Handle specific exceptions
+                Logger.Error(ex, "Exception occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An unexpected error occurred: {Message}", ex.Message);
+                // Handle any other exceptions
+                Logger.Error(ex, "Unexpected error while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
                 throw;
             }
             finally
@@ -262,6 +258,27 @@ namespace ROSE_Login_Manager.Services
         {
             byte[] buffer = ReadMemory(address, length);
             return Encoding.ASCII.GetString(buffer).TrimEnd('\0');
+        }
+
+        #endregion
+
+
+
+        #region Get Active Email Methods
+
+        /// <summary>
+        ///     Retrieves the active email from memory by following a series of pointer dereferences and applying an offset.
+        ///     The retrieved email is validated against a specific signature pattern to ensure it is in the correct format.
+        /// </summary>
+        /// <returns>
+        ///     A string containing the validated email if found; otherwise, an empty string.
+        /// </returns>
+        public string GetActiveEmail()
+        {
+            IntPtr address = ApplyOffset(_baseAddress, 0x015A50B8);
+            address = ReadPointerFromMemory(address);
+            address = ApplyOffset(address, 0x0454);
+            return SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 400));
         }
 
         #endregion
@@ -329,6 +346,9 @@ namespace ROSE_Login_Manager.Services
 
 
         #region Native Methods, Structs, and Variables
+
+        private const uint PROCESS_QUERY_INFORMATION = 0x0400;
+        private const uint PROCESS_VM_READ = 0x0010;
 
         [LibraryImport("psapi.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

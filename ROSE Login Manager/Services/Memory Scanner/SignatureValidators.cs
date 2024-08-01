@@ -19,10 +19,8 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
         /// <returns>
         ///     The extracted email address if a valid match is found; otherwise, an empty string.
         /// </returns>
-        internal static string IsValidLoginEmailSignature(byte[] buffer, int startIndex, byte[] signature)
+        internal static string IsValidLoginEmailSignature(string email)
         {
-            string foundString = Encoding.ASCII.GetString(buffer, startIndex + signature.Length, 320);
-
 #pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
             Regex regex = new(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\
                                     x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[
@@ -32,7 +30,7 @@ namespace ROSE_Login_Manager.Services.Memory_Scanner
                                     \x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
 #pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 
-            Match match = regex.Match(foundString);
+            Match match = regex.Match(email);
             if (match.Success)
             {
                 return match.Value;

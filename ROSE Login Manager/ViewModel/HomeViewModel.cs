@@ -328,7 +328,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             try
             {
-                ProcessManager.Instance.LaunchROSE(startInfo);
+                ProcessManager.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {
@@ -379,7 +379,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             try
             {
-                ProcessManager.Instance.LaunchROSE(startInfo);
+                ProcessManager.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {   // ERROR_FILE_NOT_FOUND
