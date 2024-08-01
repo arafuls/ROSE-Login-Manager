@@ -1,10 +1,10 @@
 ﻿using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
+using ROSE_Login_Manager.Services.Memory_Scanner;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-
-
+using System.Threading;
 
 namespace ROSE_Login_Manager.Services
 {
@@ -80,10 +80,11 @@ namespace ROSE_Login_Manager.Services
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly List<ActiveProcessInfo> _activeProcesses = [];
-        private static readonly DatabaseManager _db = new();
-        private readonly Mutex _findProcessesMutex = new();
+        private static readonly DatabaseManager _db = new(); 
+        private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        private const uint ELAPSED_TIME_MILLISECONDS = 1000;
+
+        private const uint ELAPSED_TIME_MILLISECONDS = 5000;
 
 
 
@@ -128,10 +129,9 @@ namespace ROSE_Login_Manager.Services
                         ActiveProcessInfo? activeProcess = _activeProcesses.FirstOrDefault(p => p.ProcessId == ProcessId);
                         if (activeProcess != null)
                         {
-                            // Remove the exited process from the active processes list
-                            _activeProcesses.Remove(activeProcess);
                             _db.UpdateProfileStatus(Email, false);
-                            Logger.Info($"Process {activeProcess.ProcessId} has exited.");
+                            _activeProcesses.Remove(activeProcess);
+                            Logger.Debug($"Process {activeProcess.ProcessId} has exited.");
                         }
                     }
                 }
@@ -145,7 +145,7 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Gets the singleton instance of the ProcessManager.
+        ///     Gets the singleton instance of the ProcessManager class.
         /// </summary>
         private static readonly Lazy<ProcessManager> lazyInstance = new(() => new ProcessManager());
         public static ProcessManager Instance => lazyInstance.Value;
@@ -157,67 +157,106 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         private ProcessManager()
         {
-            _cleanupTimer = new Timer(TimerCallback, null, 0, ELAPSED_TIME_MILLISECONDS);
+            _db.ClearAllProfileStatus();
+            _cleanupTimer = new Timer(TimerCallback, null, 100, ELAPSED_TIME_MILLISECONDS);
 
-            HandleExistingTRoseProcesses();
-        }
-
-
-
-        private void TimerCallback(object o)
-        {
-            FindProcessData();
-            CleanUpExitedProcesses();
-            HandleExistingTRoseProcesses();
+            HandleUntrackedProcesses();
         }
 
 
 
         /// <summary>
-        ///     Handles existing TRose processes by updating profile statuses and adding them to the active processes list.
+        ///     Callback method executed by the timer to handle periodic tasks related to process and profile management.
         /// </summary>
-        public static void HandleExistingTRoseProcesses()
+        private void TimerCallback(object o)
         {
-            _db.ClearAllProfileStatus();
+            // Use async method, but call it synchronously
+            Task.Run(async () =>
+            {
+                await _semaphore.WaitAsync();
+                try
+                {
+                    HandleUntrackedProcesses();
+                    HandleInactiveProfileInToml();
+                    FindProcessData();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "An error occurred during timer callback.");
+                }
+                finally
+                {
+                    _semaphore.Release();
+                }
+            }).GetAwaiter().GetResult(); // Ensure exceptions are handled properly
+        }
 
+
+
+
+        /// <summary>
+        ///     Identifies and tracks instances of the "trose" process that are not currently being monitored.
+        /// </summary>
+        public static void HandleUntrackedProcesses()
+        {
             try
             {
                 Process[] existingProcesses = Process.GetProcessesByName("trose");
                 foreach (Process process in existingProcesses)
                 {
-                    // Add the PID of each existing trose process to the active processes list
-                    _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
+                    bool isProcessAlreadyTracked = _activeProcesses.Any(p => p.ProcessId == process.Id);
+                    if (!isProcessAlreadyTracked)
+                    {
+                        _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
+                        Logger.Debug($"Added new ROSE Online client process {process.Id} to active processes.");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An exception occured during method HandleExistingTRoseProcesses.");
+                Logger.Error(ex, "An exception occured while handling active trose processes.");
             }
         }
 
 
 
         /// <summary>
-        ///     Cleans up exited processes by removing them from the active processes list and updating their associated profile statuses.
+        ///     Handles cases where the last successful login email from `rose.toml` may not be updated correctly.
+        ///     It checks if the email from `rose.toml` corresponds to an active profile. If no active process is found for the profile, 
+        ///     the profile is marked as inactive in the database.
         /// </summary>
-        public static void CleanUpExitedProcesses()
+        /// <remarks>
+        ///     This method addresses the issue where ROSE does not update the last successful login email when logging in via command-line arguments.
+        ///     Consequently, the username field might still show the last manually entered email from `rose.toml`, which could lead to incorrect flags 
+        ///     for active profiles in the database if the email is not up-to-date in memory.
+        /// </remarks>
+        private static void HandleInactiveProfileInToml()
         {
-            // Iterate over a copy of the active processes list to avoid issues with modification during enumeration
-            foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
+            // Retrieve the last account name (email) from the configuration
+            object? value = GlobalVariables.Instance.GetTomlValue("game", "last_account_name");
+            string? email = value as string;
+
+            // Check if the email is valid
+            if (string.IsNullOrEmpty(email))
             {
-                int processId = activeProcess.ProcessId;
+                Logger.Warn("Value from 'last_account_name' within rose.toml could not be found.");
+                return;
+            }
 
-                try
-                {
-                    Process.GetProcessById(processId);
-                }
-                catch (ArgumentException)
-                {
-                    _activeProcesses.Remove(activeProcess);
-                    _db.UpdateProfileStatus(activeProcess.Email, false);
+            // Check if the profile exists in the database
+            if (!_db.ProfileExists(email))
+            {
+                Logger.Warn($"Value from 'last_account_name' {email} does not correspond to a profile in the database.");
+                return;
+            }
 
-                    Logger.Info($"Process {processId} has exited.");
-                }
+            // Check if any active process corresponds to the provided email
+            bool isProcessActive = _activeProcesses.Any(p => p.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+            if (!isProcessActive)
+            {
+                // Mark the profile as inactive in the database if no active process is found
+                _db.UpdateProfileStatus(email, false);
+                Logger.Debug($"Profile {email} marked as inactive because its process is no longer active.");
             }
         }
 
@@ -230,7 +269,9 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="startInfo">ProcessStartInfo object containing information to start the client process.</param>
         /// <exception cref="ArgumentException">Thrown when the process arguments are missing in <paramref name="startInfo"/>.</exception>
-        public static void LaunchROSE(ProcessStartInfo startInfo)
+#pragma warning disable CA1822 // Do not make static as it will override singleton and will cause threading issues
+        public void LaunchROSE(ProcessStartInfo startInfo)
+#pragma warning restore CA1822 
         {
             Logger.Info("Attempting to launch ROSE Online client.");
 
@@ -368,16 +409,10 @@ namespace ROSE_Login_Manager.Services
 
 
         /// <summary>
-        ///     Scans active processes for signatures in game process memory
+        ///     Scans the active processes to retrieve and update data related to user profiles and character information.
         /// </summary>
         public void FindProcessData()
         {
-            // Attempt to acquire the mutex immediately; return if not acquired
-            if (!_findProcessesMutex.WaitOne(TimeSpan.Zero))
-            {
-                return;
-            }
-
             try
             {
                 foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
@@ -410,19 +445,6 @@ namespace ROSE_Login_Manager.Services
             {
                 Logger.Error(ex, "Error occurred while scanning process data.");
             }
-            finally
-            {
-                // Release the mutex to allow other threads to acquire it
-                try
-                {
-                    _findProcessesMutex.ReleaseMutex();
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, "Error releasing mutex.");
-                }
-            }
         }
-
     }
 }

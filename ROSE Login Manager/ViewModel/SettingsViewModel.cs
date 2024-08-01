@@ -11,6 +11,8 @@ using System.Windows.Input;
 using Tomlyn;
 using Tomlyn.Model;
 
+
+
 namespace ROSE_Login_Manager.ViewModel
 {
     /// <summary>
@@ -288,9 +290,7 @@ namespace ROSE_Login_Manager.ViewModel
         }
 
 
-
-
-
+        
         /// <summary>
         ///     Formats a value to be used in a TOML file.
         /// </summary>

@@ -176,6 +176,7 @@ namespace ROSE_Login_Manager.Services
         private static IntPtr GetBaseAddress(Process process)
         {
             IntPtr processHandle = IntPtr.Zero;
+            IntPtr baseAddress = IntPtr.Zero;
 
             try
             {
@@ -185,30 +186,46 @@ namespace ROSE_Login_Manager.Services
                     throw new InvalidOperationException($"Failed to open process. Error code: {Marshal.GetLastWin32Error()}");
                 }
 
-                IntPtr[] moduleHandles = new IntPtr[1024];
-                if (!EnumProcessModules(processHandle, moduleHandles, (uint)IntPtr.Size, out uint bytesNeeded))
+                // Initial buffer size for module handles
+                const int initialBufferSize = 1024;
+                IntPtr[] moduleHandles = new IntPtr[initialBufferSize];
+
+                // Attempt to enumerate process modules
+                if (!EnumProcessModules(processHandle, moduleHandles, (uint)(moduleHandles.Length * IntPtr.Size), out uint bytesNeeded))
                 {
-                    throw new InvalidOperationException($"Failed to enumerate process modules. Error code: {Marshal.GetLastWin32Error()}");
+                    int errorCode = Marshal.GetLastWin32Error();
+
+                    // Check if the process was terminated
+                    if (errorCode == ERROR_INVALID_PARAMETER || errorCode == ERROR_ACCESS_DENIED)
+                    {
+                        Logger.Error(new InvalidOperationException($"Failed to enumerate process modules. Error code: {errorCode}"),
+                            "Process might have been terminated or access was denied for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
+                        return IntPtr.Zero;
+                    }
+
+                    throw new InvalidOperationException($"Failed to enumerate process modules. Error code: {errorCode}");
                 }
 
-                if (bytesNeeded == 0)
+                // Check if we have received valid data
+                int moduleCount = (int)(bytesNeeded / (uint)IntPtr.Size);
+                if (moduleCount == 0 || bytesNeeded == 0 || bytesNeeded < IntPtr.Size)
                 {
                     throw new InvalidOperationException($"No modules found for the process {process.ProcessName}:{process.Id}.");
                 }
 
-                return moduleHandles[0]; // Return base address of the main executable
+                baseAddress = moduleHandles[0];
             }
-            catch (Exception ex) when (ex is UnauthorizedAccessException || ex is Win32Exception)
+            catch (UnauthorizedAccessException ex)
             {
-                // Handle specific exceptions
-                Logger.Error(ex, "Exception occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
-                throw;
+                Logger.Error(ex, "UnauthorizedAccessException occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
+            }
+            catch (Win32Exception ex)
+            {
+                Logger.Error(ex, "Win32Exception occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
             }
             catch (Exception ex)
             {
-                // Handle any other exceptions
                 Logger.Error(ex, "Unexpected error while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
-                throw;
             }
             finally
             {
@@ -217,7 +234,10 @@ namespace ROSE_Login_Manager.Services
                     CloseHandle(processHandle);
                 }
             }
+
+            return baseAddress;
         }
+
 
 
 
@@ -275,9 +295,17 @@ namespace ROSE_Login_Manager.Services
         /// </returns>
         public string GetActiveEmail()
         {
-            IntPtr address = ApplyOffset(_baseAddress, 0x015B7C10);
-            address = ReadPointerFromMemory(address);
-            return SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 320));
+            // TOML 0x015B7C10 + 0x0000
+            // ARGS 0x015D7428 + 0x0810 + 0x0110
+
+            // Read the base address and apply offsets to get the final address
+            IntPtr address = ApplyOffset(_baseAddress, 0x015D7428);
+            address = ReadPointerFromMemory(ApplyOffset(address, 0x0810));
+            address = ApplyOffset(ReadPointerFromMemory(address), 0x0110);
+
+            // Read and validate the email signature from the memory address
+            string email = ReadStringFromMemory(address, 320);
+            return SignatureValidators.IsValidLoginEmailSignature(email);
         }
 
         #endregion
@@ -345,6 +373,9 @@ namespace ROSE_Login_Manager.Services
 
 
         #region Native Methods, Structs, and Variables
+
+        private const int ERROR_ACCESS_DENIED = 5;
+        private const int ERROR_INVALID_PARAMETER = 87;
 
         private const uint PROCESS_QUERY_INFORMATION = 0x0400;
         private const uint PROCESS_VM_READ = 0x0010;

@@ -311,7 +311,7 @@ namespace ROSE_Login_Manager.Resources.Util
         /// <param name="profiles">The collection of user profiles containing the updated order.</param>
         internal void UpdateProfileOrder(ObservableCollection<UserProfileModel> profiles)
         {
-            using SqliteConnection connection = new SqliteConnection($"Data Source={_dbFilePath}");
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
             connection.Open();
             using SqliteTransaction transaction = connection.BeginTransaction();
             try
@@ -582,6 +582,40 @@ namespace ROSE_Login_Manager.Resources.Util
             catch (Exception ex)
             {
                 Logger.Error(ex, "Error occurred while getting profile status for email.");
+                return false;
+            }
+            finally
+            {
+                _db.Close();
+            }
+        }
+
+
+
+        /// <summary>
+        ///     Checks if a user profile with the specified email exists in the database.
+        /// </summary>
+        /// <param name="email">The email address to check for in the database.</param>
+        /// <returns>
+        ///     <c>true</c> if a profile with the specified email exists; otherwise, <c>false</c>.
+        /// </returns>
+        internal bool ProfileExists(string email)
+        {
+            const string query = "SELECT COUNT(*) FROM Profiles WHERE ProfileEmail = @Email";
+
+            using SqliteCommand command = _db.CreateCommand();
+            command.CommandText = query;
+            command.Parameters.AddWithValue("@Email", email);
+
+            try
+            {
+                _db.Open();
+                int count = Convert.ToInt32(command.ExecuteScalar());
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error occurred while checking if profile exists.");
                 return false;
             }
             finally
