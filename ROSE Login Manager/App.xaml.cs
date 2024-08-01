@@ -34,7 +34,7 @@ namespace ROSE_Login_Manager
             // If the mutex already exists, exit the application
             if (!createdNew)
             {
-                Logger.Fatal("Another instance of the ROSE Login Manager is already running.");
+                Logger.Warn("Another instance of the ROSE Login Manager is already running.");
 
                 _mutex.Dispose();
                 _mutex = null;
@@ -65,7 +65,7 @@ namespace ROSE_Login_Manager
         /// <param name="e">DispatcherUnhandledExceptionEventArgs that contains the event data.</param>
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            Logger.Fatal(e.Exception, "Unhandled Dispatcher Exception occurred");
+            Logger.Fatal(e.Exception, "Unhandled Dispatcher Exception occurred.");
             e.Handled = true; // Mark the exception as handled to prevent application shutdown
         }
 

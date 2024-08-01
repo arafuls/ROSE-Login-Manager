@@ -168,6 +168,7 @@ namespace ROSE_Login_Manager.Services
         {
             FindProcessData();
             CleanUpExitedProcesses();
+            HandleExistingTRoseProcesses();
         }
 
 
@@ -389,7 +390,6 @@ namespace ROSE_Login_Manager.Services
                     {
                         activeProcess.Email = email;
                         _db.UpdateProfileStatus(email, true);
-                        Logger.Debug($"Email found and updated for process {activeProcess.ProcessId}.");
                     }
 
                     if (GlobalVariables.Instance.ToggleCharDataScanning)
@@ -406,10 +406,21 @@ namespace ROSE_Login_Manager.Services
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error occurred while scanning process data.");
+            }
             finally
             {
                 // Release the mutex to allow other threads to acquire it
-                _findProcessesMutex.ReleaseMutex();
+                try
+                {
+                    _findProcessesMutex.ReleaseMutex();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error releasing mutex.");
+                }
             }
         }
 

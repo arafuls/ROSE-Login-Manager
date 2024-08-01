@@ -152,7 +152,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while checking for TRose.exe in directory: {directoryPath}.\nStackTrace: {StackTrace}", ex.StackTrace);
+                Logger.Error(ex, "Error occurred while checking for TRose.exe in directory: {directoryPath}.");
                 return false;
             }
         }
@@ -205,7 +205,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Warn(ex, $"An unexpected error has occurred while attempting to read the Windows Registry at path '{path}'.\nStackTrace: {ex.StackTrace}");
+                Logger.Warn(ex, $"An unexpected error has occurred while attempting to read the Windows Registry at path '{path}'.");
             }
 
             return null;

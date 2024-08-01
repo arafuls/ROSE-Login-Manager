@@ -75,7 +75,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error loading configuration: {ex.Message}\n{ex.StackTrace}");
+                Logger.Error($"Error loading configuration: {ex.Message}");
             }
         }
 
@@ -161,7 +161,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error creating configuration: {ex.Message}\n{ex.StackTrace}");
+                Logger.Error($"Error creating configuration: {ex.Message}");
             }
         }
 
@@ -203,7 +203,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error saving setting '{key}': {ex.Message}\n{ex.StackTrace}");
+                Logger.Error($"Error saving setting '{key}': {ex.Message}");
             }
         }
 
@@ -251,7 +251,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error saving setting '{key}' to node '{parentNodeName}': {ex.Message}\n{ex.StackTrace}");
+                Logger.Error($"Error saving setting '{key}' to node '{parentNodeName}': {ex.Message}");
             }
             _doc.Save(_configFile);
         }
@@ -281,7 +281,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error getting configuration setting '{key}': {ex.Message}\n{ex.StackTrace}");
+                Logger.Error($"Error getting configuration setting '{key}': {ex.Message}");
                 return defaultValue.ToString();
             }
         }
