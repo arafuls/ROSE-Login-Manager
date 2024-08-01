@@ -49,6 +49,10 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal abstract class ProfileViewModelBase : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         #region Accessors
         private string _profileName = string.Empty;
         public string ProfileName
@@ -97,7 +101,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (string.IsNullOrEmpty(ProfileName) || string.IsNullOrEmpty(ProfileEmail) || ProfilePassword == null || ProfilePassword.Length < 8)
             {
-                LogManager.GetCurrentClassLogger().Error("Verify all data fields have been completed and password has 8 or more characters.");
+                Logger.Warn("Verify all data fields have been completed and password has 8 or more characters.");
                 return false;
             }
 
@@ -106,14 +110,14 @@ namespace ROSE_Login_Manager.ViewModel
             // For new profiles, check for email collision directly
             if (isNewProfile && db.PotentialRecordCollision(ProfileEmail))
             {
-                LogManager.GetCurrentClassLogger().Error("This profile email is already in use. Each profile must have a unique email address.");
+                Logger.Warn($"This profile email '{ProfileEmail}' is already in use. Each profile must have a unique email address.");
                 return false;
             }
 
             // For updating profiles, check for email collision only if the email has changed
             if (!isNewProfile && ProfileEmail != ExistingEmail && db.PotentialRecordCollision(ProfileEmail))
             {
-                LogManager.GetCurrentClassLogger().Error("This profile email is already in use. Each profile must have a unique email address.");
+                Logger.Warn($"This profile email '{ProfileEmail}' is already in use. Each profile must have a unique email address.");
                 return false;
             }
 

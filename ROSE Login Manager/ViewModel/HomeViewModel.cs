@@ -24,6 +24,7 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal class HomeViewModel : ObservableObject, IDropTarget
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly DatabaseManager _db = new();
         private readonly RoseUpdater _roseUpdater;
 
@@ -191,7 +192,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (GlobalVariables.Instance.RoseGameFolder == null ||
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
-                LogManager.GetCurrentClassLogger().Error("You must set the ROSE Online game directory in the Settings tab in order to launch.");
+                Logger.Warn("You must set the ROSE Online game directory in the Settings tab in order to launch.");
                 return;
             }
 
@@ -210,7 +211,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (GlobalVariables.Instance.RoseGameFolder == null ||
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
-                LogManager.GetCurrentClassLogger().Error("You must set the ROSE Online game directory in the Settings tab in order to launch.");
+                Logger.Warn("You must set the ROSE Online game directory in the Settings tab in order to launch.");
                 return;
             }
 
@@ -314,15 +315,13 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
-                LogManager.GetCurrentClassLogger().Error(
-                    "TRose.exe could not be found.\n\n" +
-                    "Confirm that the ROSE Online Folder Location is set correctly.");
+                Logger.Warn("TRose.exe could not be found.");
                 return;
             }
 
             if (_db.GetProfileStatusByEmail(email))
             {
-                LogManager.GetCurrentClassLogger().Error("TRose.exe is already running an instance with the specified email.");
+                Logger.Warn("TRose.exe is already running an instance with the specified email.");
                 return;
             }
 
@@ -332,12 +331,11 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {
-                // ERROR_FILE_NOT_FOUND
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Warn(ex, "Failed to start TRose.exe. File not found.");
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.");
             }
             finally
             {
@@ -371,9 +369,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
-                LogManager.GetCurrentClassLogger().Error(
-                    "TRose.exe could not be found.\n\n" +
-                    "Confirm that the ROSE Online Folder Location is set correctly.");
+                Logger.Warn("TRose.exe could not be found.");
                 return;
             }
 
@@ -382,12 +378,12 @@ namespace ROSE_Login_Manager.ViewModel
                 ProcessManager.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
-            {   // ERROR_FILE_NOT_FOUND
-                LogManager.GetCurrentClassLogger().Error(ex);
+            {
+                Logger.Warn(ex, "Failed to start TRose.exe. File not found.");
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.");
             }
         }
 

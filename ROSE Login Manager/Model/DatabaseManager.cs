@@ -22,6 +22,8 @@ namespace ROSE_Login_Manager.Resources.Util
     /// </summary>
     internal class DatabaseManager : IDisposable
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private const string DB_FILENAME = "data.sqlite";
         private readonly string _dbFilePath;
         private readonly string _appFolderPath;
@@ -150,12 +152,12 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (SqliteException ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"An SQL error while executing command: {command.CommandText}\nStackTrace: {0}", ex.StackTrace);
                 result = false;
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"An unexpected error occured while executing command: {command.CommandText}\nStackTrace: {0}", ex.StackTrace);
                 result = false;
             }
             finally
@@ -239,6 +241,7 @@ namespace ROSE_Login_Manager.Resources.Util
 
             if (ExecuteNonQuery(command))
             {
+                Logger.Info($"Profile {profile.ProfileName} was added successfully.");
                 WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
                 success = true;
             }
@@ -387,6 +390,7 @@ namespace ROSE_Login_Manager.Resources.Util
 
             if (ExecuteNonQuery(command))
             {
+                Logger.Info("Profile was deleted successfully.");
                 WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
                 return true;
             }
@@ -550,7 +554,7 @@ namespace ROSE_Login_Manager.Resources.Util
                 }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error(ex);
+                    Logger.Error(ex, "Error occurred while clearing profile status.\nStackTrace: {0}", ex.StackTrace);
                     transaction.Rollback();
                 }
             }

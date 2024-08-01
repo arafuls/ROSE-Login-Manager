@@ -18,6 +18,8 @@ namespace ROSE_Login_Manager.Services
         private const string RemoteManifestUrl = RemoteUrl + "/manifest.json";
         private const string LocalManifestFileName = "local_manifest.json";
 
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private static string? RootFolder { get; set; }
 
 
@@ -53,7 +55,7 @@ namespace ROSE_Login_Manager.Services
                 }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error(ex);
+                    Logger.Error(ex, "Error occurred while checking if the updater is the latest and exists.");
                     return false;
                 }
             }
@@ -260,11 +262,11 @@ namespace ROSE_Login_Manager.Services
             }
             catch (FileNotFoundException ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "File not found during update local files operation.");
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "Error occurred while updating local files.");
             }
         }
 
@@ -343,13 +345,14 @@ namespace ROSE_Login_Manager.Services
 
                 return process.ExitCode == 0;
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
+                Logger.Error(ex, "Bita executable file not found.");
                 throw; // Re-throw the FileNotFoundException to handle it higher up
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "Error occurred while downloading the file.");
                 return false;
             }
         }
@@ -413,7 +416,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"Error occurred while saving local manifest to {localManifestPath}.");
                 throw;
             }
         }

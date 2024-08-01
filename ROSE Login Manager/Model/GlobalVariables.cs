@@ -14,6 +14,10 @@ namespace ROSE_Login_Manager.Model
     /// </summary>
     public class GlobalVariables : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         #region Accessors
         public const string APP_NAME = "ROSE Online Login Manager";
 
@@ -148,7 +152,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, "Error occurred while checking for TRose.exe in directory: {directoryPath}.\nStackTrace: {StackTrace}", ex.StackTrace);
                 return false;
             }
         }
@@ -173,10 +177,10 @@ namespace ROSE_Login_Manager.Model
             }
             else
             {
-                LogManager.GetCurrentClassLogger().Error($"Unknown setting changed: {0}, {1}", message.Key, message.Value);
+                Logger.Warn($"An unknown setting has changed. Key '{message.Key}' with value '{message.Value}'");
             }
-
         }
+
 
 
         /// <summary>
@@ -201,7 +205,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Warn(ex, $"An unexpected error has occurred while attempting to read the Windows Registry at path '{path}'.\nStackTrace: {ex.StackTrace}");
             }
 
             return null;

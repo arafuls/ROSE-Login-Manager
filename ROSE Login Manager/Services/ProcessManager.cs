@@ -137,7 +137,7 @@ namespace ROSE_Login_Manager.Services
                 }
                 catch (Exception ex)
                 {
-                    LogManager.GetCurrentClassLogger().Error($"Error cleaning up after process {ProcessId}: {ex.Message}");
+                    Logger.Error($"Error cleaning up after process {ProcessId}: {ex.Message}");
                 }
             }
         }
@@ -199,7 +199,7 @@ namespace ROSE_Login_Manager.Services
         /// <summary>
         ///     Cleans up exited processes by removing them from the active processes list and updating their associated profile statuses.
         /// </summary>
-        public void CleanUpExitedProcesses()
+        public static void CleanUpExitedProcesses()
         {
             // Iterate over a copy of the active processes list to avoid issues with modification during enumeration
             foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
@@ -215,7 +215,7 @@ namespace ROSE_Login_Manager.Services
                     _activeProcesses.Remove(activeProcess);
                     _db.UpdateProfileStatus(activeProcess.Email, false);
 
-                    Logger.Info($"Process {processId} exited due to clean up.");
+                    Logger.Info($"Process {processId} has exited.");
                 }
             }
         }

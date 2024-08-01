@@ -18,6 +18,10 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal class SettingsViewModel : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         #region Accessors
         private string? _roseGameFolderPath;
         public string? RoseGameFolderPath
@@ -245,30 +249,44 @@ namespace ROSE_Login_Manager.ViewModel
         /// <param name="value">The new value to set for the specified key.</param>
         private static void UpdateTomlFile(string section, string key, object value)
         {
-            string? filePath = Directory.GetParent(GlobalVariables.Instance.AppPath)?.FullName;
-            filePath = Path.Combine(filePath, "Rednim Games", "ROSE Online", "config", "rose.toml");
+            string? filePath = Path.Combine(
+                Directory.GetParent(GlobalVariables.Instance.AppPath)?.FullName ?? string.Empty,
+                "Rednim Games", "ROSE Online", "config", "rose.toml"
+            );
 
             if (string.IsNullOrEmpty(filePath))
             {
-                LogManager.GetCurrentClassLogger().Error("Failed to locate rose.toml");
+                Logger.Error("Failed to locate rose.toml at the expected path.");
                 return;
             }
 
-            string tomlContents = File.ReadAllText(filePath);
-            TomlTable tomlTable = Toml.ToModel(tomlContents);
+            try
+            {
+                // Read and deserialize the TOML file
+                string tomlContents = File.ReadAllText(filePath);
+                TomlTable tomlTable = Toml.ToModel(tomlContents);
 
-            if (tomlTable.TryGetValue(section, out var sectionTableObj) && sectionTableObj is TomlTable sectionTable)
-            {
-                sectionTable[key] = FormatTomlValue(value);             // Update the value of the specified key
-                string updatedTomlContent = Toml.FromModel(tomlTable);  // Serialize the updated TOML table back to string
-                File.WriteAllText(filePath, updatedTomlContent);        // Write the updated content back to the file
+                // Update the specified section and key
+                if (tomlTable.TryGetValue(section, out var sectionTableObj) && sectionTableObj is TomlTable sectionTable)
+                {
+                    sectionTable[key] = FormatTomlValue(value);
+                    string updatedTomlContent = Toml.FromModel(tomlTable);
+
+                    // Write the updated TOML content back to the file
+                    File.WriteAllText(filePath, updatedTomlContent);
+                    Logger.Info($"Updated {key} in section {section} of rose.toml.");
+                }
+                else
+                {
+                    Logger.Warn($"Failed to find section '{section}' or key '{key}' in rose.toml.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error($"Failed to update {key} within rose.toml");
-                return;
+                Logger.Error(ex, "An error occurred while updating rose.toml.");
             }
         }
+
 
 
 
@@ -298,7 +316,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error($"Error formatting toml value: {ex}");
                 return null;
             }
         }

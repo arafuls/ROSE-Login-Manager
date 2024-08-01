@@ -29,6 +29,10 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal class AESEncryptor : IPasswordEncryptor
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         /// <summary>
         ///     Encrypts the specified password using the AES algorithm.
         /// </summary>
@@ -64,12 +68,12 @@ namespace ROSE_Login_Manager.Services
             }
             catch (CryptographicException ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"Cryptographic error during encryption. IV: {BitConverter.ToString(iv)}");
                 throw;
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"Unexpected error during encryption. IV: {BitConverter.ToString(iv)}");
                 throw;
             }
         }
@@ -108,12 +112,12 @@ namespace ROSE_Login_Manager.Services
             }
             catch (CryptographicException ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"Cryptographic error during decryption. IV: {BitConverter.ToString(iv)}");
                 throw;
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error(ex, $"Unexpected error during decryption. IV: {BitConverter.ToString(iv)}");
                 throw;
             }
         }

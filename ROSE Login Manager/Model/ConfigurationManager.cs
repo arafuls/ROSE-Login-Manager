@@ -13,6 +13,7 @@ namespace ROSE_Login_Manager.Model
     /// </summary>
     class ConfigurationManager : IDisposable
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly string _configFile;
         private readonly XmlDocument _doc;
 
@@ -74,7 +75,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error($"Error loading configuration: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -160,7 +161,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error($"Error creating configuration: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -202,7 +203,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error($"Error saving setting '{key}': {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -250,7 +251,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                LogManager.GetCurrentClassLogger().Error(ex);
+                Logger.Error($"Error saving setting '{key}' to node '{parentNodeName}': {ex.Message}\n{ex.StackTrace}");
             }
             _doc.Save(_configFile);
         }
@@ -267,14 +268,22 @@ namespace ROSE_Login_Manager.Model
         /// <returns>The value of the configuration setting.</returns>
         public static string? GetConfigSetting(string key, XmlNode parentNode, object defaultValue)
         {
-            XmlNode? settingNode = parentNode.SelectSingleNode(key);
-            if (settingNode == null && parentNode.OwnerDocument != null)
+            try
             {
-                settingNode = parentNode.OwnerDocument.CreateElement(key);
-                settingNode.InnerText = defaultValue?.ToString() ?? string.Empty;
-                parentNode.AppendChild(settingNode);
+                XmlNode? settingNode = parentNode.SelectSingleNode(key);
+                if (settingNode == null && parentNode.OwnerDocument != null)
+                {
+                    settingNode = parentNode.OwnerDocument.CreateElement(key);
+                    settingNode.InnerText = defaultValue?.ToString() ?? string.Empty;
+                    parentNode.AppendChild(settingNode);
+                }
+                return settingNode?.InnerText;
             }
-            return settingNode?.InnerText;
+            catch (Exception ex)
+            {
+                Logger.Error($"Error getting configuration setting '{key}': {ex.Message}\n{ex.StackTrace}");
+                return defaultValue.ToString();
+            }
         }
 
 
