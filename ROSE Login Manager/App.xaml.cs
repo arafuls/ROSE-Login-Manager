@@ -65,8 +65,7 @@ namespace ROSE_Login_Manager
         /// <param name="e">DispatcherUnhandledExceptionEventArgs that contains the event data.</param>
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            Exception? ex = e.Exception;
-            LogManager.GetCurrentClassLogger().Fatal(ex, "Unhandled Dispatcher Exception occurred");
+            Logger.Fatal(e.Exception, "Unhandled Dispatcher Exception occurred");
             e.Handled = true; // Mark the exception as handled to prevent application shutdown
         }
 
@@ -93,10 +92,22 @@ namespace ROSE_Login_Manager
             var fileTarget = new FileTarget("file")
             {
                 FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "logs", "${shortdate}.log"),
-                Layout = "${longdate} ${uppercase:${level}} ${message}"
+                Layout = "${longdate} ${uppercase:${level}} ${message} ${exception}"
             };
+
+            // Targets
             config.AddTarget(fileTarget);
-            config.AddRule(LogLevel.Trace, LogLevel.Fatal, fileTarget);
+
+            // Rules
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                config.AddRule(LogLevel.Debug, LogLevel.Fatal, fileTarget);
+            }
+            else
+            {
+                config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);
+            }
+
             LogManager.Configuration = config;
         }
 
