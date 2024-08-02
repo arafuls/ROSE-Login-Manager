@@ -129,7 +129,7 @@ namespace ROSE_Login_Manager.Services
                         {
                             _db.UpdateProfileStatus(Email, false);
                             _activeProcesses.Remove(activeProcess);
-                            Logger.Debug($"Process {activeProcess.ProcessId} has exited.");
+                            Logger.Info($"Process {activeProcess.ProcessId} has exited.");
                         }
                     }
                 }
@@ -161,7 +161,10 @@ namespace ROSE_Login_Manager.Services
 
 
 
-
+        /// <summary>
+        ///     Starts a background task that periodically performs several actions:
+        ///     The task continues running until a cancellation request is made.
+        /// </summary>
         private void StartBackgroundTasks()
         {
             _backgroundTask = Task.Run(async () =>
@@ -191,7 +194,10 @@ namespace ROSE_Login_Manager.Services
 
 
 
-
+        /// <summary>
+        ///     Stops the background tasks initiated by <see cref="StartBackgroundTasks"/>.
+        ///     Cancels the ongoing background task and waits for its completion to ensure proper shutdown.
+        /// </summary>
         public void StopBackgroundTasks()
         {
             _cancellationTokenSource.Cancel();
@@ -200,7 +206,11 @@ namespace ROSE_Login_Manager.Services
 
 
 
-
+        /// <summary>
+        ///     Handles the discovery of new instances of the process named "trose".
+        ///     Adds new instances of the process to the list of active processes if they are not already tracked.
+        ///     Logs the addition of new processes.
+        /// </summary>
         public static void HandleUntrackedProcesses()
         {
             try
@@ -224,7 +234,12 @@ namespace ROSE_Login_Manager.Services
 
 
 
-        
+        /// <summary>
+        ///     Updates the status of a profile based on the email retrieved from the configuration file (`rose.toml`).
+        ///     Checks if the email corresponds to an existing profile in the database. If the profile is found but
+        ///     its associated process is not active, the profile's status is updated to inactive.
+        ///     Logs warnings if the email is not found or if the profile does not exist in the database.
+        /// </summary>
         private static void HandleInactiveProfileInToml()
         {
             object? value = GlobalVariables.Instance.GetTomlValue("game", "last_account_name");
@@ -392,8 +407,8 @@ namespace ROSE_Login_Manager.Services
                 Logger.Warn($"Process {process.ProcessName} does not have a main window handle.");
             }
         }
-        #endregion
 
+        #endregion
 
 
 

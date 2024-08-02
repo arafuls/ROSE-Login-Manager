@@ -105,6 +105,5 @@ namespace ROSE_Login_Manager.View
                 }
             }
         }
-
     }
 }

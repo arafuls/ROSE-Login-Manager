@@ -16,6 +16,16 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal partial class MemoryScanner : IDisposable
     {
+        private const int OFFSET_NAME_LENGTH        = 0x015C3130;
+        private const int OFFSET_NAME_BASE          = 0x015B56C8;
+        private const int OFFSET_NAME_1             = 0x09A8;
+
+        private const int OFFSET_EMAIL_BASE_TOML    = 0x015B7C10;
+        private const int OFFSET_EMAIL_BASE_ARGS    = 0x015D7428;
+        private const int OFFSET_EMAIL_1A           = 0x0DD0;
+        private const int OFFSET_EMAIL_2A           = 0x05C0;
+
+
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private readonly Process _process; // The process from which memory will be scanned.
@@ -296,11 +306,11 @@ namespace ROSE_Login_Manager.Services
         public string GetActiveEmail()
         {
             // Attempt to retrieve the email from the secondary memory location (used for automatic login with arguments)
-            IntPtr address = ApplyOffset(_baseAddress, 0x015D7428);
+            IntPtr address = ApplyOffset(_baseAddress, OFFSET_EMAIL_BASE_ARGS);
             address = ReadPointerFromMemory(address);
-            address = ApplyOffset(address, 0x0810);
+            address = ApplyOffset(address, OFFSET_EMAIL_1A);
             address = ReadPointerFromMemory(address);
-            address = ApplyOffset(address, 0x0110);
+            address = ApplyOffset(address, OFFSET_EMAIL_2A);
 
             // Read and validate the email data if found
             string email = SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 320));
@@ -310,7 +320,8 @@ namespace ROSE_Login_Manager.Services
             }
 
             // If the email from the secondary location is not valid or empty, fall back to the primary memory location
-            address = ApplyOffset(_baseAddress, 0x015B7C10);
+            address = ApplyOffset(_baseAddress, OFFSET_EMAIL_BASE_TOML);
+            address = ReadPointerFromMemory(address);
 
             // Read and validate the email data if found
             email = SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 320));
@@ -319,7 +330,7 @@ namespace ROSE_Login_Manager.Services
                 return email;
             }
 
-            // Return null if neither location provides a valid email
+            // Neither location provides a valid email
             return null;
         }
 
@@ -336,36 +347,19 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The character's name as a string.</returns>
         public string GetCharacterName()
         {
-            int length = GetCharacterLength();
-            int baseOffset;
+            IntPtr address = ApplyOffset(_baseAddress, OFFSET_NAME_BASE);
+            address = ReadPointerFromMemory(address);
+            address = ApplyOffset(address, OFFSET_NAME_1);
 
-            if (length <= 15)
+            if (GetCharacterLength() <= 15)
             {
-                baseOffset = 0x159EF28;
+                return ReadStringFromMemory(address, 16);
             }
             else
             {
-                baseOffset = 0x159EF80;
+                address = ReadPointerFromMemory(address);
+                return ReadStringFromMemory(address, 16);
             }
-
-            return GetCharacterNameFromOffset(baseOffset, 0x09A8);
-        }
-
-
-
-        /// <summary>
-        ///     Retrieves the character's name from a given base offset and name offset.
-        ///     Reads the name from memory based on the calculated address.
-        /// </summary>
-        /// <param name="baseOffset">The base offset used to calculate the starting address.</param>
-        /// <param name="nameOffset">The offset added to the base address to locate the character's name.</param>
-        /// <returns>The character's name as a string.</returns>
-        private string GetCharacterNameFromOffset(int baseOffset, int nameOffset)
-        {
-            IntPtr address = ApplyOffset(_baseAddress, baseOffset);
-            address = ReadPointerFromMemory(address);
-            address = ApplyOffset(address, nameOffset);
-            return ReadStringFromMemory(address, 16);
         }
 
 
@@ -377,9 +371,7 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The length of the character's name as an integer.</returns>
         private int GetCharacterLength()
         {
-            int offset = 0x015AC990;
-            IntPtr address = ApplyOffset(_baseAddress, offset);
-
+            IntPtr address = ApplyOffset(_baseAddress, OFFSET_NAME_LENGTH);
             byte[] buffer = ReadMemory(address, 1);
             return buffer[0];
         }
@@ -410,9 +402,6 @@ namespace ROSE_Login_Manager.Services
         [LibraryImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In, Out] byte[] lpBuffer, int dwSize, out int lpNumberOfBytesRead);
-
-        [LibraryImport("kernel32.dll")]
-        private static partial int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct MEMORY_BASIC_INFORMATION
