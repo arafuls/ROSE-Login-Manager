@@ -5,6 +5,7 @@ using ROSE_Login_Manager.Services.Memory_Scanner;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace ROSE_Login_Manager.Services
@@ -30,6 +31,28 @@ namespace ROSE_Login_Manager.Services
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
         private static extern bool SetWindowText(IntPtr hWnd, string lpString);
 #pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
+
+
+
+        /// <summary>
+        ///     Retrieves the text of the specified window's title bar (if it has one). 
+        ///     The text is copied to a buffer provided by the caller.
+        /// </summary>
+        /// <param name="hWnd">
+        ///     A handle to the window or control from which the text is to be retrieved. 
+        ///     This handle must be valid and represent a window or control that has text.
+        /// </param>
+        /// <param name="text">
+        ///     A <see cref="StringBuilder"/> instance that will receive the text of the window. 
+        ///     The buffer should be allocated with enough space to hold the text. The size of the buffer is specified by the <paramref name="count"/> parameter.
+        /// </param>
+        /// <param name="count">
+        ///     The maximum number of characters to copy into the buffer, including the null terminator. 
+        ///     This value should be the size of the <paramref name="text"/> buffer in characters.
+        /// </param>
+        /// <returns> The number of characters copied to the buffer, not including the null terminator. </returns>
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
 
 
@@ -390,18 +413,26 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         /// <param name="process">The process whose title is to be changed.</param>
         /// <param name="newTitle">The new title to set for the process.</param>
-        public static void ChangeProcessTitle(Process process, string newTitle)
+        public static void ChangeProcessTitle(Process process, string titleText)
         {
-            Logger.Debug($"Changing title of process {process.ProcessName} to '{newTitle}'.");
+            const string kClientName = "ROSE Online (Early Access)";
+            IntPtr handle = process.MainWindowHandle;
 
-            IntPtr mainWindowHandle = process.MainWindowHandle;
-            if (mainWindowHandle != IntPtr.Zero)
-            {
-                SetWindowText(mainWindowHandle, newTitle);
-            }
-            else
+            if (handle == IntPtr.Zero)
             {
                 Logger.Warn($"Process {process.ProcessName} does not have a main window handle.");
+                return;
+            }
+
+            var currentTitle = new StringBuilder(256);
+            GetWindowText(handle, currentTitle, currentTitle.Capacity);
+
+            string newTitle = string.IsNullOrEmpty(titleText) ? kClientName : titleText;
+
+            if (currentTitle.ToString() != newTitle)
+            {
+                Logger.Debug($"Changing title of process {process.ProcessName} to '{newTitle}'.");
+                SetWindowText(handle, newTitle);
             }
         }
 
@@ -420,7 +451,7 @@ namespace ROSE_Login_Manager.Services
                 {
                     using MemoryScanner memscan = new(activeProcess.Process);
 
-                    // If an email is found and it exists in the database, update the profile status to active
+                    // Retrieve email and update profile status if it exists in the database
                     string email = memscan.GetActiveEmail();
                     if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
                     {
@@ -430,15 +461,11 @@ namespace ROSE_Login_Manager.Services
 
                     if (GlobalVariables.Instance.ToggleCharDataScanning)
                     {
-                        CharacterInfo characterInfo = new()
-                        {
-                            CharacterName = memscan.GetCharacterName()
-                        };
-
-                        if (characterInfo.IsValid())
-                        {
-                            ChangeProcessTitle(activeProcess.Process, characterInfo.ToString());
-                        }
+                        ChangeProcessTitle(activeProcess.Process, memscan.GetCharacterName());
+                    }
+                    else
+                    {
+                        ChangeProcessTitle(activeProcess.Process, string.Empty);
                     }
                 }
             }
