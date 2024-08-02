@@ -74,17 +74,15 @@ namespace ROSE_Login_Manager.Services
 
 
 
-#pragma warning disable IDE0052
-        private readonly Timer _cleanupTimer;
-#pragma warning restore IDE0052
-
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private static readonly List<ActiveProcessInfo> _activeProcesses = [];
-        private static readonly DatabaseManager _db = new(); 
+        private static readonly List<ActiveProcessInfo> _activeProcesses = new();
+        private static readonly DatabaseManager _db = new();
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-
         private const uint ELAPSED_TIME_MILLISECONDS = 5000;
+
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private Task? _backgroundTask;
 
 
 
@@ -158,45 +156,51 @@ namespace ROSE_Login_Manager.Services
         private ProcessManager()
         {
             _db.ClearAllProfileStatus();
-            _cleanupTimer = new Timer(TimerCallback, null, 100, ELAPSED_TIME_MILLISECONDS);
-
-            HandleUntrackedProcesses();
+            StartBackgroundTasks();
         }
 
 
 
-        /// <summary>
-        ///     Callback method executed by the timer to handle periodic tasks related to process and profile management.
-        /// </summary>
-        private void TimerCallback(object o)
+
+        private void StartBackgroundTasks()
         {
-            // Use async method, but call it synchronously
-            Task.Run(async () =>
+            _backgroundTask = Task.Run(async () =>
             {
-                await _semaphore.WaitAsync();
-                try
+                while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    HandleUntrackedProcesses();
-                    HandleInactiveProfileInToml();
-                    FindProcessData();
+                    await _semaphore.WaitAsync();
+                    try
+                    {
+                        HandleUntrackedProcesses();
+                        HandleInactiveProfileInToml();
+                        FindProcessData();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "An error occurred during background tasks.\n");
+                    }
+                    finally
+                    {
+                        _semaphore.Release();
+                    }
+
+                    await Task.Delay((int)ELAPSED_TIME_MILLISECONDS, _cancellationTokenSource.Token);
                 }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, "An error occurred during timer callback.");
-                }
-                finally
-                {
-                    _semaphore.Release();
-                }
-            }).GetAwaiter().GetResult(); // Ensure exceptions are handled properly
+            }, _cancellationTokenSource.Token);
         }
 
 
 
 
-        /// <summary>
-        ///     Identifies and tracks instances of the "trose" process that are not currently being monitored.
-        /// </summary>
+        public void StopBackgroundTasks()
+        {
+            _cancellationTokenSource.Cancel();
+            _backgroundTask?.Wait();
+        }
+
+
+
+
         public static void HandleUntrackedProcesses()
         {
             try
@@ -214,49 +218,34 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An exception occured while handling active trose processes.");
+                Logger.Error(ex, "An exception occurred while handling active trose processes.\n");
             }
         }
 
 
 
-        /// <summary>
-        ///     Handles cases where the last successful login email from `rose.toml` may not be updated correctly.
-        ///     It checks if the email from `rose.toml` corresponds to an active profile. If no active process is found for the profile, 
-        ///     the profile is marked as inactive in the database.
-        /// </summary>
-        /// <remarks>
-        ///     This method addresses the issue where ROSE does not update the last successful login email when logging in via command-line arguments.
-        ///     Consequently, the username field might still show the last manually entered email from `rose.toml`, which could lead to incorrect flags 
-        ///     for active profiles in the database if the email is not up-to-date in memory.
-        /// </remarks>
+        
         private static void HandleInactiveProfileInToml()
         {
-            // Retrieve the last account name (email) from the configuration
             object? value = GlobalVariables.Instance.GetTomlValue("game", "last_account_name");
             string? email = value as string;
 
-            // Check if the email is valid
             if (string.IsNullOrEmpty(email))
             {
                 Logger.Warn("Value from 'last_account_name' within rose.toml could not be found.");
                 return;
             }
 
-            // Check if the profile exists in the database
             if (!_db.ProfileExists(email))
             {
                 Logger.Warn($"Value from 'last_account_name' {email} does not correspond to a profile in the database.");
                 return;
             }
 
-            // Check if any active process corresponds to the provided email
             bool isProcessActive = _activeProcesses.Any(p => p.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
             if (!isProcessActive)
             {
-                // Mark the profile as inactive in the database if no active process is found
                 _db.UpdateProfileStatus(email, false);
-                Logger.Debug($"Profile {email} marked as inactive because its process is no longer active.");
             }
         }
 
@@ -297,7 +286,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An exception occured while launching ROSE Online client.");
+                Logger.Error(ex, "An exception occured while launching ROSE Online client.\n");
             }
         }
 
@@ -341,7 +330,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Unable to move process window to background.");
+                Logger.Error(ex, "Unable to move process window to background.\n");
             }
         }
 
@@ -411,7 +400,7 @@ namespace ROSE_Login_Manager.Services
         /// <summary>
         ///     Scans the active processes to retrieve and update data related to user profiles and character information.
         /// </summary>
-        public void FindProcessData()
+        public static void FindProcessData()
         {
             try
             {
@@ -443,7 +432,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while scanning process data.");
+                Logger.Error(ex, "Error occurred while scanning process data.\n");
             }
         }
     }

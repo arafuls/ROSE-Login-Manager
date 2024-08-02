@@ -285,7 +285,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An error occurred while updating rose.toml.");
+                Logger.Error(ex, "An error occurred while updating rose.toml.\n");
             }
         }
 

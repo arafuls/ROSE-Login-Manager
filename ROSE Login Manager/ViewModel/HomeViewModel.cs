@@ -331,11 +331,11 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {
-                Logger.Warn(ex, "Failed to start TRose.exe. File not found.");
+                Logger.Warn(ex, "Failed to start TRose.exe. File not found.\n");
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.");
+                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.\n");
             }
             finally
             {
@@ -379,11 +379,11 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {
-                Logger.Warn(ex, "Failed to start TRose.exe. File not found.");
+                Logger.Warn(ex, "Failed to start TRose.exe. File not found.\n");
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.");
+                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.\n");
             }
         }
 

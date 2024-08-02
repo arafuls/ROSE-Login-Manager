@@ -62,7 +62,7 @@ namespace ROSE_Login_Manager.View
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Failed to initialize WebView2 control.");
+                Logger.Error(ex, "Failed to initialize WebView2 control.\n");
             }
         }
 
@@ -92,15 +92,15 @@ namespace ROSE_Login_Manager.View
                     }
                     catch (InvalidOperationException ex)
                     {
-                        Logger.Error(ex, "Failed to navigate to the new URL due to invalid operation.");
+                        Logger.Error(ex, "Failed to navigate to the new URL due to invalid operation.\n");
                     }
                     catch (COMException ex)
                     {
-                        Logger.Error(ex, "Failed to navigate to the new URL due to COM exception.");
+                        Logger.Error(ex, "Failed to navigate to the new URL due to COM exception.\n");
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex, "An unexpected error occurred while navigating to the new URL.");
+                        Logger.Error(ex, "An unexpected error occurred while navigating to the new URL.\n");
                     }
                 }
             }

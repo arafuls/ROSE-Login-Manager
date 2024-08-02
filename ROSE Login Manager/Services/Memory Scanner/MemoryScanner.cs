@@ -128,7 +128,6 @@ namespace ROSE_Login_Manager.Services
         /// <exception cref="Win32Exception">Thrown when a Win32 error occurs while reading memory.</exception>
         private byte[] ReadMemory(IntPtr address, int length)
         {
-            // TODO: Find a way to determine if user is in avatar selection to prevent scanning
             IntPtr processHandle = IntPtr.Zero;
             byte[] buffer = new byte[length];
 
@@ -137,7 +136,7 @@ namespace ROSE_Login_Manager.Services
                 processHandle = OpenProcessHandle(PROCESS_VM_READ);
                 if (!ReadProcessMemory(processHandle, address, buffer, buffer.Length, out int bytesRead) || bytesRead != length)
                 {
-                    Logger.Warn($"Failed to read {length} bytes from address {address}.");
+                    Logger.Warn($"Failed to read memory at address {address}.");
 
                     // Fail silently, this could be caused by attempting to scan while in avatar selection
                     //throw new InvalidOperationException(errorMessage);
@@ -217,15 +216,15 @@ namespace ROSE_Login_Manager.Services
             }
             catch (UnauthorizedAccessException ex)
             {
-                Logger.Error(ex, "UnauthorizedAccessException occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
+                Logger.Error(ex, "UnauthorizedAccessException occurred while getting base address for process {ProcessName}:{ProcessId}.\n", process.ProcessName, process.Id);
             }
             catch (Win32Exception ex)
             {
-                Logger.Error(ex, "Win32Exception occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
+                Logger.Error(ex, "Win32Exception occurred while getting base address for process {ProcessName}:{ProcessId}.\n", process.ProcessName, process.Id);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Unexpected error while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
+                Logger.Error(ex, "Unexpected error while getting base address for process {ProcessName}:{ProcessId}.\n", process.ProcessName, process.Id);
             }
             finally
             {
@@ -287,25 +286,41 @@ namespace ROSE_Login_Manager.Services
         #region Get Active Email Methods
 
         /// <summary>
-        ///     Retrieves the active email from memory by following a series of pointer dereferences and applying an offset.
-        ///     The retrieved email is validated against a specific signature pattern to ensure it is in the correct format.
+        ///     Retrieves the active login email from the game's memory. 
+        ///     The method first attempts to read the email from a secondary memory location used when the game is launched with arguments.
+        ///     If the email from this secondary location is not valid, it falls back to a primary memory location used for normal game launches.
         /// </summary>
         /// <returns>
-        ///     A string containing the validated email if found; otherwise, an empty string.
+        ///     The active login email if found and valid; otherwise, returns null if no valid email is detected.
         /// </returns>
         public string GetActiveEmail()
         {
-            // TOML 0x015B7C10 + 0x0000
-            // ARGS 0x015D7428 + 0x0810 + 0x0110
-
-            // Read the base address and apply offsets to get the final address
+            // Attempt to retrieve the email from the secondary memory location (used for automatic login with arguments)
             IntPtr address = ApplyOffset(_baseAddress, 0x015D7428);
-            address = ReadPointerFromMemory(ApplyOffset(address, 0x0810));
-            address = ApplyOffset(ReadPointerFromMemory(address), 0x0110);
+            address = ReadPointerFromMemory(address);
+            address = ApplyOffset(address, 0x0810);
+            address = ReadPointerFromMemory(address);
+            address = ApplyOffset(address, 0x0110);
 
-            // Read and validate the email signature from the memory address
-            string email = ReadStringFromMemory(address, 320);
-            return SignatureValidators.IsValidLoginEmailSignature(email);
+            // Read and validate the email data if found
+            string email = SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 320));
+            if (!string.IsNullOrEmpty(email))
+            {
+                return email;
+            }
+
+            // If the email from the secondary location is not valid or empty, fall back to the primary memory location
+            address = ApplyOffset(_baseAddress, 0x015B7C10);
+
+            // Read and validate the email data if found
+            email = SignatureValidators.IsValidLoginEmailSignature(ReadStringFromMemory(address, 320));
+            if (!string.IsNullOrEmpty(email))
+            {
+                return email;
+            }
+
+            // Return null if neither location provides a valid email
+            return null;
         }
 
         #endregion
