@@ -146,10 +146,7 @@ namespace ROSE_Login_Manager.Services
                 processHandle = OpenProcessHandle(PROCESS_VM_READ);
                 if (!ReadProcessMemory(processHandle, address, buffer, buffer.Length, out int bytesRead) || bytesRead != length)
                 {
-                    Logger.Warn($"Failed to read memory at address {address}.");
-
-                    // Fail silently, this could be caused by attempting to scan while in avatar selection
-                    //throw new InvalidOperationException(errorMessage);
+                    // TODO: Fail silently to prevent crashing until I can figure out how to properly investigate and handle the cases causing this
                 }
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException || ex is Win32Exception)

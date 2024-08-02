@@ -2,6 +2,7 @@
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services.Memory_Scanner;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -129,7 +130,7 @@ namespace ROSE_Login_Manager.Services
                         {
                             _db.UpdateProfileStatus(Email, false);
                             _activeProcesses.Remove(activeProcess);
-                            Logger.Info($"Process {activeProcess.ProcessId} has exited.");
+                            Logger.Info($"ROSE Online client process {activeProcess.ProcessId} has exited.");
                         }
                     }
                 }
@@ -222,7 +223,7 @@ namespace ROSE_Login_Manager.Services
                     if (!isProcessAlreadyTracked)
                     {
                         _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
-                        Logger.Debug($"Added new ROSE Online client process {process.Id} to active processes.");
+                        Logger.Info($"Untracked ROSE Online client process {process.Id} is now being tracked.");
                     }
                 }
             }
@@ -277,8 +278,6 @@ namespace ROSE_Login_Manager.Services
         public void LaunchROSE(ProcessStartInfo startInfo)
 #pragma warning restore CA1822 
         {
-            Logger.Info("Attempting to launch ROSE Online client.");
-
             try
             {
                 string[] arguments = startInfo.Arguments.Split(" ");
@@ -315,8 +314,6 @@ namespace ROSE_Login_Manager.Services
         /// <param name="process">The process whose main window should be moved.</param>
         private static void MoveToBackground(Process process)
         {
-            Logger.Debug($"Moving process {process.Id} to background.");
-
             IntPtr hWnd = IntPtr.Zero;
             int maxAttempts = 50;
             int delay = 100; // Polling interval in milliseconds
@@ -345,7 +342,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Unable to move process window to background.\n");
+                Logger.Warn(ex, "Unable to move process window to background.\n");
             }
         }
 

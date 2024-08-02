@@ -315,13 +315,13 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
-                Logger.Warn("TRose.exe could not be found.");
+                Logger.Warn("ROSE Online client executable could not be found.");
                 return;
             }
 
             if (_db.GetProfileStatusByEmail(email))
             {
-                Logger.Warn("TRose.exe is already running an instance with the specified email.");
+                Logger.Warn($"ROSE Online client executable is already running an instance with {email}.");
                 return;
             }
 
@@ -331,11 +331,11 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
             {
-                Logger.Warn(ex, "Failed to start TRose.exe. File not found.\n");
+                Logger.Warn(ex, "Failed to start the ROSE Online client executable. File not found.\n");
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.\n");
+                Logger.Error(ex, "An unexpected error occurred while attempting to launch the ROSE Online client executable.\n");
             }
             finally
             {
