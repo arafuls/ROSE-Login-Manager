@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.Windows.Input;
@@ -13,12 +14,15 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal class NavigationViewModel : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly Dictionary<string, object> _viewCache;
         private readonly Dictionary<string, bool> _buttonStates = new()
         {
             { nameof(IsHomeChecked), true },
             { nameof(IsProfilesChecked), false },
             { nameof(IsAboutMeChecked), false },
+            { nameof(IsEventLogChecked), false },
             { nameof(IsSettingsChecked), false }
         };
 
@@ -55,6 +59,12 @@ namespace ROSE_Login_Manager.ViewModel
             set => SetCheckedState(nameof(IsAboutMeChecked), value);
         }
 
+        public bool IsEventLogChecked
+        {
+            get => _buttonStates[nameof(IsEventLogChecked)];
+            set => SetCheckedState(nameof(IsEventLogChecked), value);
+        }
+
         public bool IsSettingsChecked
         {
             get => _buttonStates[nameof(IsSettingsChecked)];
@@ -80,6 +90,11 @@ namespace ROSE_Login_Manager.ViewModel
 
 
 
+        public ICommand EventLogCommand { get; }
+        private void EventLog(object obj) => NavigateToView<EventLogViewModel>();
+
+
+
         public ICommand SettingsCommand { get; }
         private void Settings(object obj) => NavigateToView<SettingsViewModel>();
         #endregion
@@ -93,9 +108,35 @@ namespace ROSE_Login_Manager.ViewModel
         {
             _viewCache = [];
 
+            // Initialize all view models
+            var viewModels = new[] {
+                typeof(HomeViewModel),
+                typeof(ProfilesViewModel),
+                typeof(AboutMeViewModel),
+                typeof(EventLogViewModel),
+                typeof(SettingsViewModel)
+            };
+
+            foreach (var viewModelType in viewModels)
+            {
+                var typeName = viewModelType.Name;
+
+                // Instantiate and handle possible null values
+                if (Activator.CreateInstance(viewModelType) is object viewModelInstance)
+                {
+                    _viewCache[typeName] = viewModelInstance;
+                }
+                else
+                {
+                    Logger.Fatal($"Failed to create an instance of {viewModelType.FullName}");
+                    throw new InvalidOperationException($"Failed to create an instance of {viewModelType.FullName}");
+                }
+            }
+
             HomeCommand = new RelayCommand(Home);
             ProfilesCommand = new RelayCommand(Profiles);
             AboutMeCommand = new RelayCommand(AboutMe);
+            EventLogCommand = new RelayCommand(EventLog);
             SettingsCommand = new RelayCommand(Settings);
 
             NavigateToView<HomeViewModel>();
@@ -109,20 +150,22 @@ namespace ROSE_Login_Manager.ViewModel
         /// <typeparam name="T">The type of the view model representing the view.</typeparam>
         private void NavigateToView<T>() where T : class
         {
-            // Get the name of the specified type and check if the view is already cached
             var typeName = typeof(T).Name;
-            if (!_viewCache.TryGetValue(typeName, out object? value))
+
+            // Retrieve the cached view model
+            if (!_viewCache.TryGetValue(typeName, out var value))
             {
                 value = Activator.CreateInstance<T>();
                 _viewCache[typeName] = value;
             }
 
-            // Update the checked state of the corresponding navigation button
+            // Update the current view
             CurrentView = value;
             SetCheckedState($"Is{typeName}Checked", true);
 
             WeakReferenceMessenger.Default.Send(new ViewChangedMessage(typeName));
         }
+
 
 
 
@@ -158,6 +201,7 @@ namespace ROSE_Login_Manager.ViewModel
             OnPropertyChanged(nameof(IsHomeChecked));
             OnPropertyChanged(nameof(IsProfilesChecked));
             OnPropertyChanged(nameof(IsAboutMeChecked));
+            OnPropertyChanged(nameof(IsEventLogChecked));
             OnPropertyChanged(nameof(IsSettingsChecked));
         }
     }

@@ -26,33 +26,26 @@ namespace ROSE_Login_Manager
         /// <param name="e">Information about the startup event.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            const string mutexName = "ROSE_Login_Manager_Mutex";
+            // Configure logging before performing other operations
+            ConfigureLogging();
 
-            // Attempt to create a new mutex
-            _mutex = new Mutex(true, mutexName, out bool createdNew);
+            // Handle application-wide exceptions
+            Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
 
-            // If the mutex already exists, exit the application
-            if (!createdNew)
+            // Attempt to ensure only a single instance is running
+            if (!TryAcquireMutex())
             {
                 Logger.Warn("Another instance of the ROSE Login Manager is already running.");
-
-                _mutex.Dispose();
-                _mutex = null;
-                Environment.Exit(1);
+                ShutdownApplication();
+                return; // Prevent further processing
             }
 
             base.OnStartup(e);
-
-            ConfigureLogging();
 
             // Instantiate Singletons
             _ = GlobalVariables.Instance;
             _ = ConfigurationManager.Instance;
             _ = ProcessManager.Instance;
-
-            // Subscribe to handle unhandled exceptions on the UI (Dispatcher) thread.
-            // This ensures that any unhandled exceptions occurring on the UI thread are caught and logged.
-            Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
         }
 
 
@@ -67,6 +60,44 @@ namespace ROSE_Login_Manager
         {
             Logger.Fatal(e.Exception, "Unhandled Dispatcher Exception occurred.");
             e.Handled = true; // Mark the exception as handled to prevent application shutdown
+        }
+
+
+
+        /// <summary>
+        ///     Tries to acquire a named mutex to ensure only one instance of the application is running.
+        /// </summary>
+        /// <returns>True if the mutex was created; false if it already existed.</returns>
+        private static bool TryAcquireMutex()
+        {
+            const string mutexName = "ROSE_Login_Manager_Mutex";
+
+            // Create or open the mutex
+            _mutex = new Mutex(true, mutexName, out bool createdNew);
+
+            if (!createdNew)
+            {
+                // Mutex already exists
+                _mutex.Dispose();
+                _mutex = null;
+                return false;
+            }
+
+            return true;
+        }
+
+
+
+        /// <summary>
+        ///     Disposes of the mutex and shuts down the application with an exit code of 1.
+        /// </summary>
+        /// <remarks>Releases the mutex and terminates the application, indicating an abnormal exit.</remarks>
+        private static void ShutdownApplication()
+        {
+            // Ensure mutex is disposed properly before exiting
+            _mutex?.Dispose();
+            _mutex = null;
+            Application.Current.Shutdown(1);
         }
 
 
@@ -95,10 +126,7 @@ namespace ROSE_Login_Manager
                 Layout = "${longdate} ${uppercase:${level}} ${message} ${exception}"
             };
 
-            // Targets
-            config.AddTarget(fileTarget);
-
-            // Rules
+            // Configure rules
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 config.AddRule(LogLevel.Debug, LogLevel.Fatal, fileTarget);
@@ -108,6 +136,7 @@ namespace ROSE_Login_Manager
                 config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);
             }
 
+            // Apply configuration
             LogManager.Configuration = config;
         }
 

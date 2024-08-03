@@ -51,7 +51,7 @@ namespace ROSE_Login_Manager.Services
         ///     This value should be the size of the <paramref name="text"/> buffer in characters.
         /// </param>
         /// <returns> The number of characters copied to the buffer, not including the null terminator. </returns>
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
 
@@ -99,7 +99,7 @@ namespace ROSE_Login_Manager.Services
 
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private static readonly List<ActiveProcessInfo> _activeProcesses = new();
+        private static readonly List<ActiveProcessInfo> _activeProcesses = [];
         private static readonly DatabaseManager _db = new();
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
 

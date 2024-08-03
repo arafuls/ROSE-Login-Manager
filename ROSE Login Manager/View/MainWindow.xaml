@@ -61,10 +61,21 @@
                         <Grid>
                             <Image Source="../Resources/Images/information.png" 
                                    Style="{StaticResource NavigationButtonImageStyle}"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                   RenderOptions.BitmapScalingMode="HighQuality" Margin="0,5,0,0" VerticalAlignment="Top"/>
                         </Grid>
                     </util:NavMenuButton>
-                    
+
+                    <!-- Event Log View Button -->
+                    <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
+                                        Command="{Binding EventLogCommand}"
+                                        IsChecked="{Binding IsEventLogChecked, Mode=TwoWay}">
+                        <Grid>
+                            <Image Source="../Resources/Images/note-alert.png" 
+                                    Style="{StaticResource NavigationButtonImageStyle}"
+                                    RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Grid>
+                    </util:NavMenuButton>
+
                     <!-- Settings View Button -->
                     <util:NavMenuButton Style="{StaticResource NavMenuButtonStyle}"
                                         Command="{Binding SettingsCommand}"
