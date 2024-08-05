@@ -123,7 +123,7 @@ namespace ROSE_Login_Manager
             var fileTarget = new FileTarget("file")
             {
                 FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "logs", "${shortdate}.log"),
-                Layout = "${longdate} ${uppercase:${level}} ${message} ${exception}"
+                Layout = "${longdate} ${uppercase:${level}} ${callsite:className=true:methodName=true} ${message} ${exception}"
             };
 
             // Configure rules

@@ -21,7 +21,12 @@
         <Grid Grid.Column="1" Margin="20"
               HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel>
-                <DataGrid x:Name="LogDataGrid" AutoGenerateColumns="True" />
+                <DataGrid x:Name="LogDataGrid" Height="500"
+                          ItemsSource="{Binding LogEntries}"
+                          HorizontalScrollBarVisibility="Visible">
+                    <DataGrid.Columns>
+                    </DataGrid.Columns>
+                </DataGrid>
             </StackPanel>
         </Grid>
     </Grid>

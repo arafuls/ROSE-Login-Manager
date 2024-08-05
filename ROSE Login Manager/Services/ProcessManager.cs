@@ -1,12 +1,11 @@
 ﻿using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
-using ROSE_Login_Manager.Services.Memory_Scanner;
-using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
+
+
 
 namespace ROSE_Login_Manager.Services
 {
@@ -424,8 +423,8 @@ namespace ROSE_Login_Manager.Services
                 return;
             }
 
-            var currentTitle = new StringBuilder(256);
-            GetWindowText(handle, currentTitle, currentTitle.Capacity);
+            StringBuilder currentTitle = new(256);
+            _ = GetWindowText(handle, currentTitle, currentTitle.Capacity);
 
             string newTitle = string.IsNullOrEmpty(titleText) ? kClientName : titleText;
 
