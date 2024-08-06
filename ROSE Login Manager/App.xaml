@@ -12,6 +12,7 @@
                 
                 <!-- View Styling -->
                 <ResourceDictionary Source="Resources/Styles/AddProfileStyle.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/EventLogDataGridStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/HomeViewStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/NavigationStyle.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/ProfileCardStyle.xaml"/>

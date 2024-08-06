@@ -3,6 +3,7 @@ using NLog.Config;
 using NLog.Targets;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Logging;
 using System.IO;
 using System.Windows;
 
@@ -105,35 +106,36 @@ namespace ROSE_Login_Manager
         /// <summary>
         ///     Configures the logging settings for the application.
         /// </summary>
-        /// <remarks>
-        ///     This method sets up a logging configuration that writes log entries to a file. 
-        ///     The log files are saved in a directory specified by the application's name in the user's 
-        ///     application data folder, with the filename format based on the current date.
-        ///     
-        ///     The configuration includes:
-        ///     - A <see cref="FileTarget"/> that specifies the file path and format of log entries.
-        ///     - A log rule that logs messages from <see cref="LogLevel.Trace"/> to <see cref="LogLevel.Fatal"/>.
-        ///     
-        ///     The log layout is formatted to include the date, log level, and message, with the level 
-        ///     converted to uppercase.
-        /// </remarks>
         private static void ConfigureLogging()
         {
-            var config = new LoggingConfiguration();
-            var fileTarget = new FileTarget("file")
+            LoggingConfiguration config = new();
+            FileTarget fileTarget = new("file")
             {
                 FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"{GlobalVariables.APP_NAME}", "logs", "${shortdate}.log"),
                 Layout = "${longdate} ${uppercase:${level}} ${callsite:className=true:methodName=true} ${message} ${exception}"
             };
 
+            // Create an instance of the custom log target
+            var logCollectorTarget = new LogCollectorTarget
+            {
+                Name = "logCollector",
+                Layout = "${longdate} ${uppercase:${level}} ${callsite:className=true:methodName=true} ${message} ${exception:format=tostring}"
+            };
+
+            // Add targets to the configuration
+            config.AddTarget(fileTarget);
+            config.AddTarget(logCollectorTarget);
+
             // Configure rules
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 config.AddRule(LogLevel.Debug, LogLevel.Fatal, fileTarget);
+                config.AddRule(LogLevel.Debug, LogLevel.Fatal, logCollectorTarget);
             }
             else
             {
                 config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);
+                config.AddRule(LogLevel.Info, LogLevel.Fatal, logCollectorTarget);
             }
 
             // Apply configuration
