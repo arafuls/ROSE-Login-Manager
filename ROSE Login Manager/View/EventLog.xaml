@@ -30,7 +30,7 @@
             </b:Interaction.Behaviors>
 
             <!-- Content goes here -->
-            <DataGrid x:Name="LogDataGrid" Height="500" Width="1500"
+            <DataGrid x:Name="LogDataGrid" Height="500" Width="990"
                       ItemsSource="{Binding LogEntries}"
                       Style="{StaticResource EventLogDataGridStyle}" 
                       CellStyle="{StaticResource EventLogDataGridCellStyle}"

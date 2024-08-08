@@ -60,43 +60,55 @@ namespace ROSE_Login_Manager.Services.Logging
         {
             var logEntries = new List<LogEntry>();
 
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
-                try
+                Logger.Error($"File does not exist: {filePath}");
+                return logEntries;
+            }
+
+            try
+            {
+                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var reader = new StreamReader(fileStream);
+
+                int id = 1;
+                string? line;
+
+                while ((line = reader.ReadLine()) != null)
                 {
-                    using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    using StreamReader reader = new(fileStream);
-                    
-                    int id = 1;
-                    string? line;
+                    var parts = SplitLogLine(line);
 
-                    while ((line = reader.ReadLine()) != null)
+                    if (parts.Length >= 5)
                     {
-                        var parts = SplitLogLine(line);
+                        string? timestamp = ParseDateTime($"{parts[0]} {parts[1]}");
 
-                        if (parts.Length >= 3)
+                        if (!string.IsNullOrEmpty(timestamp))
                         {
-                            var logEntry = new LogEntry
+                            logEntries.Add(new LogEntry
                             {
                                 Id = id++,
-                                Timestamp = ParseDateTime(parts[0] + ' ' + parts[1]),
+                                Timestamp = timestamp,
                                 Level = parts[2],
                                 Logger = parts[3],
                                 Message = parts[4]
-                            };
-                            logEntries.Add(logEntry);
+                            });
+                        }
+                        else
+                        {
+                            //Logger.Warn($"Skipping line due to invalid timestamp format: {line}");
                         }
                     }
                 }
-                catch (IOException ex)
-                {
-                    Logger.Error($"IOException: {ex.Message}");
-                }
-                catch (FormatException ex)
-                {
-                    Logger.Error($"FormatException: {ex.Message}");
-                }
             }
+            catch (IOException ex)
+            {
+                //Logger.Error($"IOException: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                //Logger.Error($"Unexpected exception: {ex.Message}");
+            }
+
             return logEntries;
         }
 
@@ -120,10 +132,16 @@ namespace ROSE_Login_Manager.Services.Logging
         /// </summary>
         /// <param name="dateTimeString">The date-time string to parse.</param>
         /// <returns>A standardized date-time string in the format "yyyy-MM-dd HH:mm:ss".</returns>
-        private static string ParseDateTime(string dateTimeString)
+        private static string? ParseDateTime(string dateTimeString)
         {
-            DateTime parsedDateTime = DateTime.ParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture);
-            return parsedDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+            if (DateTime.TryParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDateTime))
+            {
+                return parsedDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
