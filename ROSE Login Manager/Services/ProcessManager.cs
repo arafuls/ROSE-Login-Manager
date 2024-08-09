@@ -203,7 +203,7 @@ namespace ROSE_Login_Manager.Services
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(ex, "An error occurred during background tasks.\n");
+                        Logger.Error(ex, "An error occurred during background tasks.");
                     }
                     finally
                     {
@@ -251,7 +251,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An exception occurred while handling active trose processes.\n");
+                Logger.Error(ex, "An exception occurred while handling active trose processes.");
             }
         }
 
@@ -322,7 +322,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An exception occured while launching ROSE Online client.\n");
+                Logger.Error(ex, "An exception occured while launching ROSE Online client.");
             }
         }
 
@@ -364,7 +364,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Warn(ex, "Unable to move process window to background.\n");
+                Logger.Warn(ex, "Unable to move process window to background.");
             }
         }
 
@@ -419,7 +419,7 @@ namespace ROSE_Login_Manager.Services
 
             if (handle == IntPtr.Zero)
             {
-                Logger.Warn($"Process {process.ProcessName} does not have a main window handle.");
+                Logger.Warn($"Process {process.Id} does not have a main window handle.");
                 return;
             }
 
@@ -430,7 +430,7 @@ namespace ROSE_Login_Manager.Services
 
             if (currentTitle.ToString() != newTitle)
             {
-                Logger.Debug($"Changing title of process {process.ProcessName} to '{newTitle}'.");
+                Logger.Info($"Changing the title of process {process.Id} to '{newTitle}'.");
                 SetWindowText(handle, newTitle);
             }
         }
@@ -470,7 +470,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while scanning process data.\n");
+                Logger.Error(ex, "Error occurred while scanning process data.");
             }
         }
     }

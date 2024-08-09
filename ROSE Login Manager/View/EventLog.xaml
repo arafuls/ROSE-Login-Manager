@@ -12,6 +12,7 @@
              Style="{StaticResource View_Style}">
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="900"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -19,30 +20,21 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Use a ScrollViewer wrapper to apply smooth scrolling -->
-        <ScrollViewer x:Name="EventLogScrollViewer" 
-                      Style="{StaticResource ScrollViewerStyle}"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto">
-            <!-- Attach SmoothScrollViewerBehavior -->
-            <b:Interaction.Behaviors>
-                <util:SmoothScrollViewerBehavior/>
-            </b:Interaction.Behaviors>
+        <Border Grid.Column="0" Margin="0 15">
+            <DataGrid x:Name="LogDataGrid" 
+                ItemsSource="{Binding LogEntries}"
+                Style="{StaticResource EventLogDataGridStyle}" 
+                CellStyle="{StaticResource EventLogDataGridCellStyle}"
+                RowStyle="{StaticResource EventLogDataGridRowStyle}" 
+                RowHeaderStyle="{StaticResource EventLogDataGridRowHeaderStyle}"
+                ColumnHeaderStyle="{StaticResource EventLogColHeaderStyle}"
+                SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                VerticalScrollBarVisibility="Auto">
 
-            <!-- Content goes here -->
-            <DataGrid x:Name="LogDataGrid" Height="500" Width="990"
-                      ItemsSource="{Binding LogEntries}"
-                      Style="{StaticResource EventLogDataGridStyle}" 
-                      CellStyle="{StaticResource EventLogDataGridCellStyle}"
-                      RowStyle="{StaticResource EventLogDataGridRowStyle}" 
-                      RowHeaderStyle="{StaticResource EventLogDataGridRowHeaderStyle}"
-                      ColumnHeaderStyle="{StaticResource EventLogColHeaderStyle}"
-                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
-                <!-- DataGrid Columns and other settings -->
                 <DataGrid.Columns>
                     <!-- Timestamp -->
                     <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp}" Width="140"
-                                        HeaderStyle="{StaticResource EventLogTimestampColumnHeaderStyle}">
+                        HeaderStyle="{StaticResource EventLogTimestampColumnHeaderStyle}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -52,7 +44,7 @@
 
                     <!-- Level -->
                     <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="60"
-                                        HeaderStyle="{StaticResource EventLogLevelColumnHeaderStyle}">
+                        HeaderStyle="{StaticResource EventLogLevelColumnHeaderStyle}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -62,8 +54,8 @@
                     </DataGridTextColumn>
 
                     <!-- Logger -->
-                    <DataGridTextColumn Header="Logger" Binding="{Binding Logger}" Width="400" 
-                                        HeaderStyle="{StaticResource EventLogColHeaderStyle}">
+                    <DataGridTextColumn Header="Logger" Binding="{Binding Logger}" Width="*" 
+                        HeaderStyle="{StaticResource EventLogColHeaderStyle}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource WrapTextBlockStyle}"/>
                         </DataGridTextColumn.ElementStyle>
@@ -71,13 +63,13 @@
 
                     <!-- Message -->
                     <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" 
-                                        HeaderStyle="{StaticResource EventLogColHeaderStyle}">
+                        HeaderStyle="{StaticResource EventLogColHeaderStyle}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource WrapTextBlockStyle}"/>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
-        </ScrollViewer>
+        </Border>
     </Grid>
 </UserControl>

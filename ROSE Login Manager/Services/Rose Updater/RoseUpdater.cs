@@ -55,7 +55,7 @@ namespace ROSE_Login_Manager.Services
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "Error occurred while checking if the updater is the latest and exists.\n");
+                    Logger.Error(ex, "Error occurred while checking if the updater is the latest and exists.");
                     return false;
                 }
             }
@@ -262,11 +262,11 @@ namespace ROSE_Login_Manager.Services
             }
             catch (FileNotFoundException ex)
             {
-                Logger.Error(ex, "File not found during update local files operation.\n");
+                Logger.Error(ex, "File not found during update local files operation.");
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while updating local files.\n");
+                Logger.Error(ex, "Error occurred while updating local files.");
             }
         }
 
@@ -347,12 +347,12 @@ namespace ROSE_Login_Manager.Services
             }
             catch (FileNotFoundException ex)
             {
-                Logger.Error(ex, "Bita executable file not found.\n");
+                Logger.Error(ex, "Bita executable file not found.");
                 throw; // Re-throw the FileNotFoundException to handle it higher up
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while downloading the file.\n");
+                Logger.Error(ex, "Error occurred while downloading the file.");
                 return false;
             }
         }

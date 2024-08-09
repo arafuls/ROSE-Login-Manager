@@ -154,7 +154,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Error occurred while checking for TRose.exe in directory: {directoryPath}.\n");
+                Logger.Error(ex, $"Error occurred while checking for TRose.exe in directory: {directoryPath}.");
                 return false;
             }
         }
@@ -261,7 +261,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An error occurred while retrieving a value from rose.toml.\n");
+                Logger.Error(ex, "An error occurred while retrieving a value from rose.toml.");
                 return null;
             }
         }

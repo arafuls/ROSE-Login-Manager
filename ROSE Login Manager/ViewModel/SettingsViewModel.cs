@@ -276,7 +276,7 @@ namespace ROSE_Login_Manager.ViewModel
 
                     // Write the updated TOML content back to the file
                     File.WriteAllText(filePath, updatedTomlContent);
-                    Logger.Info($"Updated {key} in section {section} of rose.toml.");
+                    Logger.Info($"Updated {key} in section {section} of rose.toml to {value}.");
                 }
                 else
                 {
@@ -285,7 +285,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "An error occurred while updating rose.toml.\n");
+                Logger.Error(ex, "An error occurred while updating rose.toml.");
             }
         }
 

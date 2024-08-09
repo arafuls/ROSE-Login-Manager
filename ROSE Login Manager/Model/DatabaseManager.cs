@@ -333,7 +333,7 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while updating profile order.\n");
+                Logger.Error(ex, "Error occurred while updating profile order.");
                 transaction.Rollback();
             }
         }
@@ -478,7 +478,7 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while checking if email exists.\n");
+                Logger.Error(ex, "Error occurred while checking if email exists.");
                 return false; 
             }
             finally
@@ -553,7 +553,7 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (Exception ex)
             {
-                Logger.Warn(ex, "Error occurred while clearing profile status.\n");
+                Logger.Warn(ex, "Error occurred while clearing profile status.");
                 transaction.Rollback();
             }
         }
@@ -581,7 +581,7 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while getting profile status for email.\n");
+                Logger.Error(ex, "Error occurred while getting profile status for email.");
                 return false;
             }
             finally
@@ -615,7 +615,7 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error occurred while checking if profile exists.\n");
+                Logger.Error(ex, "Error occurred while checking if profile exists.");
                 return false;
             }
             finally

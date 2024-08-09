@@ -223,15 +223,15 @@ namespace ROSE_Login_Manager.Services
             }
             catch (UnauthorizedAccessException ex)
             {
-                Logger.Error(ex, "UnauthorizedAccessException occurred while getting base address for process {ProcessName}:{ProcessId}.\n", process.ProcessName, process.Id);
+                Logger.Error(ex, "UnauthorizedAccessException occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
             }
             catch (Win32Exception ex)
             {
-                Logger.Error(ex, "Win32Exception occurred while getting base address for process {ProcessName}:{ProcessId}.\n", process.ProcessName, process.Id);
+                Logger.Error(ex, "Win32Exception occurred while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Unexpected error while getting base address for process {ProcessName}:{ProcessId}.\n", process.ProcessName, process.Id);
+                Logger.Error(ex, "Unexpected error while getting base address for process {ProcessName}:{ProcessId}.", process.ProcessName, process.Id);
             }
             finally
             {

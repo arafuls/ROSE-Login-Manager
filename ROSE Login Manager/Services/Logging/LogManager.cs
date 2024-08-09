@@ -52,10 +52,10 @@ namespace ROSE_Login_Manager.Services.Logging
 
 
         /// <summary>
-        ///     Parses a log file into a list of <see cref="LogEntry"/> objects.
+        ///     Parses the specified log file and extracts log entries into a list of <see cref="LogEntry"/> objects.
         /// </summary>
-        /// <param name="filePath">The path to the log file to parse.</param>
-        /// <returns>A list of parsed log entries.</returns>
+        /// <param name="filePath">The path to the log file to be parsed.</param>
+        /// <returns>A list of <see cref="LogEntry"/> objects representing the parsed log entries. If the file does not exist or an error occurs, the list will be empty.</returns>
         public static List<LogEntry> ParseLogFile(string filePath)
         {
             var logEntries = new List<LogEntry>();
@@ -78,7 +78,7 @@ namespace ROSE_Login_Manager.Services.Logging
                 {
                     var parts = SplitLogLine(line);
 
-                    if (parts.Length >= 5)
+                    if (parts.Length == 5)
                     {
                         string? timestamp = ParseDateTime($"{parts[0]} {parts[1]}");
 
@@ -89,24 +89,16 @@ namespace ROSE_Login_Manager.Services.Logging
                                 Id = id++,
                                 Timestamp = timestamp,
                                 Level = parts[2],
-                                Logger = parts[3],
+                                Logger = StripNamespace(parts[3]),
                                 Message = parts[4]
                             });
-                        }
-                        else
-                        {
-                            //Logger.Warn($"Skipping line due to invalid timestamp format: {line}");
                         }
                     }
                 }
             }
-            catch (IOException ex)
-            {
-                //Logger.Error($"IOException: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                //Logger.Error($"Unexpected exception: {ex.Message}");
+                Logger.Warn(ex, "An error occurred while reading the log file.");
             }
 
             return logEntries;
@@ -142,6 +134,22 @@ namespace ROSE_Login_Manager.Services.Logging
             {
                 return null;
             }
+        }
+
+
+
+        /// <summary>
+        ///     Strips the "ROSE_Login_Manager." namespace from the logger name.
+        /// </summary>
+        /// <param name="loggerName">The logger name to process.</param>
+        /// <returns>The logger name with the namespace stripped out.</returns>
+        private static string StripNamespace(string loggerName)
+        {
+            if (loggerName != null)
+            {
+                return loggerName.Replace("ROSE_Login_Manager.", string.Empty);
+            }
+            return loggerName;
         }
     }
 }

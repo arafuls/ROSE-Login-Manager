@@ -180,7 +180,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Setter Property="Margin" Value="0 10 0 10"/>
-        <Setter Property="Padding" Value="0 0 20 0"/>
+        <Setter Property="Margin" Value="0 0 0 0"/>
+        <Setter Property="Padding" Value="0 0 0 0"/>
     </Style>
 </ResourceDictionary>
