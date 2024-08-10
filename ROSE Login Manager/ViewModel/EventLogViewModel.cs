@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Infrastructure;
 using ROSE_Login_Manager.Services.Logging;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -72,7 +74,7 @@ namespace ROSE_Login_Manager.ViewModel
             }
 
             // Hook up the LogCollector target to handle logs
-            var logCollectorTarget = LogManager.Configuration.FindTargetByName<LogCollectorTarget>("logCollector");
+            LogCollectorTarget logCollectorTarget = LogManager.Configuration.FindTargetByName<LogCollectorTarget>("logCollector");
             if (logCollectorTarget != null)
             {
                 logCollectorTarget.LogCollected += OnLogCollected;
@@ -139,8 +141,9 @@ namespace ROSE_Login_Manager.ViewModel
         /// </summary>
         private void LoadLogEntries()
         {
-            var logEntries = LogParser.ParseLogFile(_logFile);
+            List<LogEntry> logEntries = LogParser.ParseLogFile(_logFile);
             LogEntries = new ObservableCollection<LogEntry>(logEntries);
+            WeakReferenceMessenger.Default.Send(new EventLogAddedMessage());    // Notify the view to scroll
         }
 
 
@@ -152,8 +155,8 @@ namespace ROSE_Login_Manager.ViewModel
         /// <returns>The path to the latest log file, or null if no log files are found.</returns>
         private static string GetLatestLogFile(string logDirectory)
         {
-            var directoryInfo = new DirectoryInfo(logDirectory);
-            var latestFile = directoryInfo.GetFiles("*.log")
+            DirectoryInfo directoryInfo = new(logDirectory);
+            FileInfo? latestFile = directoryInfo.GetFiles("*.log")
                                           .OrderByDescending(f => f.LastWriteTime)
                                           .FirstOrDefault();
             return latestFile?.FullName;
@@ -176,6 +179,7 @@ namespace ROSE_Login_Manager.ViewModel
             Application.Current.Dispatcher.Invoke(() =>
             {
                 LogEntries.Add(logEntry);
+                WeakReferenceMessenger.Default.Send(new EventLogAddedMessage());    // Notify the view to scroll
             });
         }
 

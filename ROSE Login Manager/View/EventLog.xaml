@@ -8,7 +8,6 @@
              xmlns:vm="clr-namespace:ROSE_Login_Manager.ViewModel" 
              xmlns:service="clr-namespace:ROSE_Login_Manager.Services" 
              mc:Ignorable="d" 
-             d:DataContext="{d:DesignInstance Type=vm:EventLogViewModel}"
              d:DesignHeight="650" d:DesignWidth="1025"
              Style="{StaticResource View_Style}">
     <Grid>
@@ -95,7 +94,7 @@
                         Margin="0 5"
                         Width="110"/>
 
-                <CheckBox Content="Enable Auto-scroll" 
+                <CheckBox Content="Enable Auto-Scroll" 
                         IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
                         Foreground="WhiteSmoke"
                         Grid.ColumnSpan="2" 
