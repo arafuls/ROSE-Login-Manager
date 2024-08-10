@@ -265,25 +265,32 @@ namespace ROSE_Login_Manager.Services
         /// </summary>
         private static void HandleInactiveProfileInToml()
         {
-            object? value = GlobalVariables.Instance.GetTomlValue("game", "last_account_name");
-            string? email = value as string;
-
-            if (string.IsNullOrEmpty(email))
+            try
             {
-                Logger.Warn("Value from 'last_account_name' within rose.toml could not be found.");
-                return;
+                object? value = GlobalVariables.Instance.GetTomlValue("game", "last_account_name");
+                string? email = value as string;
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    Logger.Warn("Value from 'last_account_name' within rose.toml could not be found.");
+                    return;
+                }
+
+                if (!_db.ProfileExists(email))
+                {
+                    Logger.Warn($"Value from 'last_account_name' {email} does not correspond to a profile in the database.");
+                    return;
+                }
+
+                bool isProcessActive = _activeProcesses.Any(p => p.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+                if (!isProcessActive)
+                {
+                    _db.UpdateProfileStatus(email, false);
+                }
             }
-
-            if (!_db.ProfileExists(email))
+            catch (Exception ex)
             {
-                Logger.Warn($"Value from 'last_account_name' {email} does not correspond to a profile in the database.");
-                return;
-            }
-
-            bool isProcessActive = _activeProcesses.Any(p => p.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
-            if (!isProcessActive)
-            {
-                _db.UpdateProfileStatus(email, false);
+                Logger.Error(ex, "An exception occurred in HandleInactiveProfileInToml.");
             }
         }
 
