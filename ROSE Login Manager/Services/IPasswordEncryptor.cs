@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using NLog;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
@@ -28,6 +29,10 @@ namespace ROSE_Login_Manager.Services
     /// </summary>
     internal class AESEncryptor : IPasswordEncryptor
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         /// <summary>
         ///     Encrypts the specified password using the AES algorithm.
         /// </summary>
@@ -36,29 +41,41 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The encrypted bytes representing the password.</returns>
         public byte[] Encrypt(SecureString password, byte[] iv)
         {
-            byte[] encrypted;
-
-            // Create a new instance of the AES algorithm.
-            using (Aes aes = Aes.Create())
+            try
             {
-                // Ensure that the block size matches the IV size (16 bytes).
-                aes.BlockSize = 128;
+                byte[] encrypted;
 
-                // Create an encryptor to perform the stream transform.
-                ICryptoTransform encryptor = aes.CreateEncryptor(HWIDGenerator.GetHWID(), iv);
-
-                // Encrypt the password.
-                using MemoryStream memoryStream = new();
-                using CryptoStream cryptoStream = new(memoryStream, encryptor, CryptoStreamMode.Write);
-                using (StreamWriter streamWriter = new(cryptoStream))
+                // Create a new instance of the AES algorithm.
+                using (Aes aes = Aes.Create())
                 {
-                    // Convert SecureString to string and write it to the stream.
-                    streamWriter.Write(SecureStringExtensions.ConvertSecureStringToString(password));
-                }
-                encrypted = memoryStream.ToArray();
-            }
+                    aes.BlockSize = 128; // Ensure that the block size matches the IV size (16 bytes).
 
-            return encrypted;
+                    // Create an encryptor to perform the stream transform.
+                    ICryptoTransform encryptor = aes.CreateEncryptor(HWIDGenerator.GetHWID(), iv);
+
+                    // Encrypt the password.
+                    using MemoryStream memoryStream = new();
+                    using CryptoStream cryptoStream = new(memoryStream, encryptor, CryptoStreamMode.Write);
+                    using (StreamWriter streamWriter = new(cryptoStream))
+                    {
+                        // Convert SecureString to string and write it to the stream.
+                        streamWriter.Write(SecureStringExtensions.ConvertSecureStringToString(password));
+                    }
+                    encrypted = memoryStream.ToArray();
+                }
+
+                return encrypted;
+            }
+            catch (CryptographicException ex)
+            {
+                Logger.Error(ex, $"Cryptographic error during encryption. IV: {BitConverter.ToString(iv)}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Unexpected error during encryption. IV: {BitConverter.ToString(iv)}");
+                throw;
+            }
         }
 
 
@@ -71,30 +88,40 @@ namespace ROSE_Login_Manager.Services
         /// <returns>The decrypted plain text string.</returns>
         public static string Decrypt(byte[] cipherText, byte[] iv)
         {
-            string plaintext = string.Empty;
-
-            // Create a new instance of the AES algorithm.
-            using (Aes aes = Aes.Create())
+            try
             {
-                // Ensure that the block size matches the IV size (16 bytes).
-                aes.BlockSize = 128;
+                string plaintext = string.Empty;
 
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), iv);
+                // Create a new instance of the AES algorithm.
+                using (Aes aes = Aes.Create())
+                {
+                    // Ensure that the block size matches the IV size (16 bytes).
+                    aes.BlockSize = 128;
 
-                // Decrypt the cipher text.
-                using MemoryStream memoryStream = new(cipherText);
-                using CryptoStream cryptoStream = new(memoryStream, decryptor, CryptoStreamMode.Read);
-                using StreamReader reader = new(cryptoStream);
-                plaintext = reader.ReadToEnd();
+                    // Create a decryptor to perform the stream transform.
+                    ICryptoTransform decryptor = aes.CreateDecryptor(HWIDGenerator.GetHWID(), iv);
+
+                    // Decrypt the cipher text.
+                    using MemoryStream memoryStream = new(cipherText);
+                    using CryptoStream cryptoStream = new(memoryStream, decryptor, CryptoStreamMode.Read);
+                    using StreamReader reader = new(cryptoStream);
+                    plaintext = reader.ReadToEnd();
+                }
+
+                return plaintext;
             }
-
-            return plaintext;
+            catch (CryptographicException ex)
+            {
+                Logger.Error(ex, $"Cryptographic error during decryption. IV: {BitConverter.ToString(iv)}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Unexpected error during decryption. IV: {BitConverter.ToString(iv)}");
+                throw;
+            }
         }
     }
-
-
-
 
 
 

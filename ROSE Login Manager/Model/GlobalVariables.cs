@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
-using ROSE_Login_Manager.Services;
+using NLog;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
-using System.Windows;
+using Tomlyn.Model;
+using Tomlyn;
 
 
 
@@ -15,6 +16,10 @@ namespace ROSE_Login_Manager.Model
     /// </summary>
     public class GlobalVariables : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         #region Accessors
         public const string APP_NAME = "ROSE Online Login Manager";
 
@@ -58,6 +63,13 @@ namespace ROSE_Login_Manager.Model
         {
             get => _loginScreen;
             set => SetProperty(ref _loginScreen, value);
+        }
+
+        private bool _toggleCharDataScanning;
+        public bool ToggleCharDataScanning
+        {
+            get => _toggleCharDataScanning;
+            set => SetProperty(ref _toggleCharDataScanning, value);
         }
 
         private readonly string _appPath;
@@ -142,11 +154,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{APP_NAME} - SettingsViewModel::ContainsRoseExec",
-                    message: ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error(ex, $"Error occurred while checking for TRose.exe in directory: {directoryPath}.");
                 return false;
             }
         }
@@ -171,14 +179,10 @@ namespace ROSE_Login_Manager.Model
             }
             else
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{APP_NAME} - GlobalVariables::HandleSettingChanged",
-                    message: "Unknown setting changed.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Warn($"An unknown setting has changed. Key '{message.Key}' with value '{message.Value}'");
             }
-
         }
+
 
 
         /// <summary>
@@ -203,10 +207,63 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading registry: {ex.Message}");
+                Logger.Warn(ex, $"An unexpected error has occurred while attempting to read the Windows Registry at path '{path}'.");
             }
 
             return null;
+        }
+
+
+
+        /// <summary>
+        ///     Retrieves the value associated with a given key from a specified section in a TOML file.
+        /// </summary>
+        /// <param name="section">The section in the TOML file where the key is located.</param>
+        /// <param name="key">The key whose value is to be retrieved.</param>
+        /// <returns>The value associated with the key, or null if the key or section is not found.</returns>
+        public object? GetTomlValue(string section, string key)
+        {
+            string? filePath = Path.Combine(
+                Directory.GetParent(AppPath)?.FullName ?? string.Empty,
+                "Rednim Games", "ROSE Online", "config", "rose.toml"
+            );
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                Logger.Error($"Failed to locate rose.toml at the expected path: {filePath}.");
+                return null;
+            }
+
+            try
+            {
+                // Read and deserialize the TOML file
+                string tomlContents = File.ReadAllText(filePath);
+                TomlTable tomlTable = Toml.ToModel(tomlContents);
+
+                // Retrieve the specified section and key
+                if (tomlTable.TryGetValue(section, out var sectionTableObj) && sectionTableObj is TomlTable sectionTable)
+                {
+                    if (sectionTable.TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+                    else
+                    {
+                        Logger.Warn($"Key '{key}' not found in section '{section}' of rose.toml.");
+                        return null;
+                    }
+                }
+                else
+                {
+                    Logger.Warn($"Section '{section}' not found in rose.toml.");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "An error occurred while retrieving a value from rose.toml.");
+                return null;
+            }
         }
     }
 }

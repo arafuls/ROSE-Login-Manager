@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\Images\Moldie.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
     <None Remove="Resources\Images\information.png" />
     <None Remove="Resources\Images\magnify.png" />
     <None Remove="Resources\Images\Moldie.ico" />
+    <None Remove="Resources\Images\note-alert.png" />
     <None Remove="Resources\Images\pencil.png" />
     <None Remove="Resources\Images\refresh-auto.png" />
     <None Remove="Resources\Images\ROSE-Header.png" />
@@ -51,6 +53,8 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NLog" Version="5.3.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.3.11" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
     <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
@@ -73,6 +77,7 @@
     <Resource Include="Resources\Images\information.png" />
     <Resource Include="Resources\Images\magnify.png" />
     <Resource Include="Resources\Images\Moldie.ico" />
+    <Resource Include="Resources\Images\note-alert.png" />
     <Resource Include="Resources\Images\pencil.png" />
     <Resource Include="Resources\Images\refresh-auto.png" />
     <Resource Include="Resources\Images\ROSE-Header.png" />

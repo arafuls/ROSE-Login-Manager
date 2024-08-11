@@ -102,4 +102,15 @@ namespace ROSE_Login_Manager.Services.Infrastructure
     {
         public int Progress { get; set; } = progress;
     }
+
+
+
+    /// <summary>
+    ///     Represents a message indicating a new event has been added to the logs.
+    /// </summary>
+    public class EventLogAddedMessage()
+    {
+        // This class does not contain any properties or methods.
+        // It serves as a marker class to indicate a request.
+    }
 }

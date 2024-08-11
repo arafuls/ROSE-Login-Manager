@@ -6,6 +6,6 @@ namespace ROSE_Login_Manager.ViewModel
 {
     internal class AboutMeViewModel : ObservableObject
     {
-        
+
     }
 }

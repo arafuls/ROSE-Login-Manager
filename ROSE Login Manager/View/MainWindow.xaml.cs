@@ -11,7 +11,7 @@ namespace ROSE_Login_Manager.Views
     {
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent(); 
         }
     }
 }

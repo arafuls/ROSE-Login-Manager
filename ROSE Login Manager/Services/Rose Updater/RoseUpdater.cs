@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Newtonsoft.Json;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services.Infrastructure;
 using ROSE_Login_Manager.Services.Rose_Updater;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Windows;
 
 
 
@@ -17,6 +17,8 @@ namespace ROSE_Login_Manager.Services
         private const string RemoteUrl = "https://updates.roseonlinegame.com";
         private const string RemoteManifestUrl = RemoteUrl + "/manifest.json";
         private const string LocalManifestFileName = "local_manifest.json";
+
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         private static string? RootFolder { get; set; }
 
@@ -53,11 +55,7 @@ namespace ROSE_Login_Manager.Services
                 }
                 catch (Exception ex)
                 {
-                    new DialogService().ShowMessageBox(
-                        title: $"{GlobalVariables.APP_NAME} - RoseUpdater::UpdaterIsLatestAndExists",
-                        message: $"Error validating updater: {ex.Message}",
-                        button: MessageBoxButton.OK,
-                        icon: MessageBoxImage.Error);
+                    Logger.Error(ex, "Error occurred while checking if the updater is the latest and exists.");
                     return false;
                 }
             }
@@ -232,33 +230,44 @@ namespace ROSE_Login_Manager.Services
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task UpdateLocalFiles(List<(Uri, RemoteManifestFileEntry)> files)
         {
-            // Create a dictionary from the remote manifest entries for quick lookup by file path
-            Dictionary<string, RemoteManifestFileEntry> remoteFilePaths = RemoteManifest.Files.ToDictionary(file => file.SourcePath);
-
-            LocalManifest newLocalManifest = GetLocalManifest();
-
-            int totalFiles = files.Count;
-            int _processedFiles = 0;
-
-            // Transform each loop iteration into a task and run them concurrently
-            var tasks = files.Select(async file =>
+            try
             {
-                if (await DownloadFile(remoteFilePaths[file.Item2.SourcePath]))
+                // Create a dictionary from the remote manifest entries for quick lookup by file path
+                Dictionary<string, RemoteManifestFileEntry> remoteFilePaths = RemoteManifest.Files.ToDictionary(file => file.SourcePath);
+
+                LocalManifest newLocalManifest = GetLocalManifest();
+
+                int totalFiles = files.Count;
+                int _processedFiles = 0;
+
+                // Transform each loop iteration into a task and run them concurrently
+                var tasks = files.Select(async file =>
                 {
-                    lock (newLocalManifest) // Ensure thread safety when accessing newLocalManifest
+                    if (await DownloadFile(remoteFilePaths[file.Item2.SourcePath]))
                     {
-                        newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                        lock (newLocalManifest) // Ensure thread safety when accessing newLocalManifest
+                        {
+                            newLocalManifest.Files.Add(ConvertRemoteFileEntryToLocal(remoteFilePaths[file.Item2.SourcePath]));
+                        }
                     }
-                }
 
-                int processedFiles = Interlocked.Increment(ref _processedFiles);
-                int progressPercentage = (processedFiles * 100) / totalFiles;
+                    int processedFiles = Interlocked.Increment(ref _processedFiles);
+                    int progressPercentage = (processedFiles * 100) / totalFiles;
 
-                WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
-            });
+                    WeakReferenceMessenger.Default.Send(new ProgressMessage(progressPercentage, file.Item2.SourcePath));
+                });
 
-            await Task.WhenAll(tasks);
-            _ = SaveLocalManifest(newLocalManifest);
+                await Task.WhenAll(tasks);
+                _ = SaveLocalManifest(newLocalManifest);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Logger.Error(ex, "File not found during update local files operation.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error occurred while updating local files.");
+            }
         }
 
 
@@ -336,13 +345,14 @@ namespace ROSE_Login_Manager.Services
 
                 return process.ExitCode == 0;
             }
+            catch (FileNotFoundException ex)
+            {
+                Logger.Error(ex, "Bita executable file not found.");
+                throw; // Re-throw the FileNotFoundException to handle it higher up
+            }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - RoseUpdater::DownloadFileWithBitaAsync",
-                    message: $"Error running bita: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error(ex, "Error occurred while downloading the file.");
                 return false;
             }
         }
@@ -406,11 +416,7 @@ namespace ROSE_Login_Manager.Services
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - RoseUpdater::SaveLocalManifest",
-                    message: $"Failed to save local manifest to {localManifestPath}: {ex.Message}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error(ex, $"Error occurred while saving local manifest to {localManifestPath}.");
                 throw;
             }
         }

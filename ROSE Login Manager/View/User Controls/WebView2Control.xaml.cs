@@ -1,6 +1,8 @@
 ﻿using Microsoft.Web.WebView2.Core;
+using NLog;
 using ROSE_Login_Manager.Model;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -13,6 +15,8 @@ namespace ROSE_Login_Manager.View
     /// </summary>
     public partial class WebView2Control : UserControl
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         public static readonly DependencyProperty SourceUrlProperty = DependencyProperty.Register(
             nameof(SourceUrl), typeof(string), typeof(WebView2Control), new PropertyMetadata(default(string), OnSourceUrlChanged));
 
@@ -45,13 +49,20 @@ namespace ROSE_Login_Manager.View
         /// </summary>
         private async void InitializeWebView()
         {
-            var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), GlobalVariables.APP_NAME);
-            var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
-            await webView.EnsureCoreWebView2Async(env);
-
-            if (!string.IsNullOrEmpty(SourceUrl))
+            try
             {
-                webView.CoreWebView2.Navigate(SourceUrl);
+                var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), GlobalVariables.APP_NAME);
+                var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+                await webView.EnsureCoreWebView2Async(env);
+
+                if (!string.IsNullOrEmpty(SourceUrl))
+                {
+                    webView.CoreWebView2.Navigate(SourceUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Failed to initialize WebView2 control.");
             }
         }
 
@@ -68,14 +79,28 @@ namespace ROSE_Login_Manager.View
             {
                 if (webViewControl.webView != null)
                 {
-                    if (webViewControl.webView.CoreWebView2 == null)
+                    try
                     {
-                        await webViewControl.webView.EnsureCoreWebView2Async();
-                    }
+                        // Ensure CoreWebView2 is initialized
+                        if (webViewControl.webView.CoreWebView2 == null)
+                        {
+                            await webViewControl.webView.EnsureCoreWebView2Async();
+                        }
 
-                    if (webViewControl.webView != null && e.NewValue != null)
-                    {
+                        // Navigate to the new URL
                         webViewControl.webView.CoreWebView2?.Navigate(newUrl);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Logger.Error(ex, "Failed to navigate to the new URL due to invalid operation.");
+                    }
+                    catch (COMException ex)
+                    {
+                        Logger.Error(ex, "Failed to navigate to the new URL due to COM exception.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "An unexpected error occurred while navigating to the new URL.");
                     }
                 }
             }

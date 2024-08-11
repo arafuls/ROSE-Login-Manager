@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using GongSolutions.Wpf.DragDrop;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
@@ -23,7 +24,8 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal class HomeViewModel : ObservableObject, IDropTarget
     {
-        private readonly DatabaseManager _db;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private static readonly DatabaseManager _db = new();
         private readonly RoseUpdater _roseUpdater;
 
 
@@ -93,7 +95,6 @@ namespace ROSE_Login_Manager.ViewModel
         /// </summary>
         public HomeViewModel()
         {
-            _db = new DatabaseManager();
             LaunchGameCommand = new RelayCommand(LaunchGame);
 
             RegisterMessageHandlers();
@@ -191,11 +192,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (GlobalVariables.Instance.RoseGameFolder == null ||
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LaunchProfile",
-                    message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Warn("You must set the ROSE Online game directory in the Settings tab in order to launch.");
                 return;
             }
 
@@ -214,11 +211,7 @@ namespace ROSE_Login_Manager.ViewModel
             if (GlobalVariables.Instance.RoseGameFolder == null ||
                 GlobalVariables.Instance.RoseGameFolder == string.Empty)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LaunchProfile",
-                    message: "You must set the ROSE Online game directory in the Settings tab in order to launch.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Warn("You must set the ROSE Online game directory in the Settings tab in order to launch.");
                 return;
             }
 
@@ -239,21 +232,32 @@ namespace ROSE_Login_Manager.ViewModel
 
 
         /// <summary>
-        ///     Loads the user profiles and initializes the corresponding profile card view models.
+        ///     Loads user profiles from the database and updates the corresponding observable collections
+        ///     for display in the UI.
         /// </summary>
         private void LoadProfileData()
         {
-            Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
-            ProfileCards = [];
-
-            bool display = GlobalVariables.Instance.DisplayEmail;
-            bool mask = GlobalVariables.Instance.MaskEmail;
-
-            IOrderedEnumerable<UserProfileModel> sortedProfiles = Profiles.OrderBy(p => p.ProfileOrder);
-            foreach (UserProfileModel profile in sortedProfiles)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
-            }
+                Profiles = new ObservableCollection<UserProfileModel>(_db.GetAllProfiles());
+                if (ProfileCards == null)
+                {
+                    ProfileCards = [];
+                }
+                else
+                {
+                    ProfileCards.Clear();
+                }
+
+                bool display = GlobalVariables.Instance.DisplayEmail;
+                bool mask = GlobalVariables.Instance.MaskEmail;
+
+                IOrderedEnumerable<UserProfileModel> sortedProfiles = Profiles.OrderBy(p => p.ProfileOrder);
+                foreach (UserProfileModel profile in sortedProfiles)
+                {
+                    ProfileCards.Add(new ProfileCardViewModel(profile.ProfileName, profile.ProfileEmail, display, mask));
+                }
+            });
         }
 
 
@@ -311,12 +315,13 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
-                    message: "TRose.exe could not be found.\n\n" +
-                             "Confirm that the ROSE Online Folder Location is set correctly.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Warn("ROSE Online client executable could not be found.");
+                return;
+            }
+
+            if (_db.GetProfileStatusByEmail(email))
+            {
+                Logger.Warn($"ROSE Online client executable is already running an instance with {email}.");
                 return;
             }
 
@@ -325,21 +330,12 @@ namespace ROSE_Login_Manager.ViewModel
                 ProcessManager.Instance.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
-            {   // ERROR_FILE_NOT_FOUND
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
-                    message: "trose.exe could not be found.\n\n" +
-                             $"Confirm that trose.exe exists within {startInfo.WorkingDirectory}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+            {
+                Logger.Warn(ex, "Failed to start the ROSE Online client executable. File not found.");
             }
             catch (Exception ex)
-            {   // Display a generic error message for other exceptions
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
-                    message: ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+            {
+                Logger.Error(ex, "An unexpected error occurred while attempting to launch the ROSE Online client executable.");
             }
             finally
             {
@@ -373,12 +369,7 @@ namespace ROSE_Login_Manager.ViewModel
 
             if (string.IsNullOrEmpty(startInfo.FileName))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
-                    message: "TRose.exe could not be found.\n\n" +
-                             "Confirm that the ROSE Online Folder Location is set correctly.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Warn("TRose.exe could not be found.");
                 return;
             }
 
@@ -387,21 +378,12 @@ namespace ROSE_Login_Manager.ViewModel
                 ProcessManager.Instance.LaunchROSE(startInfo);
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 2)
-            {   // ERROR_FILE_NOT_FOUND
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
-                    message: "trose.exe could not be found.\n\n" +
-                             $"Confirm that trose.exe exists within {startInfo.WorkingDirectory}",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+            {
+                Logger.Warn(ex, "Failed to start TRose.exe. File not found.");
             }
             catch (Exception ex)
-            {   // Display a generic error message for other exceptions
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - HomeViewModel::LoginThread",
-                    message: ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+            {
+                Logger.Error(ex, "An unexpected error occurred while launching TRose.exe.");
             }
         }
 

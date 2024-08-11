@@ -49,6 +49,6 @@
             </Button>
         </StackPanel>
 
-        <Label Content="Version 1.2.0     -     Discord: bonehead8719" Foreground="WhiteSmoke" Margin="0 0 0 5" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+        <Label Content="Version 1.3.0     -     Discord: bonehead8719" Foreground="WhiteSmoke" Margin="0 0 0 5" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
     </Grid>
 </UserControl>

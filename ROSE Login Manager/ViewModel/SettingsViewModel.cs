@@ -1,15 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Services;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
 using System.Windows.Input;
 using Tomlyn;
 using Tomlyn.Model;
+
+
 
 namespace ROSE_Login_Manager.ViewModel
 {
@@ -18,6 +20,10 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal class SettingsViewModel : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         #region Accessors
         private string? _roseGameFolderPath;
         public string? RoseGameFolderPath
@@ -126,6 +132,19 @@ namespace ROSE_Login_Manager.ViewModel
                 }
             }
         }
+
+        private bool _toggleCharDataScanning;
+        public bool ToggleCharDataScanning
+        {
+            get => _toggleCharDataScanning;
+            set
+            {
+                if (SetProperty(ref _toggleCharDataScanning, value))
+                {
+                    ConfigurationManager.Instance.SaveConfigSetting("ToggleCharDataScanning", value, "ClientSettings");
+                }
+            }
+        }
         #endregion
 
 
@@ -157,6 +176,7 @@ namespace ROSE_Login_Manager.ViewModel
         /// </summary>
         private void InitializeAccessors()
         {
+            // General Settings
             _roseGameFolderPath = GlobalVariables.Instance.RoseGameFolder;
             _isPathValidImage = GlobalVariables.Instance.ContainsRoseExec(RoseGameFolderPath);
 
@@ -164,8 +184,12 @@ namespace ROSE_Login_Manager.ViewModel
             _maskEmailChecked = GlobalVariables.Instance.MaskEmail;
             _launchClientBehindChecked = GlobalVariables.Instance.LaunchClientBehind;
 
+            // Game Settings
             _skipPlanetCutscene = GlobalVariables.Instance.SkipPlanetCutscene;
             _selectedLoginScreen = GlobalVariables.Instance.LoginScreen;
+
+            // Client Settings
+            _toggleCharDataScanning = GlobalVariables.Instance.ToggleCharDataScanning;
         }
 
 
@@ -227,47 +251,46 @@ namespace ROSE_Login_Manager.ViewModel
         /// <param name="value">The new value to set for the specified key.</param>
         private static void UpdateTomlFile(string section, string key, object value)
         {
-            string? filePath = Directory.GetParent(GlobalVariables.Instance.AppPath)?.FullName;
-            filePath = Path.Combine(filePath, "Rednim Games", "ROSE Online", "config", "rose.toml");
+            string? filePath = Path.Combine(
+                Directory.GetParent(GlobalVariables.Instance.AppPath)?.FullName ?? string.Empty,
+                "Rednim Games", "ROSE Online", "config", "rose.toml"
+            );
 
             if (string.IsNullOrEmpty(filePath))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - GlobalVariables::UpdateTomlFile",
-                    message: "Failed to locate rose.toml",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error("Failed to locate rose.toml at the expected path.");
                 return;
             }
 
-            string tomlContents = File.ReadAllText(filePath);
-            TomlTable tomlTable = Toml.ToModel(tomlContents);
-
-            if (tomlTable.TryGetValue(section, out var sectionTableObj) && sectionTableObj is TomlTable sectionTable)
+            try
             {
-                // Update the value of the specified key
-                sectionTable[key] = FormatTomlValue(value);
+                // Read and deserialize the TOML file
+                string tomlContents = File.ReadAllText(filePath);
+                TomlTable tomlTable = Toml.ToModel(tomlContents);
 
-                // Serialize the updated TOML table back to string
-                string updatedTomlContent = Toml.FromModel(tomlTable);
+                // Update the specified section and key
+                if (tomlTable.TryGetValue(section, out var sectionTableObj) && sectionTableObj is TomlTable sectionTable)
+                {
+                    sectionTable[key] = FormatTomlValue(value);
+                    string updatedTomlContent = Toml.FromModel(tomlTable);
 
-                // Write the updated content back to the file
-                File.WriteAllText(filePath, updatedTomlContent);
+                    // Write the updated TOML content back to the file
+                    File.WriteAllText(filePath, updatedTomlContent);
+                    Logger.Info($"Updated {key} in section {section} of rose.toml to {value}.");
+                }
+                else
+                {
+                    Logger.Warn($"Failed to find section '{section}' or key '{key}' in rose.toml.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - GlobalVariables::UpdateTomlFile",
-                    message: $"Failed to update {key} within rose.toml",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
-                return;
+                Logger.Error(ex, "An error occurred while updating rose.toml.");
             }
         }
 
 
-
-
+        
         /// <summary>
         ///     Formats a value to be used in a TOML file.
         /// </summary>
@@ -275,19 +298,27 @@ namespace ROSE_Login_Manager.ViewModel
         /// <returns>The formatted value.</returns>
         private static object FormatTomlValue(object value)
         {
-#pragma warning disable IDE0066 // Convert switch statement to expression
-            switch (value)
+            try
             {
-                case bool:
-                    return (bool)value;
-                case int:
-                    return (int)value;
-                case string:
-                    return $"'{value}'";
-                default:
-                    throw new ArgumentException("Unsupported value type.");
-            }
+#pragma warning disable IDE0066 // Convert switch statement to expression
+                switch (value)
+                {
+                    case bool:
+                        return (bool)value;
+                    case int:
+                        return (int)value;
+                    case string:
+                        return $"'{value}'";
+                    default:
+                        throw new ArgumentException("Unsupported value type.");
+                }
 #pragma warning restore IDE0066 // Convert switch statement to expression
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error formatting toml value: {ex}");
+                return null;
+            }
         }
 
 

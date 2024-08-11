@@ -1,11 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using NLog;
 using ROSE_Login_Manager.Model;
 using ROSE_Login_Manager.Resources.Util;
 using ROSE_Login_Manager.Services;
 using System.Security;
 using System.Security.Cryptography;
-using System.Windows;
 
 
 
@@ -49,6 +49,10 @@ namespace ROSE_Login_Manager.ViewModel
     /// </summary>
     internal abstract class ProfileViewModelBase : ObservableObject
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+
+
         #region Accessors
         private string _profileName = string.Empty;
         public string ProfileName
@@ -97,11 +101,7 @@ namespace ROSE_Login_Manager.ViewModel
         {
             if (string.IsNullOrEmpty(ProfileName) || string.IsNullOrEmpty(ProfileEmail) || ProfilePassword == null || ProfilePassword.Length < 8)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Error Creating Profile",
-                    message: "Verify all data fields have been completed and password has 8 or more characters.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Warn("Verify all data fields have been completed and password has 8 or more characters.");
                 return false;
             }
 
@@ -110,22 +110,14 @@ namespace ROSE_Login_Manager.ViewModel
             // For new profiles, check for email collision directly
             if (isNewProfile && db.PotentialRecordCollision(ProfileEmail))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Duplicate Profile Email",
-                    message: "This profile email is already in use. Each profile must have a unique email address.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Exclamation);
+                Logger.Warn($"This profile email '{ProfileEmail}' is already in use. Each profile must have a unique email address.");
                 return false;
             }
 
             // For updating profiles, check for email collision only if the email has changed
             if (!isNewProfile && ProfileEmail != ExistingEmail && db.PotentialRecordCollision(ProfileEmail))
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - Duplicate Profile Email",
-                    message: "This profile email is already in use. Each profile must have a unique email address.",
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Exclamation);
+                Logger.Warn($"This profile email '{ProfileEmail}' is already in use. Each profile must have a unique email address.");
                 return false;
             }
 

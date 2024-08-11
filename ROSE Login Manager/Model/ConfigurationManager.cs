@@ -1,8 +1,7 @@
 using CommunityToolkit.Mvvm.Messaging;
-using ROSE_Login_Manager.Services;
+using NLog;
 using ROSE_Login_Manager.Services.Infrastructure;
 using System.IO;
-using System.Windows;
 using System.Xml;
 
 
@@ -14,6 +13,7 @@ namespace ROSE_Login_Manager.Model
     /// </summary>
     class ConfigurationManager : IDisposable
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly string _configFile;
         private readonly XmlDocument _doc;
 
@@ -48,7 +48,8 @@ namespace ROSE_Login_Manager.Model
 
 
         /// <summary>
-        ///     Loads configuration settings from the XML file.
+        ///     Loads the configuration settings from the config file and sends the settings
+        ///     to the application via the WeakReferenceMessenger.
         /// </summary>
         public void LoadConfig()
         {
@@ -67,15 +68,14 @@ namespace ROSE_Login_Manager.Model
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("SkipPlanetCutscene", bool.Parse(GetConfigSetting("SkipPlanetCutscene", gameSettingsNode, false))));
                 WeakReferenceMessenger.Default.Send(new SettingChangedMessage<string>("LoginScreen", GetConfigSetting("LoginScreen", gameSettingsNode, "Random")));
 
+                XmlNode? clientSettingsNode = EnsureXmlNodeExists(_doc, "//Configuration/ClientSettings");
+                WeakReferenceMessenger.Default.Send(new SettingChangedMessage<bool>("ToggleCharDataScanning", bool.Parse(GetConfigSetting("ToggleCharDataScanning", clientSettingsNode, false))));
+
                 _doc.Save(_configFile);
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::LoadConfig",
-                    message: "Error loading config: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error($"Error loading configuration: {ex.Message}");
             }
         }
 
@@ -153,15 +153,15 @@ namespace ROSE_Login_Manager.Model
                 SaveConfigSetting("SkipPlanetCutscene", "False", gameSettings);
                 SaveConfigSetting("LoginScreen", "Random", gameSettings);
 
+                XmlElement clientSettings = _doc.CreateElement("ClientSettings");
+                root.AppendChild(clientSettings);
+                SaveConfigSetting("ToggleCharDataScanning", "False", clientSettings);
+
                 _doc.Save(_configFile);
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::CreateConfig",
-                    message: "Error creating configuration file: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error($"Error creating configuration: {ex.Message}");
             }
         }
 
@@ -203,11 +203,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::SaveSetting",
-                    message: "Error saving setting: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error($"Error saving setting '{key}': {ex.Message}");
             }
         }
 
@@ -255,11 +251,7 @@ namespace ROSE_Login_Manager.Model
             }
             catch (Exception ex)
             {
-                new DialogService().ShowMessageBox(
-                    title: $"{GlobalVariables.APP_NAME} - ConfigurationManager::SaveConfigSetting",
-                    message: "Error saving setting: " + ex.Message,
-                    button: MessageBoxButton.OK,
-                    icon: MessageBoxImage.Error);
+                Logger.Error($"Error saving setting '{key}' to node '{parentNodeName}': {ex.Message}");
             }
             _doc.Save(_configFile);
         }
@@ -276,14 +268,22 @@ namespace ROSE_Login_Manager.Model
         /// <returns>The value of the configuration setting.</returns>
         public static string? GetConfigSetting(string key, XmlNode parentNode, object defaultValue)
         {
-            XmlNode? settingNode = parentNode.SelectSingleNode(key);
-            if (settingNode == null && parentNode.OwnerDocument != null)
+            try
             {
-                settingNode = parentNode.OwnerDocument.CreateElement(key);
-                settingNode.InnerText = defaultValue?.ToString() ?? string.Empty;
-                parentNode.AppendChild(settingNode);
+                XmlNode? settingNode = parentNode.SelectSingleNode(key);
+                if (settingNode == null && parentNode.OwnerDocument != null)
+                {
+                    settingNode = parentNode.OwnerDocument.CreateElement(key);
+                    settingNode.InnerText = defaultValue?.ToString() ?? string.Empty;
+                    parentNode.AppendChild(settingNode);
+                }
+                return settingNode?.InnerText;
             }
-            return settingNode?.InnerText;
+            catch (Exception ex)
+            {
+                Logger.Error($"Error getting configuration setting '{key}': {ex.Message}");
+                return defaultValue.ToString();
+            }
         }
 
 

@@ -22,6 +22,10 @@
         <View:AboutMe/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type ViewModel:EventLogViewModel}">
+        <View:EventLog/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type ViewModel:SettingsViewModel}">
         <View:Settings/>
     </DataTemplate>
