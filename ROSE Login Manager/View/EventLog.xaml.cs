@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using ROSE_Login_Manager.Services.Infrastructure;
 using ROSE_Login_Manager.ViewModel;
+using System.Windows;
 using System.Windows.Controls;
 
 
@@ -20,6 +21,8 @@ namespace ROSE_Login_Manager.View
         public EventLog()
         {
             InitializeComponent();
+
+            ScrollToBottom();
 
             WeakReferenceMessenger.Default.Register<EventLogAddedMessage>(this, OnEventLogAdded);
         }
