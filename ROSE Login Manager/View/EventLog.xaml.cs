@@ -22,9 +22,19 @@ namespace ROSE_Login_Manager.View
         {
             InitializeComponent();
 
-            ScrollToBottom();
+            this.Loaded += OnLoaded;
 
             WeakReferenceMessenger.Default.Register<EventLogAddedMessage>(this, OnEventLogAdded);
+        }
+
+
+
+        /// <summary>
+        ///     Handles the Loaded event of the UserControl to scroll to the bottom when the view is first displayed.
+        /// </summary>
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ScrollToBottom();
         }
 
 
