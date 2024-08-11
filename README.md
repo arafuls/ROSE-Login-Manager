@@ -14,13 +14,38 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
 
 
 ## Features
-- **Automatic Login**: Quickly log into ROSE Online accounts with saved credentials.
-- **Automatic Patching**: Checks on start-up for latest game version and updates automatically if needed.
-- **Automatic Game Locating**: Attempts to find the game directory for you using the Windows Registry.
-- **Account Management**: Store and manage multiple ROSE Online accounts securely.
-- **Customizable Settings**: Adjust settings for the ROSE Client, `rose.toml` file settings through the client along with various other settings.
-- **Game Memory Reading**: Option to access game memory data for client-side writing purposes.
-- **Log Viewer**: Monitor and review login attempts and errors with a comprehensive log viewer.
+- **Account Management**:
+  - Create, Modify, and Delete profile accounts for logging into ROSE Online.
+  - Store and manage multiple ROSE Online accounts securely.
+  - Account information is encrypted using AES.
+  
+- **Automatic Functions**:
+  - **Automatic Login**: Quickly log into ROSE Online accounts with saved credentials.
+  - **Automatic Patching**: Checks on start-up for the latest game version and updates automatically if needed.
+  - **Automatic Game Locating**: Finds the ROSE install location using the Windows Registry (thanks to ZeroPoke!).
+  
+- **User Interface Enhancements**:
+  - **One-Click Launch**: Quickly start ROSE from the main menu.
+  - **Drag and Drop**: Reorganize Profile Cards with drag-and-drop functionality.
+  - **Integrated Updater**: ROSE-Updater behavior with a progress bar for seamless updates.
+  
+- **Client Settings Management**:
+  - Manage ROSE client settings, including rose.toml file settings.
+    - Toggle the Skip Planet Cutscenes option.
+  - Change Login Screen Preferences:
+    - Random
+    - Treehouse
+    - Adventure Plains
+    - Junon Polis
+  
+- Email Address Management:
+  - Display and mask email addresses as needed.
+- **Client Behavior Customization**:
+  - Launch ROSE behind the client to keep it unobtrusive.
+  
+- **Advanced Features**:
+  - **Game Memory Reading**: Access game memory data to overwrite client-side data, such as updating the Window Title with your active character name.
+  - **Logging and Debugging**: Logging using NLog to capture and debug issues, with an Event Log View for real-time log statements.
 
 
 ## Upcoming Planned Features
