@@ -106,11 +106,11 @@
                     <Label Content="Client Settings" Foreground="WhiteSmoke" FontWeight="Bold" Margin="24 10 0 -5" Grid.Row="0"/>
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="38 0 0 10" Width="300" Grid.Row="1">
                         <!-- -->
-                        <CheckBox Content="Overwrite Window Title with Character Data" VerticalContentAlignment="Center" IsChecked="{Binding ToggleCharDataScanning}" Margin="0 2" Foreground="WhiteSmoke">
+                        <CheckBox Content="Write Character Name to Window Title" VerticalContentAlignment="Center" IsChecked="{Binding ToggleCharDataScanning}" Margin="0 2" Foreground="WhiteSmoke">
                             <CheckBox.ToolTip>
                                 <ToolTip>
                                     <TextBlock>
-                                        <Run Text="Enable to set the ROSE Client's window title to the active character data. (Eg. Ghidorah (Artisan) - Level 130)"/>
+                                        <Run Text="When enabled, the active player charcter name will replace the ROSE Online client's window title."/>
                                         <LineBreak/>
                                         <Run Text="This setting can be toggled on and off without needing to restart the manager or the game clients."/>
                                     </TextBlock>
