@@ -30,15 +30,15 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
   - **Integrated Updater**: ROSE-Updater behavior with a progress bar for seamless updates.
   
 - **Client Settings Management**:
-  - Manage ROSE client settings, including rose.toml file settings.
+  - Manage ROSE client settings, including `rose.toml` file settings.
     - Toggle the Skip Planet Cutscenes option.
-  - Change Login Screen Preferences:
+  - **Change Login Screen Preferences**:
     - Random
     - Treehouse
     - Adventure Plains
     - Junon Polis
   
-- Email Address Management:
+- **Email Address Management**:
   - Display and mask email addresses as needed.
 - **Client Behavior Customization**:
   - Launch ROSE behind the client to keep it unobtrusive.
