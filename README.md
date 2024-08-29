@@ -55,9 +55,7 @@ The database file, data.sqlite, is located within "%AppData%/Roaming/ROSE Online
 
 
 ## Installation
-**Prerequisites**
-- .NET 8 Runtime
-- ROSE Online installed and properly configured
+See **Releases** for detailed installations instructions. 
 
 
 ## Screenshots
