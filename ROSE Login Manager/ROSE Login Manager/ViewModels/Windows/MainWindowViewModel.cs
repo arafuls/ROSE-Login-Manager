@@ -37,16 +37,16 @@ namespace ROSE_Login_Manager.ViewModels.Windows
             MenuItems.Clear();
             MenuItems.Add(new NavigationViewItem()
             {
-                Content = "Profiles",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.Person24 },
-                TargetPageType = typeof(Views.Pages.ProfilePage)
+                Content = "Patcher",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.ArrowDownload24 },
+                TargetPageType = typeof(Views.Pages.PatcherPage)
             });
 
             MenuItems.Add(new NavigationViewItem()
             {
-                Content = "Patcher",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.ArrowDownload24 },
-                TargetPageType = typeof(Views.Pages.PatcherPage)
+                Content = "Profiles",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Person24 },
+                TargetPageType = typeof(Views.Pages.ProfilePage)
             });
 
             FooterMenuItems.Clear();

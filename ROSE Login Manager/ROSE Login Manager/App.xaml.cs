@@ -68,6 +68,8 @@ namespace ROSE_Login_Manager
                 services.AddSingleton<IEncryptionService, EncryptionService>();
                 services.AddSingleton<IUserProfileService, UserProfileService>();
                 services.AddSingleton<ILauncherSettingsService, LauncherSettingsService>();
+                services.AddSingleton<IRoseClientService, RoseClientService>();
+                services.AddSingleton<IRosePatcherService, RosePatcherService>();
 
                 // Register our ViewModels
                 services.AddTransient<MainViewModel>();
