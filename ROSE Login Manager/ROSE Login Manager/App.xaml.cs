@@ -5,10 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.ViewModels;
 using ROSE_Login_Manager.ViewModels.Pages;
 using ROSE_Login_Manager.ViewModels.Windows;
 using ROSE_Login_Manager.Views.Pages;
 using ROSE_Login_Manager.Views.Windows;
+using Serilog;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
 
@@ -27,6 +29,21 @@ namespace ROSE_Login_Manager
         private static readonly IHost _host = Host
             .CreateDefaultBuilder()
             .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)); })
+            .UseSerilog((context, services, configuration) => configuration
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .WriteTo.File(
+                    Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "RoseOnlineLoginManager",
+                        "logs",
+                        "app-.log"
+                    ),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    fileSizeLimitBytes: 10 * 1024 * 1024 // 10MB
+                )
+            )
             .ConfigureServices((context, services) =>
             {
                 services.AddNavigationViewPageProvider();
@@ -46,10 +63,19 @@ namespace ROSE_Login_Manager
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
-                services.AddSingleton<DashboardPage>();
-                services.AddSingleton<DashboardViewModel>();
-                services.AddSingleton<DataPage>();
-                services.AddSingleton<DataViewModel>();
+                // Register our custom services
+                services.AddSingleton<IDatabaseService, DatabaseService>();
+                services.AddSingleton<IEncryptionService, EncryptionService>();
+                services.AddSingleton<IUserProfileService, UserProfileService>();
+                services.AddSingleton<ILauncherSettingsService, LauncherSettingsService>();
+
+                // Register our ViewModels
+                services.AddTransient<MainViewModel>();
+
+                services.AddSingleton<ProfilePage>();
+                services.AddTransient<ProfileViewModel>();
+                services.AddSingleton<PatcherPage>();
+                services.AddSingleton<PatcherViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
             }).Build();
@@ -67,7 +93,20 @@ namespace ROSE_Login_Manager
         /// </summary>
         private async void OnStartup(object sender, StartupEventArgs e)
         {
-            await _host.StartAsync();
+            try
+            {
+                // Initialize database
+                var databaseService = Services.GetRequiredService<IDatabaseService>();
+                await databaseService.InitializeAsync();
+
+                Log.Information("Application started successfully");
+                await _host.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application failed to start");
+                throw;
+            }
         }
 
         /// <summary>
@@ -75,9 +114,19 @@ namespace ROSE_Login_Manager
         /// </summary>
         private async void OnExit(object sender, ExitEventArgs e)
         {
-            await _host.StopAsync();
-
-            _host.Dispose();
+            try
+            {
+                Log.Information("Application shutting down");
+                await _host.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during application shutdown");
+            }
+            finally
+            {
+                _host.Dispose();
+            }
         }
 
         /// <summary>
@@ -85,7 +134,8 @@ namespace ROSE_Login_Manager
         /// </summary>
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
+            Log.Fatal(e.Exception, "Unhandled exception occurred");
+            e.Handled = true;
         }
     }
 }

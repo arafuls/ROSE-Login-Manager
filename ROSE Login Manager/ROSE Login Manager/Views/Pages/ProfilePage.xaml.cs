@@ -3,11 +3,11 @@ using Wpf.Ui.Abstractions.Controls;
 
 namespace ROSE_Login_Manager.Views.Pages
 {
-    public partial class DashboardPage : INavigableView<DashboardViewModel>
+    public partial class ProfilePage : INavigableView<ProfileViewModel>
     {
-        public DashboardViewModel ViewModel { get; }
+        public ProfileViewModel ViewModel { get; }
 
-        public DashboardPage(DashboardViewModel viewModel)
+        public ProfilePage(ProfileViewModel viewModel)
         {
             ViewModel = viewModel;
             DataContext = this;

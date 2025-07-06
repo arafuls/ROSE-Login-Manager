@@ -1,0 +1,150 @@
+<Page
+    x:Class="ROSE_Login_Manager.Views.Pages.PatcherPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ROSE_Login_Manager.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:ROSE_Login_Manager.Models"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Patcher"
+    d:DataContext="{d:DesignInstance local:PatcherPage,
+                                     IsDesignTimeCreatable=False}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ScrollViewer.CanContentScroll="False"
+    mc:Ignorable="d">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,0">
+            <TextBlock 
+                Text="Game Client Patcher" 
+                Style="{DynamicResource TitleTextBlockStyle}"
+                Margin="0,0,0,8" />
+            <TextBlock 
+                Text="Update and maintain your Rose Online game client" 
+                Style="{DynamicResource BodyTextBlockStyle}"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <!-- Patcher Controls -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox
+                Grid.Column="0"
+                PlaceholderText="Enter game client path..."
+                Text="{Binding ViewModel.GameClientPath, UpdateSourceTrigger=PropertyChanged}"
+                Icon="Folder24"
+                Margin="0,0,12,0" />
+
+            <ui:Button
+                Grid.Column="1"
+                Command="{Binding ViewModel.BrowseClientPathCommand}"
+                Content="Browse"
+                Icon="FolderOpen24" />
+        </Grid>
+
+        <!-- Status and Progress -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center">
+            <ui:Card Margin="0,0,0,16" Padding="16">
+                <StackPanel>
+                    <TextBlock 
+                        Text="Current Status" 
+                        Style="{DynamicResource SubtitleTextBlockStyle}"
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,12" />
+                    
+                    <TextBlock 
+                        Text="{Binding ViewModel.StatusMessage}" 
+                        Style="{DynamicResource BodyTextBlockStyle}"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Margin="0,0,0,12" />
+                    
+                    <ui:ProgressRing 
+                        IsIndeterminate="{Binding ViewModel.IsPatching}"
+                        Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Margin="0,0,0,12" />
+                    
+                    <ProgressBar 
+                        Value="{Binding ViewModel.PatchProgress}"
+                        Maximum="100"
+                        Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+            </ui:Card>
+
+            <ui:Card Padding="16">
+                <StackPanel>
+                    <TextBlock 
+                        Text="Available Actions" 
+                        Style="{DynamicResource SubtitleTextBlockStyle}"
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,12" />
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button
+                            Command="{Binding ViewModel.CheckForUpdatesCommand}"
+                            Content="Check for Updates"
+                            Icon="ArrowClockwise24"
+                            Appearance="Primary"
+                            Margin="0,0,8,0" />
+                        
+                        <ui:Button
+                            Command="{Binding ViewModel.PatchGameCommand}"
+                            Content="Patch Game"
+                            Icon="ArrowDownload24"
+                            Appearance="Secondary"
+                            Margin="0,0,8,0" />
+                        
+                        <ui:Button
+                            Command="{Binding ViewModel.VerifyFilesCommand}"
+                            Content="Verify Files"
+                            Icon="Checkmark24"
+                            Appearance="Secondary" />
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+        </StackPanel>
+
+        <!-- Status Bar -->
+        <Grid Grid.Row="3" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock 
+                Grid.Column="0"
+                Text="{Binding ViewModel.LastUpdateCheck}" 
+                Style="{DynamicResource CaptionTextBlockStyle}"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                VerticalAlignment="Center" />
+
+            <ui:Button
+                Grid.Column="1"
+                Command="{Binding ViewModel.RefreshStatusCommand}"
+                Content="Refresh"
+                Icon="ArrowClockwise24"
+                Appearance="Secondary" />
+        </Grid>
+
+        <!-- Error Message -->
+        <ui:SnackbarPresenter 
+            Grid.Row="0" Grid.RowSpan="4"
+            x:Name="SnackbarPresenter" />
+    </Grid>
+</Page>

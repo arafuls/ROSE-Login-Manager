@@ -1,0 +1,161 @@
+﻿<Page
+    x:Class="ROSE_Login_Manager.Views.Pages.ProfilePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ROSE_Login_Manager.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Profiles"
+    d:DataContext="{d:DesignInstance local:ProfilePage,
+                                     IsDesignTimeCreatable=False}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock 
+                Text="Game Profiles" 
+                Style="{DynamicResource TitleTextBlockStyle}"
+                Margin="0,0,0,8" />
+            <TextBlock 
+                Text="Manage your Rose Online game account profiles" 
+                Style="{DynamicResource BodyTextBlockStyle}"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <!-- Search and Actions -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox
+                Grid.Column="0"
+                PlaceholderText="Search profiles..."
+                Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}"
+                Icon="Search24"
+                Margin="0,0,12,0" />
+
+            <ui:Button
+                Grid.Column="1"
+                Command="{Binding ViewModel.AddProfileCommand}"
+                Content="Add Profile"
+                Icon="Add24" />
+        </Grid>
+
+        <!-- Profiles List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding ViewModel.Profiles}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ui:Card Margin="0,0,0,8" Padding="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock 
+                                                Text="{Binding ProfileName}" 
+                                                Style="{DynamicResource SubtitleTextBlockStyle}"
+                                                FontWeight="SemiBold" />
+                                            <TextBlock 
+                                                Text="{Binding GameAccountUsername}" 
+                                                Style="{DynamicResource BodyTextBlockStyle}"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Margin="0,4,0,0" />
+                                            <TextBlock 
+                                                Text="{Binding GameClientPath}" 
+                                                Style="{DynamicResource CaptionTextBlockStyle}"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Margin="0,4,0,0"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                                            <ui:Badge 
+                                                Content="Default" 
+                                                Appearance="Primary"
+                                                Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                                    <ui:Button
+                                        Command="{Binding DataContext.ViewModel.LaunchGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Content="Launch"
+                                        Icon="Play24"
+                                        Appearance="Primary"
+                                        Margin="0,0,8,0" />
+                                    <ui:Button
+                                        Command="{Binding DataContext.ViewModel.EditProfileCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Content="Edit"
+                                        Icon="Edit24"
+                                        Margin="0,0,8,0" />
+                                    <ui:Button
+                                        Command="{Binding DataContext.ViewModel.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Content="Delete"
+                                        Icon="Delete24"
+                                        Appearance="Danger" />
+                                </StackPanel>
+                            </Grid>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Status Bar -->
+        <Grid Grid.Row="3" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock 
+                Grid.Column="0"
+                Text="{Binding ViewModel.Profiles.Count, StringFormat='{}{0} profile(s)'}" 
+                Style="{DynamicResource CaptionTextBlockStyle}"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                VerticalAlignment="Center" />
+
+            <ui:Button
+                Grid.Column="1"
+                Command="{Binding ViewModel.RefreshProfilesCommand}"
+                Content="Refresh"
+                Icon="ArrowClockwise24"
+                Appearance="Secondary" />
+        </Grid>
+
+        <!-- Error Message -->
+        <ui:SnackbarPresenter 
+            Grid.Row="0" Grid.RowSpan="4"
+            x:Name="SnackbarPresenter" />
+    </Grid>
+</Page>

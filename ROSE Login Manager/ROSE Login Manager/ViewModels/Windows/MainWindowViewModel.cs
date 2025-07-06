@@ -1,45 +1,63 @@
 ﻿using System.Collections.ObjectModel;
+using Microsoft.Extensions.Logging;
+using ROSE_Login_Manager.ViewModels;
 using Wpf.Ui.Controls;
 
 namespace ROSE_Login_Manager.ViewModels.Windows
 {
     public partial class MainWindowViewModel : ObservableObject
     {
-        [ObservableProperty]
-        private string _applicationTitle = "WPF UI - ROSE_Login_Manager";
+        private readonly ILogger<MainWindowViewModel> _logger;
+
+        public MainWindowViewModel(ILogger<MainWindowViewModel> logger)
+        {
+            _logger = logger;
+            InitializeNavigationItems();
+        }
 
         [ObservableProperty]
-        private ObservableCollection<object> _menuItems = new()
-        {
-            new NavigationViewItem()
-            {
-                Content = "Home",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.Home24 },
-                TargetPageType = typeof(Views.Pages.DashboardPage)
-            },
-            new NavigationViewItem()
-            {
-                Content = "Data",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.DataHistogram24 },
-                TargetPageType = typeof(Views.Pages.DataPage)
-            }
-        };
+        private string _applicationTitle = "Rose Online Login Manager";
 
         [ObservableProperty]
-        private ObservableCollection<object> _footerMenuItems = new()
-        {
-            new NavigationViewItem()
-            {
-                Content = "Settings",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
-                TargetPageType = typeof(Views.Pages.SettingsPage)
-            }
-        };
+        private ObservableCollection<object> _menuItems = new();
+
+        [ObservableProperty]
+        private ObservableCollection<object> _footerMenuItems = new();
 
         [ObservableProperty]
         private ObservableCollection<MenuItem> _trayMenuItems = new()
         {
-            new MenuItem { Header = "Home", Tag = "tray_home" }
+            new MenuItem { Header = "Profiles", Tag = "tray_profiles" },
+            new MenuItem { Header = "Settings", Tag = "tray_settings" },
+            new MenuItem { Header = "Exit", Tag = "tray_exit" }
         };
+
+        private void InitializeNavigationItems()
+        {
+            MenuItems.Clear();
+            MenuItems.Add(new NavigationViewItem()
+            {
+                Content = "Profiles",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Person24 },
+                TargetPageType = typeof(Views.Pages.ProfilePage)
+            });
+
+            MenuItems.Add(new NavigationViewItem()
+            {
+                Content = "Patcher",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.ArrowDownload24 },
+                TargetPageType = typeof(Views.Pages.PatcherPage)
+            });
+
+            FooterMenuItems.Clear();
+            FooterMenuItems.Add(new NavigationViewItem()
+            {
+                Content = "Settings",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
+                TargetPageType = typeof(Views.Pages.SettingsPage)
+            });
+
+            _logger.LogInformation("Navigation items initialized");
+        }
     }
 }

@@ -50,7 +50,7 @@ namespace ROSE_Login_Manager.Services
                 )!;
                 _navigationWindow!.ShowWindow();
 
-                _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));
+                _navigationWindow.Navigate(typeof(Views.Pages.PatcherPage));
             }
 
             await Task.CompletedTask;
