@@ -340,7 +340,8 @@
 *.sdf
 
 ## Visual Studio 2017 and newer
-.vs/                  # This is the problematic folder you encountered!
+.vs/
+*/.vs/
 
 ## Packages
 # It's recommended to commit packages.config and use PackageReference in .csproj
@@ -389,9 +390,7 @@ TestResults/
 # The NuGet cache files
 .nuget/packages/
 
-# Project-specific build output (e.g., if you have a custom output path)
-# Add any other specific output folders your build process might create here
-# e.g., MyCustomBuildOutput/
+# Project-specific build output
 
 # Operating System generated files
 .DS_Store
