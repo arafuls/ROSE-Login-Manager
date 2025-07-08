@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ROSE_Login_Manager.Models;
-using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Interfaces;
 using System.Collections.ObjectModel;
 using System.IO;
 

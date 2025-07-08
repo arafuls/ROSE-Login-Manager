@@ -2,10 +2,12 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using ROSE_Login_Manager.Models;
+using ROSE_Login_Manager.Services.Interfaces;
+using ROSE_Login_Manager.Services.Models;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 
-namespace ROSE_Login_Manager.Services;
+namespace ROSE_Login_Manager.Services.Implementations;
 
 /// <summary>
 /// Implementation of user profile service for CRUD operations
@@ -250,9 +252,9 @@ public class UserProfileService : IUserProfileService
     /// <summary>
     /// Validates a user profile
     /// </summary>
-    public async Task<ValidationResult> ValidateProfileAsync(UserProfile profile)
+    public async Task<Models.ValidationResult> ValidateProfileAsync(UserProfile profile)
     {
-        var result = new ValidationResult { IsValid = true };
+        var result = new Models.ValidationResult { IsValid = true };
 
         // Basic validation
         if (string.IsNullOrWhiteSpace(profile.ProfileName))

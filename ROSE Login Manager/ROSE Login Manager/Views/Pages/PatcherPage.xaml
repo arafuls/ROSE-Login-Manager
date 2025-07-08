@@ -27,19 +27,21 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+        <StackPanel Grid.Row="0" Margin="0,0,0,0">
             <TextBlock 
                 Text="Game Client Patcher" 
                 Style="{DynamicResource TitleTextBlockStyle}"
-                Margin="0,0,0,8" />
+                Margin="0,0,0,16" />
+            
             <TextBlock 
                 Text="ROSE Install Directory" 
+                Margin="8 0 0 2"
                 Style="{DynamicResource BodyTextBlockStyle}"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
         </StackPanel>
 
         <!-- Patcher Controls -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
+        <Grid Grid.Row="1" Margin="8,0,8,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -61,7 +63,7 @@
 
         <!-- Status and Progress -->
         <StackPanel Grid.Row="2" VerticalAlignment="Top">
-            <ui:Card Margin="0,0,0,16" Padding="16">
+            <ui:Card Margin="0,0,0,16" Padding="16" Height="Auto">
                 <Grid>
                     <ui:ProgressRing 
                         IsIndeterminate="{Binding ViewModel.IsPatching}"
@@ -74,7 +76,7 @@
                             FontWeight="SemiBold"
                             Margin="0,0,0,12" />
 
-                        <ScrollViewer Height="250" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer Height="300" VerticalScrollBarVisibility="Auto">
                             <TextBlock 
                                 Text="{Binding ViewModel.StatusMessage}" 
                                 Style="{DynamicResource BodyTextBlockStyle}"
@@ -83,15 +85,10 @@
                                 TextWrapping="Wrap"/>
                         </ScrollViewer>
 
-                        <ProgressBar 
-                            Value="{Binding ViewModel.PatchProgress}"
-                            Maximum="100"
-                            Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}" />
-
                         <StackPanel Orientation="Horizontal" Margin="0 16 0 0">
                             <ui:Button
                             Command="{Binding ViewModel.CheckForUpdatesCommand}"
-                            Content="Run Patcher - Force"
+                            Content="Run Patcher"
                             Icon="ArrowClockwise24"
                             Appearance="Primary"
                             Margin="0,0,8,0" />
@@ -100,10 +97,5 @@
                 </Grid>
             </ui:Card>
         </StackPanel>
-
-        <!-- Error Message -->
-        <ui:SnackbarPresenter 
-            Grid.Row="0" Grid.RowSpan="4"
-            x:Name="SnackbarPresenter" />
     </Grid>
 </Page>

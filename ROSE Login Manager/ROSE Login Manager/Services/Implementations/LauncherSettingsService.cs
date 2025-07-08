@@ -1,9 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ROSE_Login_Manager.Models;
+using ROSE_Login_Manager.Services.Interfaces;
 using System.IO;
 
-namespace ROSE_Login_Manager.Services;
+namespace ROSE_Login_Manager.Services.Implementations;
 
 /// <summary>
 /// Implementation of launcher settings service for JSON configuration management

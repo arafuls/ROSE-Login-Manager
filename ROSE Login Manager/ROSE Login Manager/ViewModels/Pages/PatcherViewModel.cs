@@ -1,6 +1,6 @@
 using System.Windows.Media;
 using ROSE_Login_Manager.Models;
-using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Interfaces;
 using Wpf.Ui.Abstractions.Controls;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;

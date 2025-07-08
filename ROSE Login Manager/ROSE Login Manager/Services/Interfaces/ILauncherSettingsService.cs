@@ -1,6 +1,6 @@
 using ROSE_Login_Manager.Models;
 
-namespace ROSE_Login_Manager.Services;
+namespace ROSE_Login_Manager.Services.Interfaces;
 
 /// <summary>
 /// Service for managing launcher settings stored in JSON configuration

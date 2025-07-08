@@ -1,7 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using ROSE_Login_Manager.Services.Interfaces;
 
-namespace ROSE_Login_Manager.Services;
+namespace ROSE_Login_Manager.Services.Implementations;
 
 /// <summary>
 /// Implementation of encryption service using Windows Data Protection API (DPAPI)

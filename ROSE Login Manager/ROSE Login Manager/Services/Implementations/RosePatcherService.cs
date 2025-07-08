@@ -1,9 +1,10 @@
 using Microsoft.Extensions.Logging;
+using ROSE_Login_Manager.Services.Interfaces;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 
-namespace ROSE_Login_Manager.Services
+namespace ROSE_Login_Manager.Services.Implementations
 {
     /// <summary>
     /// Service for managing Rose Online client patching operations

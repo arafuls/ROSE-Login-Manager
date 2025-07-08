@@ -1,6 +1,7 @@
 using ROSE_Login_Manager.Models;
+using ROSE_Login_Manager.Services.Models;
 
-namespace ROSE_Login_Manager.Services;
+namespace ROSE_Login_Manager.Services.Interfaces;
 
 /// <summary>
 /// Service for managing user profile CRUD operations
@@ -59,14 +60,5 @@ public interface IUserProfileService
     /// </summary>
     /// <param name="profile">The profile to validate</param>
     /// <returns>Validation result</returns>
-    Task<ValidationResult> ValidateProfileAsync(UserProfile profile);
-}
-
-/// <summary>
-/// Result of profile validation
-/// </summary>
-public class ValidationResult
-{
-    public bool IsValid { get; set; }
-    public List<string> Errors { get; set; } = new();
+    Task<ROSE_Login_Manager.Services.Models.ValidationResult> ValidateProfileAsync(UserProfile profile);
 } 

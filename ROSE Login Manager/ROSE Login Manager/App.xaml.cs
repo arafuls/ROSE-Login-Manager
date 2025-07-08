@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ROSE_Login_Manager.Services;
+using ROSE_Login_Manager.Services.Interfaces;
+using ROSE_Login_Manager.Services.Implementations;
 using ROSE_Login_Manager.ViewModels;
 using ROSE_Login_Manager.ViewModels.Pages;
 using ROSE_Login_Manager.ViewModels.Windows;

@@ -1,4 +1,4 @@
-namespace ROSE_Login_Manager.Services;
+namespace ROSE_Login_Manager.Services.Interfaces;
 
 /// <summary>
 /// Service for encrypting and decrypting sensitive data using Windows DPAPI
