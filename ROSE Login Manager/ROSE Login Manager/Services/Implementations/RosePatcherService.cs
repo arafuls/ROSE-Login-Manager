@@ -7,7 +7,7 @@ using System.IO;
 namespace ROSE_Login_Manager.Services.Implementations
 {
     /// <summary>
-    /// Service for managing Rose Online client patching operations
+    /// Service for managing ROSE Online client patching operations
     /// </summary>
     public class RosePatcherService : IRosePatcherService
     {
@@ -21,14 +21,14 @@ namespace ROSE_Login_Manager.Services.Implementations
         }
 
         /// <summary>
-        /// Checks if updates are available for the Rose Online client
+        /// Checks if updates are available for the ROSE Online client
         /// </summary>
         public async Task<bool> CheckForUpdatesAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default)
         {
             var updaterPath = _roseClientService.GetUpdaterPath();
             if (string.IsNullOrEmpty(updaterPath))
             {
-                progressCallback?.Invoke("Rose Online updater not found. Please ensure the game is properly installed.");
+                progressCallback?.Invoke("ROSE Online updater not found. Please ensure the game is properly installed.");
                 return false;
             }
 
@@ -52,14 +52,14 @@ namespace ROSE_Login_Manager.Services.Implementations
         }
 
         /// <summary>
-        /// Patches the Rose Online client with available updates
+        /// Patches the ROSE Online client with available updates
         /// </summary>
         public async Task<bool> PatchClientAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default)
         {
             var updaterPath = _roseClientService.GetUpdaterPath();
             if (string.IsNullOrEmpty(updaterPath))
             {
-                progressCallback?.Invoke("Rose Online updater not found. Please ensure the game is properly installed.");
+                progressCallback?.Invoke("ROSE Online updater not found. Please ensure the game is properly installed.");
                 return false;
             }
 
@@ -82,14 +82,14 @@ namespace ROSE_Login_Manager.Services.Implementations
         }
 
         /// <summary>
-        /// Verifies the integrity of Rose Online client files
+        /// Verifies the integrity of ROSE Online client files
         /// </summary>
         public async Task<bool> VerifyFilesAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default)
         {
             var updaterPath = _roseClientService.GetUpdaterPath();
             if (string.IsNullOrEmpty(updaterPath))
             {
-                progressCallback?.Invoke("Rose Online updater not found. Please ensure the game is properly installed.");
+                progressCallback?.Invoke("ROSE Online updater not found. Please ensure the game is properly installed.");
                 return false;
             }
 
@@ -111,7 +111,7 @@ namespace ROSE_Login_Manager.Services.Implementations
         }
 
         /// <summary>
-        /// Gets the current version of the Rose Online client
+        /// Gets the current version of the ROSE Online client
         /// </summary>
         public async Task<string?> GetClientVersionAsync()
         {

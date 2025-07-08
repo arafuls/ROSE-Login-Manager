@@ -8,10 +8,10 @@
     xmlns:models="clr-namespace:ROSE_Login_Manager.Models"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Patcher"
+    Width="1000"
+    Height="600"
     d:DataContext="{d:DesignInstance local:PatcherPage,
                                      IsDesignTimeCreatable=False}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -65,35 +65,49 @@
         <StackPanel Grid.Row="2" VerticalAlignment="Top">
             <ui:Card Margin="0,0,0,16" Padding="16" Height="Auto">
                 <Grid>
-                    <ui:ProgressRing 
-                        IsIndeterminate="{Binding ViewModel.IsPatching}"
-                        Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Margin="0,0,0,12" />
-                    <StackPanel>
-                        <TextBlock 
-                            Text="Current Status" 
-                            Style="{DynamicResource SubtitleTextBlockStyle}"
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,12" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width=".75*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <ui:Card>
+                        <Grid>
+                            <!-- Left Panel -->
+                            <ui:ProgressRing
+                                IsIndeterminate="{Binding ViewModel.IsPatching}"
+                                Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Margin="0,0,0,12" />
+                            <StackPanel>
+                                <TextBlock 
+                                    Text="Current Status" 
+                                    Style="{DynamicResource SubtitleTextBlockStyle}"
+                                    FontWeight="SemiBold"
+                                    Margin="0,0,0,12" />
 
-                        <ScrollViewer Height="300" VerticalScrollBarVisibility="Auto">
-                            <TextBlock 
-                                Text="{Binding ViewModel.StatusMessage}" 
-                                Style="{DynamicResource BodyTextBlockStyle}"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Margin="0,0,0,0"
-                                TextWrapping="Wrap"/>
-                        </ScrollViewer>
+                                <ScrollViewer Height="250" VerticalScrollBarVisibility="Auto">
+                                    <TextBlock 
+                                        Text="{Binding ViewModel.StatusMessage}" 
+                                        Style="{DynamicResource BodyTextBlockStyle}"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Margin="0,0,0,0"
+                                        TextWrapping="Wrap"/>
+                                </ScrollViewer>
 
-                        <StackPanel Orientation="Horizontal" Margin="0 16 0 0">
-                            <ui:Button
-                            Command="{Binding ViewModel.CheckForUpdatesCommand}"
-                            Content="Run Patcher"
-                            Icon="ArrowClockwise24"
-                            Appearance="Primary"
-                            Margin="0,0,8,0" />
-                        </StackPanel>
-                    </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 16 0 0">
+                                    <ui:Button
+                                        Command="{Binding ViewModel.CheckForUpdatesCommand}"
+                                        Content="Run Patcher"
+                                        Icon="ArrowClockwise24"
+                                        Appearance="Primary"
+                                        Margin="0,0,8,0" />
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- Right Panel -->
+                            <!-- Patch Notes Here -->
+                            
+                        </Grid>
+                    </ui:Card>
                 </Grid>
             </ui:Card>
         </StackPanel>

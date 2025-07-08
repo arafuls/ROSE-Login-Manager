@@ -6,7 +6,7 @@ using System.IO;
 namespace ROSE_Login_Manager.Services.Implementations;
 
 /// <summary>
-/// Service for detecting and managing Rose Online client installation
+/// Service for detecting and managing ROSE Online client installation
 /// </summary>
 public class RoseClientService : IRoseClientService
 {
@@ -19,7 +19,7 @@ public class RoseClientService : IRoseClientService
     }
 
     /// <summary>
-    /// Gets the Rose Online client installation path from registry
+    /// Gets the ROSE Online client installation path from registry
     /// </summary>
     /// <returns>The installation path if found, null otherwise</returns>
     public string? GetClientInstallPath()
@@ -34,16 +34,16 @@ public class RoseClientService : IRoseClientService
                 var value = key.GetValue(valueName) as string;
                 if (!string.IsNullOrEmpty(value) && Directory.Exists(value))
                 {
-                    _logger.LogInformation("Found Rose Online installation at: {Path}", value);
+                    _logger.LogInformation("Found ROSE Online installation at: {Path}", value);
                     return value;
                 }
             }
-            _logger.LogWarning("Rose Online installation not found at registry key: {Key}", registryPath);
+            _logger.LogWarning("ROSE Online installation not found at registry key: {Key}", registryPath);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reading registry for Rose Online installation");
+            _logger.LogError(ex, "Error reading registry for ROSE Online installation.");
             return null;
         }
     }
@@ -70,7 +70,7 @@ public class RoseClientService : IRoseClientService
     }
 
     /// <summary>
-    /// Checks if the Rose Online client is installed
+    /// Checks if the ROSE Online client is installed
     /// </summary>
     /// <returns>True if client is found, false otherwise</returns>
     public bool IsClientInstalled()
@@ -109,13 +109,13 @@ public class RoseClientService : IRoseClientService
     }
 
     /// <summary>
-    /// Debug method to list all Rose Online related registry entries
+    /// Debug method to list all ROSE Online related registry entries
     /// </summary>
     public void DebugRegistryEntries()
     {
         try
         {
-            _logger.LogInformation("=== Debugging Rose Online Registry Entries ===");
+            _logger.LogInformation("=== Debugging ROSE Online Registry Entries ===");
             
             // Check uninstall keys
             var uninstallKeys = new[]

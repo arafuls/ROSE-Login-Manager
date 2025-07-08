@@ -9,7 +9,7 @@ using System.IO;
 namespace ROSE_Login_Manager.ViewModels;
 
 /// <summary>
-/// Main ViewModel for the Rose Online Login Manager application
+/// Main ViewModel for the ROSE Online Login Manager application
 /// </summary>
 public partial class MainViewModel : ViewModelBase
 {
@@ -58,7 +58,7 @@ public partial class MainViewModel : ViewModelBase
     /// Application title
     /// </summary>
     [ObservableProperty]
-    private string _title = "Rose Online Login Manager";
+    private string _title = "ROSE Online Login Manager";
 
     /// <summary>
     /// Current application version

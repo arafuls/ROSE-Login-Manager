@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace ROSE_Login_Manager.Models;
 
 /// <summary>
-/// Flexible model for Rose Online game client settings stored in TOML files
+/// Flexible model for ROSE Online game client settings stored in TOML files
 /// </summary>
 public class GameClientSettings
 {

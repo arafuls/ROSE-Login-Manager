@@ -11,7 +11,7 @@ public class LauncherSettings
     public string Theme { get; set; } = "Default";
 
     /// <summary>
-    /// Default path to the Rose Online game client
+    /// Default path to the ROSE Online game client
     /// </summary>
     public string DefaultGameClientPath { get; set; } = string.Empty;
 

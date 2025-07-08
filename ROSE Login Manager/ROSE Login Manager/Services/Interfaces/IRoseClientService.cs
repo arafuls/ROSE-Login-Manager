@@ -1,12 +1,12 @@
 namespace ROSE_Login_Manager.Services.Interfaces;
 
 /// <summary>
-/// Service for detecting and managing Rose Online client installation
+/// Service for detecting and managing ROSE Online client installation
 /// </summary>
 public interface IRoseClientService
 {
     /// <summary>
-    /// Gets the Rose Online client installation path from registry
+    /// Gets the ROSE Online client installation path from registry
     /// </summary>
     /// <returns>The installation path if found, null otherwise</returns>
     string? GetClientInstallPath();
@@ -18,7 +18,7 @@ public interface IRoseClientService
     string? GetUpdaterPath();
 
     /// <summary>
-    /// Checks if the Rose Online client is installed
+    /// Checks if the ROSE Online client is installed
     /// </summary>
     /// <returns>True if client is found, false otherwise</returns>
     bool IsClientInstalled();
@@ -36,7 +36,7 @@ public interface IRoseClientService
     string? GetGameExecutablePath();
 
     /// <summary>
-    /// Debug method to list all Rose Online related registry entries
+    /// Debug method to list all ROSE Online related registry entries
     /// </summary>
     void DebugRegistryEntries();
 } 

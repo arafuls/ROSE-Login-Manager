@@ -31,7 +31,7 @@
                 Style="{DynamicResource TitleTextBlockStyle}"
                 Margin="0,0,0,8" />
             <TextBlock 
-                Text="Manage your Rose Online game account profiles" 
+                Text="Manage your ROSE Online game account profiles" 
                 Style="{DynamicResource BodyTextBlockStyle}"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
         </StackPanel>
@@ -66,7 +66,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">

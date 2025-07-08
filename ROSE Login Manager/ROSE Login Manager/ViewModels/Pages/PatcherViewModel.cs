@@ -66,18 +66,18 @@ namespace ROSE_Login_Manager.ViewModels.Pages
             // Debug registry entries to help with development
             _roseClientService.DebugRegistryEntries();
 
-            // Auto-detect Rose Online installation
+            // Auto-detect ROSE Online installation
             var installPath = _roseClientService.GetClientInstallPath();
             if (!string.IsNullOrEmpty(installPath))
             {
                 GameClientPath = installPath;
-                StatusMessage = "Rose Online installation detected automatically";
-                _logger.LogInformation("Auto-detected Rose Online installation at: {Path}", installPath);
+                StatusMessage = "ROSE Online installation detected automatically";
+                _logger.LogInformation("Auto-detected ROSE Online installation at: {Path}", installPath);
             }
             else
             {
-                StatusMessage = "Rose Online installation not found. Please select the game directory manually.";
-                _logger.LogWarning("Rose Online installation not found in registry");
+                StatusMessage = "ROSE Online installation not found. Please select the game directory manually.";
+                _logger.LogWarning("ROSE Online installation not found in registry");
             }
 
             _isInitialized = true;

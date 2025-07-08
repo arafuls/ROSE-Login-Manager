@@ -16,7 +16,7 @@ namespace ROSE_Login_Manager.ViewModels.Windows
         }
 
         [ObservableProperty]
-        private string _applicationTitle = "Rose Online Login Manager";
+        private string _applicationTitle = "ROSE Online Login Manager";
 
         [ObservableProperty]
         private ObservableCollection<object> _menuItems = new();

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace ROSE_Login_Manager.Models;
 
 /// <summary>
-/// Represents a user profile for Rose Online game account management
+/// Represents a user profile for ROSE Online game account management
 /// </summary>
 public class UserProfile
 {
@@ -20,7 +20,7 @@ public class UserProfile
     public string ProfileName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Rose Online account username
+    /// ROSE Online account username
     /// </summary>
     [Required]
     [StringLength(50)]
