@@ -8,108 +8,133 @@
     xmlns:models="clr-namespace:ROSE_Login_Manager.Models"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Patcher"
-    Width="1000"
-    Height="600"
-    d:DataContext="{d:DesignInstance local:PatcherPage,
-                                     IsDesignTimeCreatable=False}"
+    d:DataContext="{d:DesignInstance local:PatcherPage, IsDesignTimeCreatable=False}"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ScrollViewer.CanContentScroll="False"
-    mc:Ignorable="d">
+    mc:Ignorable="d" 
+    d:DesignHeight="600" d:DesignWidth="1000">
 
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,0">
+        <!-- Header Section -->
+        <StackPanel Grid.Row="0">
             <TextBlock 
                 Text="Game Client Patcher" 
                 Style="{DynamicResource TitleTextBlockStyle}"
-                Margin="0,0,0,16" />
-            
+                Margin="0 0 0 16" />
+        </StackPanel>
+
+        <!-- Directory Selection Section -->
+        <StackPanel Grid.Row="1" Margin="0 0 0 16">
             <TextBlock 
                 Text="ROSE Install Directory" 
-                Margin="8 0 0 2"
-                Style="{DynamicResource BodyTextBlockStyle}"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                Style="{DynamicResource SubtitleTextBlockStyle}"
+                FontWeight="SemiBold" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <ui:TextBox
+                    Grid.Column="0"
+                    PlaceholderText="Enter path to game directory..."
+                    Text="{Binding ViewModel.GameClientPath, UpdateSourceTrigger=PropertyChanged}"
+                    Margin="0,0,12,0" />
+
+                <ui:Button
+                    Grid.Column="1"
+                    Command="{Binding ViewModel.BrowseClientPathCommand}"
+                    Content="Browse" />
+            </Grid>
         </StackPanel>
 
-        <!-- Patcher Controls -->
-        <Grid Grid.Row="1" Margin="8,0,8,16">
+        <!-- Main Content Section -->
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
 
-            <ui:TextBox
-                Grid.Column="0"
-                PlaceholderText="Enter path to game directory..."
-                Text="{Binding ViewModel.GameClientPath, UpdateSourceTrigger=PropertyChanged}"
-                Icon="Folder24"
-                Margin="0,0,12,0" />
-
-            <ui:Button
-                Grid.Column="1"
-                Command="{Binding ViewModel.BrowseClientPathCommand}"
-                Content="Browse"
-                Icon="FolderOpen24" />
-        </Grid>
-
-        <!-- Status and Progress -->
-        <StackPanel Grid.Row="2" VerticalAlignment="Top">
-            <ui:Card Margin="0,0,0,16" Padding="16" Height="Auto">
+            <ui:Card Grid.Column="0"
+                     Padding="4"
+                     VerticalAlignment="Stretch" 
+                     VerticalContentAlignment="Stretch">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width=".75*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <ui:Card>
-                        <Grid>
-                            <!-- Left Panel -->
-                            <ui:ProgressRing
-                                IsIndeterminate="{Binding ViewModel.IsPatching}"
-                                Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                Margin="0,0,0,12" />
-                            <StackPanel>
-                                <TextBlock 
-                                    Text="Current Status" 
-                                    Style="{DynamicResource SubtitleTextBlockStyle}"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12" />
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                                <ScrollViewer Height="250" VerticalScrollBarVisibility="Auto">
-                                    <TextBlock 
-                                        Text="{Binding ViewModel.StatusMessage}" 
-                                        Style="{DynamicResource BodyTextBlockStyle}"
-                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Margin="0,0,0,0"
-                                        TextWrapping="Wrap"/>
-                                </ScrollViewer>
+                    <TextBlock Grid.Row="0"
+                        Text="Current Status" 
+                        Style="{DynamicResource SubtitleTextBlockStyle}"
+                        FontWeight="SemiBold"
+                        Margin="4"/>
 
-                                <StackPanel Orientation="Horizontal" Margin="0 16 0 0">
-                                    <ui:Button
-                                        Command="{Binding ViewModel.CheckForUpdatesCommand}"
-                                        Content="Run Patcher"
-                                        Icon="ArrowClockwise24"
-                                        Appearance="Primary"
-                                        Margin="0,0,8,0" />
-                                </StackPanel>
-                            </StackPanel>
-                            
-                            <!-- Right Panel -->
-                            <!-- Patch Notes Here -->
-                            
-                        </Grid>
-                    </ui:Card>
+                    <!-- Patcher Log Content Area -->
+                    <ScrollViewer Grid.Row="1"
+                        VerticalScrollBarVisibility="Auto"
+                        VerticalAlignment="Stretch"
+                        Margin="8 4 4 4">
+                        <TextBlock 
+                            Text="{Binding ViewModel.StatusMessage}"
+                            Style="{DynamicResource BodyTextBlockStyle}"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap"/>
+                    </ScrollViewer>
+
+                    <!-- Progress Ring Overlay -->
+                    <ui:ProgressRing Grid.Row="1"
+                        IsIndeterminate="{Binding ViewModel.IsPatching}"
+                        Visibility="{Binding ViewModel.IsPatching, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" />
+
+                    <ui:Button Grid.Row="2"
+                        Command="{Binding ViewModel.CheckForUpdatesCommand}"
+                        Content="Run Patcher"
+                        Icon="ArrowClockwise24"
+                        Appearance="Primary"
+                        HorizontalAlignment="Left"
+                        Margin="4" />
                 </Grid>
             </ui:Card>
-        </StackPanel>
+
+            <ui:Card Grid.Column="2" 
+                     Padding="4"
+                     VerticalAlignment="Stretch" 
+                     VerticalContentAlignment="Stretch">
+                <StackPanel>
+                    <TextBlock 
+                        Text="Patch Notes" 
+                        Style="{DynamicResource SubtitleTextBlockStyle}"
+                        FontWeight="SemiBold"
+                        Margin="4" />
+
+                    <ScrollViewer 
+                        Height="250" 
+                        VerticalScrollBarVisibility="Auto">
+                        <TextBlock 
+                            Margin="8 4 4 4"
+                            Text="No patch notes available" 
+                            Style="{DynamicResource BodyTextBlockStyle}"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </ui:Card>
+
+        </Grid>
     </Grid>
 </Page>
