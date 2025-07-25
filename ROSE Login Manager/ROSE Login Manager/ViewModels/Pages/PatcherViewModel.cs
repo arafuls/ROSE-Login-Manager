@@ -1,4 +1,6 @@
+using System;
 using System.Windows.Media;
+using System.Windows.Documents;
 using ROSE_Login_Manager.Models;
 using ROSE_Login_Manager.Services.Interfaces;
 using Wpf.Ui.Abstractions.Controls;
@@ -9,29 +11,32 @@ using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ROSE_Login_Manager.ViewModels.Pages
 {
-    public partial class PatcherViewModel : ObservableObject, INavigationAware
+    public partial class PatcherViewModel : ViewModelBase, INavigationAware, IDisposable
     {
-        private readonly ILogger<PatcherViewModel> _logger;
         private readonly IRoseClientService _roseClientService;
         private readonly IRosePatcherService _rosePatcherService;
         private bool _isInitialized = false;
+        private CancellationTokenSource? _currentOperationCts;
+        private readonly Regex _ansiColorRegex = new(@"\x1B\[[0-9;]*[mK]", RegexOptions.Compiled);
+        private readonly Regex _timestampRegex = new(@"^\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s*", RegexOptions.Compiled);
+        private readonly Regex _logPrefixRegex = new(@"INFO (rose_updater|rose_update::manifest):\s*", RegexOptions.Compiled);
 
         public PatcherViewModel(ILogger<PatcherViewModel> logger, IRoseClientService roseClientService, IRosePatcherService rosePatcherService)
+            : base(logger)
         {
-            _logger = logger;
             _roseClientService = roseClientService;
             _rosePatcherService = rosePatcherService;
             ParsedStatusLines = new ObservableCollection<string>();
         }
 
-        [ObservableProperty]
-        private string _gameClientPath = string.Empty;
+        #region Properties
 
         [ObservableProperty]
-        private string _statusMessage = "Ready to check for updates";
+        private string _statusMessage = "";
 
         [ObservableProperty]
         private bool _isPatching = false;
@@ -40,16 +45,12 @@ namespace ROSE_Login_Manager.ViewModels.Pages
         private double _patchProgress = 0;
 
         [ObservableProperty]
-        private string _lastUpdateCheck = "Last checked: Never";
-
-        [ObservableProperty]
-        private string _statusIndicatorText = "READY";
-
-        [ObservableProperty]
-        private Brush _statusIndicatorBrush = new SolidColorBrush(Colors.LimeGreen);
-
-        [ObservableProperty]
         private ObservableCollection<string> _parsedStatusLines;
+
+        // Event to notify UI when status document should be updated
+        public event Action<string>? StatusLineAdded;
+
+        #endregion
 
         public Task OnNavigatedToAsync()
         {
@@ -59,237 +60,231 @@ namespace ROSE_Login_Manager.ViewModels.Pages
             return Task.CompletedTask;
         }
 
-        public Task OnNavigatedFromAsync() => Task.CompletedTask;
+        public Task OnNavigatedFromAsync()
+        {
+            CancelCurrentOperation();
+            return Task.CompletedTask;
+        }
 
         private void InitializeViewModel()
         {
-            // Debug registry entries to help with development
             _roseClientService.DebugRegistryEntries();
 
-            // Auto-detect ROSE Online installation
             var installPath = _roseClientService.GetClientInstallPath();
             if (!string.IsNullOrEmpty(installPath))
             {
-                GameClientPath = installPath;
-                StatusMessage = "ROSE Online installation detected automatically";
+                StatusMessage = "ROSE Online installation detected automatically.";
                 _logger.LogInformation("Auto-detected ROSE Online installation at: {Path}", installPath);
             }
             else
             {
                 StatusMessage = "ROSE Online installation not found. Please select the game directory manually.";
-                _logger.LogWarning("ROSE Online installation not found in registry");
+                _logger.LogWarning("ROSE Online installation not found in registry.");
             }
 
             _isInitialized = true;
         }
 
         [RelayCommand]
-        private void BrowseClientPath()
-        {
-            var openFolderDialog = new OpenFolderDialog
-            {
-                Title = "Select ROSE Online Game Installation Directory",
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Multiselect = false
-            };
-
-            bool? result = openFolderDialog.ShowDialog();
-            if (result == true)
-            {
-                GameClientPath = openFolderDialog.FolderName;
-                // Optional: Update a UI element, e.g., a TextBox
-                // myPathTextBox.Text = GameClientPath;
-            }
-        }
-
-        [RelayCommand]
         private async Task CheckForUpdatesAsync()
         {
-            if (string.IsNullOrEmpty(GameClientPath))
-            {
-                StatusMessage = "Please select a game client path first";
-                return;
-            }
-
-            IsPatching = true;
-            StatusMessage = "Checking for updates...";
-            PatchProgress = 0;
-            ParsedStatusLines.Clear();
-            SetStatusIndicator(true);
-
-            try
-            {
-                string patcherOutput = string.Empty;
-                var hasUpdates = await _rosePatcherService.CheckForUpdatesAsync(
-                    progress =>
-                    {
-                        patcherOutput += progress + "\n";
-
-                        var userLines = ParseUserFriendlyLines(patcherOutput);
-                        ParsedStatusLines.Clear();
-                        foreach (var line in userLines)
-                            ParsedStatusLines.Add(line);
-
-                        // Set StatusMessage to the last important line, or a default
-                        if (userLines.Count > 0)
-                            StatusMessage += '\n' + userLines.Last();
-                    });
-
-
-                SetStatusIndicator(hasUpdates);
-
-                LastUpdateCheck = $"Last checked: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking for updates");
-                StatusMessage = $"Error checking for updates: {ex.Message}";
-                SetStatusIndicator(false);
-            }
-            finally
-            {
-                IsPatching = false;
-                PatchProgress = 0;
-            }
+            await ExecutePatcherOperationAsync(
+                async (progressCallback, cancellationToken) => await _rosePatcherService.CheckForUpdatesAsync(progressCallback, cancellationToken)
+            );
         }
 
-        [RelayCommand]
-        private async Task PatchGameAsync()
+
+
+        private async Task ExecutePatcherOperationAsync(Func<Action<string>, CancellationToken, Task<bool>> operation)
         {
-            if (string.IsNullOrEmpty(GameClientPath))
+            await ExecuteAsync(async () =>
             {
-                StatusMessage = "Please select a game client path first";
-                return;
-            }
+                await InitializePatcherOperationAsync();
+                
+                var progressTracker = new ProgressTracker();
+                var progressCallback = CreateProgressCallback(progressTracker);
 
-            IsPatching = true;
-            StatusMessage = "Patching game client...";
-            PatchProgress = 0;
-            ParsedStatusLines.Clear();
-            SetStatusIndicator(true);
-
-            try
-            {
-                string patcherOutput = string.Empty;
-                var success = await _rosePatcherService.PatchClientAsync(
-                    progress =>
-                    {
-                        patcherOutput += progress + "\n";
-                    });
-
-                var userLines = ParseUserFriendlyLines(patcherOutput);
-                ParsedStatusLines.Clear();
-                foreach (var line in userLines)
-                    ParsedStatusLines.Add(line);
-
-                if (userLines.Count > 0)
-                    StatusMessage = userLines.Last();
-                else
-                    StatusMessage = "No status available.";
-
-                SetStatusIndicator(success);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error patching game client");
-                StatusMessage = $"Error patching game: {ex.Message}";
-                SetStatusIndicator(false);
-            }
-            finally
-            {
-                IsPatching = false;
-                PatchProgress = 0;
-            }
-        }
-
-        [RelayCommand]
-        private async Task VerifyFilesAsync()
-        {
-            if (string.IsNullOrEmpty(GameClientPath))
-            {
-                StatusMessage = "Please select a game client path first";
-                return;
-            }
-
-            IsPatching = true;
-            StatusMessage = "Verifying game files...";
-            PatchProgress = 0;
-            ParsedStatusLines.Clear();
-            SetStatusIndicator(true);
-
-            try
-            {
-                string patcherOutput = string.Empty;
-                var success = await _rosePatcherService.VerifyFilesAsync(
-                    progress =>
-                    {
-                        patcherOutput += progress + "\n";
-                    });
-
-                var userLines = ParseUserFriendlyLines(patcherOutput);
-                ParsedStatusLines.Clear();
-                foreach (var line in userLines)
-                    ParsedStatusLines.Add(line);
-
-                if (userLines.Count > 0)
-                    StatusMessage = userLines.Last();
-                else
-                    StatusMessage = "No status available.";
-
-                SetStatusIndicator(success);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error verifying files");
-                StatusMessage = $"Error verifying files: {ex.Message}";
-                SetStatusIndicator(false);
-            }
-            finally
-            {
-                IsPatching = false;
-                PatchProgress = 0;
-            }
-        }
-
-        [RelayCommand]
-        private async Task RefreshStatusAsync()
-        {
-            StatusMessage = "Refreshing status...";
-            await Task.Delay(1000);
-            StatusMessage = "Ready to check for updates";
-            ParsedStatusLines.Clear();
-            SetStatusIndicator(true);
-        }
-
-        private void SetStatusIndicator(bool ready)
-        {
-            StatusIndicatorText = ready ? "READY" : "";
-            StatusIndicatorBrush = new SolidColorBrush(Colors.LimeGreen);
-        }
-
-        private List<string> ParseUserFriendlyLines(string output)
-        {
-            var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var importantLines = new List<string>();
-            foreach (var line in lines)
-            {
-                // Remove ANSI color codes and timestamps
-                var clean = Regex.Replace(line, @"\x1B\[[0-9;]*[mK]", ""); // Remove ANSI
-                clean = Regex.Replace(clean, @"^\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s*", ""); // Remove timestamp
-                clean = Regex.Replace(clean, @"INFO (rose_updater|rose_update::manifest):\s*", ""); // Remove log prefix
-
-                if (clean.Contains("Building local chunk indexes") ||
-                    clean.Contains("Initializing clone outputs") ||
-                    clean.Contains("Downloading missing chunks") ||
-                    clean.Contains("Saving local manifest") ||
-                    clean.Contains("Download task completed") ||
-                    clean.Contains("Application updated") ||
-                    clean.Contains("Ready to launch"))
+                try
                 {
-                    importantLines.Add(clean.Trim());
+                    var result = await operation(progressCallback, _currentOperationCts!.Token);
+                    await FinalizePatcherOperationAsync(progressTracker);
+                }
+                finally
+                {
+                    await CleanupPatcherOperationAsync();
+                }
+            });
+        }
+
+        private async Task InitializePatcherOperationAsync()
+        {
+            CancelCurrentOperation();
+            _currentOperationCts = new CancellationTokenSource();
+            
+            IsPatching = true;
+            PatchProgress = 0;
+            ParsedStatusLines.Clear();
+            StatusMessage = string.Empty;
+            
+            await Task.CompletedTask; // For consistency with async pattern
+        }
+
+        private Action<string> CreateProgressCallback(ProgressTracker progressTracker)
+        {
+            return (progress) =>
+            {
+                progressTracker.AddProgress(progress);
+                
+                if (progressTracker.ShouldUpdateUI())
+                {
+                    UpdateUIWithProgress(progressTracker);
+                }
+            };
+        }
+
+        private void UpdateUIWithProgress(ProgressTracker progressTracker)
+        {
+            var userLines = ParseUserFriendlyLines(progressTracker.GetProgressBuffer());
+            
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                AddNewLinesToUI(userLines, progressTracker);
+                UpdateStatusMessage(userLines);
+            });
+        }
+
+        private void AddNewLinesToUI(List<string> userLines, ProgressTracker progressTracker)
+        {
+            foreach (var line in userLines)
+            {
+                if (!progressTracker.IsLineProcessed(line))
+                {
+                    ParsedStatusLines.Add(line);
+                    progressTracker.MarkLineAsProcessed(line);
                 }
             }
-            return importantLines;
+        }
+
+        private void UpdateStatusMessage(List<string> userLines)
+        {
+            if (userLines.Count > 0)
+            {
+                var lastLine = userLines.Last();
+                StatusLineAdded?.Invoke(lastLine);
+                StatusMessage = lastLine; // Keep StatusMessage for backward compatibility
+            }
+        }
+
+
+
+        private async Task FinalizePatcherOperationAsync(ProgressTracker progressTracker)
+        {
+            var finalUserLines = ParseUserFriendlyLines(progressTracker.GetProgressBuffer());
+            
+            foreach (var line in finalUserLines)
+            {
+                ParsedStatusLines.Add(line);
+                StatusLineAdded?.Invoke(line);
+            }
+
+            if (finalUserLines.Count > 0)
+            {
+                StatusMessage = finalUserLines.Last();
+            }
+            
+            await Task.CompletedTask; // For consistency with async pattern
+        }
+
+        private async Task CleanupPatcherOperationAsync()
+        {
+            IsPatching = false;
+            PatchProgress = 0;
+            _currentOperationCts?.Dispose();
+            _currentOperationCts = null;
+            
+            await Task.CompletedTask; // For consistency with async pattern
+        }
+
+        private void CancelCurrentOperation()
+        {
+            if (_currentOperationCts?.IsCancellationRequested == false)
+            {
+                _currentOperationCts.Cancel();
+                StatusMessage = "Patching cancelled.";
+                IsPatching = false;
+            }
+        }
+
+        private List<string> ParseUserFriendlyLines(IEnumerable<string> outputLines)
+        {
+            var cleanLines = new List<string>();
+            
+            foreach (var line in outputLines)
+            {
+                var cleanLine = CleanLogLine(line);
+                if (!string.IsNullOrWhiteSpace(cleanLine))
+                {
+                    cleanLines.Add(cleanLine);
+                }
+            }
+            
+            return cleanLines;
+        }
+
+        private string CleanLogLine(string line)
+        {
+            string clean = _ansiColorRegex.Replace(line, "");
+            clean = _timestampRegex.Replace(clean, "");
+            clean = _logPrefixRegex.Replace(clean, "");
+            return clean.Trim();
+        }
+
+        public void Dispose()
+        {
+            CancelCurrentOperation();
+            _currentOperationCts?.Dispose();
+        }
+
+        /// <summary>
+        /// Helper class to track progress updates and manage UI throttling
+        /// </summary>
+        private class ProgressTracker
+        {
+            private readonly List<string> _progressBuffer = new();
+            private readonly HashSet<string> _processedLines = new();
+            private DateTime _lastUpdateTime = DateTime.MinValue;
+            private const int UpdateIntervalMs = 100; // Throttle UI updates
+
+            public void AddProgress(string progress)
+            {
+                _progressBuffer.Add(progress);
+            }
+
+            public bool ShouldUpdateUI()
+            {
+                var now = DateTime.UtcNow;
+                var shouldUpdate = (now - _lastUpdateTime).TotalMilliseconds >= UpdateIntervalMs;
+                if (shouldUpdate)
+                {
+                    _lastUpdateTime = now;
+                }
+                return shouldUpdate;
+            }
+
+            public List<string> GetProgressBuffer()
+            {
+                return _progressBuffer.ToList();
+            }
+
+            public bool IsLineProcessed(string line)
+            {
+                return _processedLines.Contains(line);
+            }
+
+            public void MarkLineAsProcessed(string line)
+            {
+                _processedLines.Add(line);
+            }
         }
     }
 }

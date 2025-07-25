@@ -51,64 +51,7 @@ namespace ROSE_Login_Manager.Services.Implementations
             }
         }
 
-        /// <summary>
-        /// Patches the ROSE Online client with available updates
-        /// </summary>
-        public async Task<bool> PatchClientAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default)
-        {
-            var updaterPath = _roseClientService.GetUpdaterPath();
-            if (string.IsNullOrEmpty(updaterPath))
-            {
-                progressCallback?.Invoke("ROSE Online updater not found. Please ensure the game is properly installed.");
-                return false;
-            }
 
-            try
-            {
-                progressCallback?.Invoke("Starting patch process...");
-                
-                // Use --force-recheck to force a full patch
-                var arguments = $"--output \"{Path.GetDirectoryName(updaterPath)}\" --force-recheck";
-                var result = await RunUpdaterAsync(updaterPath, arguments, progressCallback, cancellationToken);
-                
-                return result.ExitCode == 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error patching client");
-                progressCallback?.Invoke($"Error patching client: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Verifies the integrity of ROSE Online client files
-        /// </summary>
-        public async Task<bool> VerifyFilesAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default)
-        {
-            var updaterPath = _roseClientService.GetUpdaterPath();
-            if (string.IsNullOrEmpty(updaterPath))
-            {
-                progressCallback?.Invoke("ROSE Online updater not found. Please ensure the game is properly installed.");
-                return false;
-            }
-
-            try
-            {
-                progressCallback?.Invoke("Verifying game files...");
-                
-                var arguments = $"--output \"{Path.GetDirectoryName(updaterPath)}\" --verify";
-                var result = await RunUpdaterAsync(updaterPath, arguments, progressCallback, cancellationToken);
-                
-                return result.ExitCode == 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error verifying files");
-                progressCallback?.Invoke($"Error verifying files: {ex.Message}");
-                return false;
-            }
-        }
 
         /// <summary>
         /// Gets the current version of the ROSE Online client

@@ -28,33 +28,7 @@
             <TextBlock 
                 Text="Game Client Patcher" 
                 Style="{DynamicResource TitleTextBlockStyle}"
-                Margin="0 0 0 16" />
-        </StackPanel>
-
-        <!-- Directory Selection Section -->
-        <StackPanel Grid.Row="1" Margin="0 0 0 16">
-            <TextBlock 
-                Text="ROSE Install Directory" 
-                Style="{DynamicResource SubtitleTextBlockStyle}"
-                FontWeight="SemiBold" />
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <ui:TextBox
-                    Grid.Column="0"
-                    PlaceholderText="Enter path to game directory..."
-                    Text="{Binding ViewModel.GameClientPath, UpdateSourceTrigger=PropertyChanged}"
-                    Margin="0,0,12,0" />
-
-                <ui:Button
-                    Grid.Column="1"
-                    Command="{Binding ViewModel.BrowseClientPathCommand}"
-                    Content="Browse" />
-            </Grid>
+                Margin="0 0 0 8" />
         </StackPanel>
 
         <!-- Main Content Section -->
@@ -83,16 +57,18 @@
                         Margin="4"/>
 
                     <!-- Patcher Log Content Area -->
-                    <ScrollViewer Grid.Row="1"
-                        VerticalScrollBarVisibility="Auto"
+                    <RichTextBox Grid.Row="1"
+                        x:Name="StatusLogTextBox"
                         VerticalAlignment="Stretch"
-                        Margin="8 4 4 4">
-                        <TextBlock 
-                            Text="{Binding ViewModel.StatusMessage}"
-                            Style="{DynamicResource BodyTextBlockStyle}"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            TextWrapping="Wrap"/>
-                    </ScrollViewer>
+                        Margin="8 4 4 4"
+                        IsReadOnly="True"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled"
+                        FontFamily="Consolas"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
                     <!-- Progress Ring Overlay -->
                     <ui:ProgressRing Grid.Row="1"
