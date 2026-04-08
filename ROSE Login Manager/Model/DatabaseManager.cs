@@ -452,7 +452,7 @@ namespace ROSE_Login_Manager.Resources.Util
 
             string? iv = command.ExecuteScalar()?.ToString();
 
-            return iv;
+            return iv ?? string.Empty;
         }
 
 

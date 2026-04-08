@@ -474,7 +474,7 @@ namespace ROSE_Login_Manager.Services
                     using MemoryScanner memscan = new(activeProcess.Process);
 
                     // Retrieve email and update profile status if it exists in the database
-                    string email = memscan.GetActiveEmail();
+                    string? email = memscan.GetActiveEmail();
                     if (!string.IsNullOrEmpty(email) && _db.EmailExists(email))
                     {
                         activeProcess.Email = email;

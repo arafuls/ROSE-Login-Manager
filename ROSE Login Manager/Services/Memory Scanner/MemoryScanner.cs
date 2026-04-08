@@ -146,7 +146,8 @@ namespace ROSE_Login_Manager.Services
                 processHandle = OpenProcessHandle(PROCESS_VM_READ);
                 if (!ReadProcessMemory(processHandle, address, buffer, buffer.Length, out int bytesRead) || bytesRead != length)
                 {
-                    // TODO: Fail silently to prevent crashing until I can figure out how to properly investigate and handle the cases causing this
+                    Logger.Warn($"Failed to read {length} bytes from memory address {address}. Expected {length} bytes, read {bytesRead} bytes.");
+                    return new byte[length]; // Return empty buffer to indicate failure
                 }
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException || ex is Win32Exception)
@@ -300,7 +301,7 @@ namespace ROSE_Login_Manager.Services
         /// <returns>
         ///     The active login email if found and valid; otherwise, returns null if no valid email is detected.
         /// </returns>
-        public string GetActiveEmail()
+        public string? GetActiveEmail()
         {
             // Attempt to retrieve the email from the secondary memory location (used for automatic login with arguments)
             IntPtr address = ApplyOffset(_baseAddress, OFFSET_EMAIL_BASE_ARGS);
