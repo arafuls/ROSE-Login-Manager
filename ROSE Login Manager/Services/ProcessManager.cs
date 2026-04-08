@@ -241,11 +241,14 @@ namespace ROSE_Login_Manager.Services
                 Process[] existingProcesses = Process.GetProcessesByName("trose");
                 foreach (Process process in existingProcesses)
                 {
-                    bool isProcessAlreadyTracked = _activeProcesses.Any(p => p.ProcessId == process.Id);
-                    if (!isProcessAlreadyTracked)
+                    lock (_activeProcesses)
                     {
-                        _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
-                        Logger.Info($"Untracked ROSE Online client process {process.Id} is now being tracked.");
+                        bool isProcessAlreadyTracked = _activeProcesses.Any(p => p.ProcessId == process.Id);
+                        if (!isProcessAlreadyTracked)
+                        {
+                            _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, ""));
+                            Logger.Info($"Untracked ROSE Online client process {process.Id} is now being tracked.");
+                        }
                     }
                 }
             }
@@ -282,7 +285,11 @@ namespace ROSE_Login_Manager.Services
                     return;
                 }
 
-                bool isProcessActive = _activeProcesses.Any(p => p.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+                bool isProcessActive;
+                lock (_activeProcesses)
+                {
+                    isProcessActive = _activeProcesses.Any(p => p.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+                }
                 if (!isProcessActive)
                 {
                     _db.UpdateProfileStatus(email, false);
@@ -316,7 +323,10 @@ namespace ROSE_Login_Manager.Services
                 if (arguments.Length > 3 && process != null)
                 {
                     string emailArg = arguments.ElementAtOrDefault(4) ?? throw new ArgumentException("The process arguments are missing in ProcessStartInfo.");
-                    _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, emailArg));
+                    lock (_activeProcesses)
+                    {
+                        _activeProcesses.Add(new ActiveProcessInfo(process, process.Id, emailArg));
+                    }
                     _db.UpdateProfileStatus(emailArg, true);
 
                     Logger.Info($"ROSE Online client process {process.Id} has started.");
@@ -453,7 +463,13 @@ namespace ROSE_Login_Manager.Services
         {
             try
             {
-                foreach (ActiveProcessInfo? activeProcess in _activeProcesses.ToList())
+                List<ActiveProcessInfo> processSnapshot;
+                lock (_activeProcesses)
+                {
+                    processSnapshot = _activeProcesses.ToList();
+                }
+
+                foreach (ActiveProcessInfo? activeProcess in processSnapshot)
                 {
                     using MemoryScanner memscan = new(activeProcess.Process);
 
