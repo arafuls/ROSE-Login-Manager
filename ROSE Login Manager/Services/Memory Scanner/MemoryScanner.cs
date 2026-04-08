@@ -17,7 +17,7 @@ namespace ROSE_Login_Manager.Services
     internal partial class MemoryScanner : IDisposable
     {
         private const int OFFSET_NAME_LENGTH        = 0x015C3130;
-        private const int OFFSET_NAME_BASE          = 0x015B56C8;
+        private const int OFFSET_NAME_BASE          = 0x0207BD90;
         private const int OFFSET_NAME_1             = 0x09A8;
 
         private const int OFFSET_EMAIL_BASE_TOML    = 0x015B7C10;
@@ -339,39 +339,48 @@ namespace ROSE_Login_Manager.Services
         #region Get Character Name Methods
 
         /// <summary>
-        ///     Gets the character's name based on the character length.
-        ///     Determines the offset to use based on the length and retrieves the name.
+        ///     Gets the character's name.
+        ///     Memory structure: [[trose.exe + OFFSET_NAME_BASE] + OFFSET_NAME_1]
+        ///     - If name is ≤15 chars: the name is stored directly at this location
+        ///     - If name is >15 chars: this location contains a pointer to the actual string
+        ///     Uses a heuristic approach: tries reading directly first, then follows pointer if needed.
         /// </summary>
         /// <returns>The character's name as a string.</returns>
         public string GetCharacterName()
         {
-            IntPtr address = ApplyOffset(_baseAddress, OFFSET_NAME_BASE);
-            address = ReadPointerFromMemory(address);
-            address = ApplyOffset(address, OFFSET_NAME_1);
+            // Navigate to [[trose.exe + 0x0207BD90] + 0x9A8]
+            IntPtr basePtr = ApplyOffset(_baseAddress, OFFSET_NAME_BASE);
+            basePtr = ReadPointerFromMemory(basePtr);
+            IntPtr nameLocation = ApplyOffset(basePtr, OFFSET_NAME_1);
 
-            if (GetCharacterLength() <= 15)
+            // Try reading directly first (for names ≤15 chars stored inline)
+            string directName = ReadStringFromMemory(nameLocation, 16);
+            
+            // Check if we got a valid name (non-empty and printable characters)
+            if (!string.IsNullOrWhiteSpace(directName) && directName.All(c => c >= 32 && c <= 126 || char.IsWhiteSpace(c)))
             {
-                return ReadStringFromMemory(address, 16);
+                return directName;
             }
-            else
+            
+            // If direct read failed, nameLocation contains a pointer (for names >15 chars)
+            try
             {
-                address = ReadPointerFromMemory(address);
-                return ReadStringFromMemory(address, 16);
+                IntPtr pointerToName = ReadPointerFromMemory(nameLocation);
+                if (pointerToName != IntPtr.Zero)
+                {
+                    string pointerName = ReadStringFromMemory(pointerToName, 64);
+                    if (!string.IsNullOrWhiteSpace(pointerName))
+                    {
+                        return pointerName;
+                    }
+                }
             }
-        }
-
-
-
-        /// <summary>
-        ///     Gets the length of the character's name.
-        ///     Reads a byte from memory to determine the length of the name.
-        /// </summary>
-        /// <returns>The length of the character's name as an integer.</returns>
-        private int GetCharacterLength()
-        {
-            IntPtr address = ApplyOffset(_baseAddress, OFFSET_NAME_LENGTH);
-            byte[] buffer = ReadMemory(address, 1);
-            return buffer[0];
+            catch
+            {
+                // If pointer read fails, return the direct read result
+            }
+            
+            return directName;
         }
         #endregion
 
