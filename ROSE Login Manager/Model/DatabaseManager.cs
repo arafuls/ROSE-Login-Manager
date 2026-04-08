@@ -28,7 +28,6 @@ namespace ROSE_Login_Manager.Resources.Util
         private const string DB_FILENAME = "data.sqlite";
         private readonly string _dbFilePath;
         private readonly string _appFolderPath;
-        private readonly SqliteConnection _db;
 
 
 
@@ -39,7 +38,6 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             _appFolderPath = GlobalVariables.Instance.AppPath;
             _dbFilePath = Path.Combine(_appFolderPath, DB_FILENAME);
-            _db = new SqliteConnection($"Data Source={_dbFilePath}");
             InitializeAppFolder();
             InitializeDatabase();
         }
@@ -64,22 +62,20 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </summary>
         private void InitializeDatabase()
         {
-            using (_db)
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Profiles'";
+            bool tableExists = Convert.ToInt32(command.ExecuteScalar()) > 0;
+
+            if (tableExists)
             {
-                _db.Open();
-                using SqliteCommand command = _db.CreateCommand();
-
-                command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Profiles'";
-                bool tableExists = Convert.ToInt32(command.ExecuteScalar()) > 0;
-
-                if (tableExists)
-                {
-                    VerifySchemaHasOrder();
-                }
-                else
-                {
-                    CreateSchema();
-                }
+                VerifySchemaHasOrder(connection);
+            }
+            else
+            {
+                CreateSchema(connection);
             }
         }
 
@@ -88,9 +84,9 @@ namespace ROSE_Login_Manager.Resources.Util
         /// <summary>
         ///     Checks if the 'Profiles' table contains the 'ProfileOrder' column. If not, adds the column to the table.
         /// </summary>
-        private void VerifySchemaHasOrder()
+        private void VerifySchemaHasOrder(SqliteConnection connection)
         {
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteCommand command = connection.CreateCommand();
             bool profileOrderExists = false;
 
             command.CommandText = "PRAGMA table_info('Profiles')";
@@ -120,9 +116,9 @@ namespace ROSE_Login_Manager.Resources.Util
         /// <summary>
         ///     Creates the database schema if it does not already exist.
         /// </summary>
-        private void CreateSchema()
+        private void CreateSchema(SqliteConnection connection)
         {
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"
                 CREATE TABLE IF NOT EXISTS Profiles (
                     ProfileStatus       INTEGER     NOT NULL,
@@ -133,7 +129,7 @@ namespace ROSE_Login_Manager.Resources.Util
                     ProfileOrder        INTEGER     NOT NULL DEFAULT 0
                 );
             ";
-            ExecuteNonQuery(command);
+            ExecuteNonQuery(command, connection);
         }
 
 
@@ -142,14 +138,18 @@ namespace ROSE_Login_Manager.Resources.Util
         ///     Executes a specified SQL command that does not return any data.
         /// </summary>
         /// <param name="command">The <see cref="SqliteCommand"/> to execute.</param>
+        /// <param name="connection">The <see cref="SqliteConnection"/> to use.</param>
         /// <returns>True if the command executed successfully; otherwise, false.</returns>
-        private bool ExecuteNonQuery(SqliteCommand command)
+        private bool ExecuteNonQuery(SqliteCommand command, SqliteConnection connection)
         {
             bool result = true;
 
             try
             {
-                _db.Open();
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    connection.Open();
+                }
                 command.ExecuteNonQuery();
             }
             catch (SqliteException ex)
@@ -164,7 +164,10 @@ namespace ROSE_Login_Manager.Resources.Util
             }
             finally
             {
-                _db.Close();
+                if (connection.State == System.Data.ConnectionState.Open)
+                {
+                    connection.Close();
+                }
             }
 
             return result;
@@ -180,26 +183,22 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             ObservableCollection<UserProfileModel> profiles = [];
 
-            using (SqliteCommand command = _db.CreateCommand())
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Profiles";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
             {
-                command.CommandText = "SELECT * FROM Profiles";
-                _db.Open();
-                using (var reader = command.ExecuteReader())
+                profiles.Add(new UserProfileModel
                 {
-                    while (reader.Read())
-                    {
-                        profiles.Add(new UserProfileModel
-                        {
-                            ProfileStatus = reader.GetBoolean(0),
-                            ProfileEmail = reader.GetString(1),
-                            ProfileName = reader.GetString(2),
-                            ProfilePassword = reader.GetString(3),
-                            ProfileIV = reader.GetString(4),
-                            ProfileOrder = reader.GetInt32(5)
-                        });
-                    }
-                }
-                _db.Close();
+                    ProfileStatus = reader.GetBoolean(0),
+                    ProfileEmail = reader.GetString(1),
+                    ProfileName = reader.GetString(2),
+                    ProfilePassword = reader.GetString(3),
+                    ProfileIV = reader.GetString(4),
+                    ProfileOrder = reader.GetInt32(5)
+                });
             }
             return profiles;
         }
@@ -222,32 +221,30 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             bool success = false;
 
-            using (SqliteCommand command = _db.CreateCommand())
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            
+            command.CommandText = "SELECT COALESCE(MAX(ProfileOrder), 0) + 1 FROM Profiles";
+            int profileOrder = Convert.ToInt32(command.ExecuteScalar());
+
+            command.CommandText = @"
+                INSERT INTO Profiles (ProfileStatus, ProfileEmail, ProfileName, ProfilePassword, ProfileIV, ProfileOrder)
+                VALUES (@ProfileStatus, @ProfileEmail, @ProfileName, @ProfilePassword, @ProfileIV, @ProfileOrder)
+            ";
+
+            command.Parameters.AddWithValue("@ProfileStatus", profile.ProfileStatus);
+            command.Parameters.AddWithValue("@ProfileEmail", profile.ProfileEmail);
+            command.Parameters.AddWithValue("@ProfileName", profile.ProfileName);
+            command.Parameters.AddWithValue("@ProfilePassword", profile.ProfilePassword);
+            command.Parameters.AddWithValue("@ProfileIV", profile.ProfileIV);
+            command.Parameters.AddWithValue("@ProfileOrder", profileOrder);
+
+            if (ExecuteNonQuery(command, connection))
             {
-                command.CommandText = "SELECT COALESCE(MAX(ProfileOrder), 0) + 1 FROM Profiles";
-                _db.Open();
-                int profileOrder = Convert.ToInt32(command.ExecuteScalar());
-
-                command.CommandText = @"
-                    INSERT INTO Profiles (ProfileStatus, ProfileEmail, ProfileName, ProfilePassword, ProfileIV, ProfileOrder)
-                    VALUES (@ProfileStatus, @ProfileEmail, @ProfileName, @ProfilePassword, @ProfileIV, @ProfileOrder)
-                ";
-
-                command.Parameters.AddWithValue("@ProfileStatus", profile.ProfileStatus);
-                command.Parameters.AddWithValue("@ProfileEmail", profile.ProfileEmail);
-                command.Parameters.AddWithValue("@ProfileName", profile.ProfileName);
-                command.Parameters.AddWithValue("@ProfilePassword", profile.ProfilePassword);
-                command.Parameters.AddWithValue("@ProfileIV", profile.ProfileIV);
-                command.Parameters.AddWithValue("@ProfileOrder", profileOrder);
-
-                if (ExecuteNonQuery(command))
-                {
-                    Logger.Info($"Profile {profile.ProfileName} was added successfully.");
-                    WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
-                    success = true;
-                }
-
-                _db.Close();
+                Logger.Info($"Profile {profile.ProfileName} was added successfully.");
+                WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
+                success = true;
             }
 
             return success;
@@ -269,7 +266,8 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </remarks>
         internal bool UpdateProfile(UserProfileModel profile)
         {
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            using SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE Profiles 
                 SET ProfileStatus = @ProfileStatus, 
@@ -285,7 +283,7 @@ namespace ROSE_Login_Manager.Resources.Util
             command.Parameters.AddWithValue("@ProfilePassword", profile.ProfilePassword);
             command.Parameters.AddWithValue("@ProfileIV", profile.ProfileIV);
 
-            if (ExecuteNonQuery(command))
+            if (ExecuteNonQuery(command, connection))
             {
                 WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
                 return true;
@@ -350,7 +348,8 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </returns>
         internal bool UpdateProfileStatus(string email, bool status)
         {
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            using SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE Profiles 
                 SET ProfileStatus = @ProfileStatus
@@ -360,7 +359,7 @@ namespace ROSE_Login_Manager.Resources.Util
             command.Parameters.AddWithValue("@ProfileStatus", status);
             command.Parameters.AddWithValue("@ProfileEmail", email);
 
-            if (ExecuteNonQuery(command))
+            if (ExecuteNonQuery(command, connection))
             {
                 WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
                 return true;
@@ -385,11 +384,12 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </remarks>
         internal bool DeleteProfile(string profileEmail)
         {
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            using SqliteCommand command = connection.CreateCommand();
             command.CommandText = "DELETE FROM Profiles WHERE ProfileEmail = @ProfileEmail";
             command.Parameters.AddWithValue("@ProfileEmail", profileEmail);
 
-            if (ExecuteNonQuery(command))
+            if (ExecuteNonQuery(command, connection))
             {
                 Logger.Info("Profile was deleted successfully.");
                 WeakReferenceMessenger.Default.Send(new DatabaseChangedMessage());
@@ -416,13 +416,13 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             string query = "SELECT COUNT(*) FROM Profiles WHERE ProfileEmail = @Email";
 
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
             command.CommandText = query;
             command.Parameters.AddWithValue("@Email", email);
 
-            _db.Open();
             bool collisionDetected = Convert.ToInt32(command.ExecuteScalar()) > 0;
-            _db.Close();
 
             return collisionDetected;
         }
@@ -444,13 +444,13 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             string query = "SELECT ProfileIV FROM Profiles WHERE ProfileEmail = @Email";
 
-            using SqliteCommand command = _db.CreateCommand();
+            using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
             command.CommandText = query;
             command.Parameters.AddWithValue("@Email", email);
 
-            _db.Open();
             string? iv = command.ExecuteScalar()?.ToString();
-            _db.Close();
 
             return iv;
         }
@@ -466,13 +466,14 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             const string query = "SELECT COUNT(*) FROM Profiles WHERE ProfileEmail = @Email";
 
-            using SqliteCommand command = _db.CreateCommand();
-            command.CommandText = query;
-            command.Parameters.AddWithValue("@Email", email);
-
             try
             {
-                _db.Open();
+                using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+                connection.Open();
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = query;
+                command.Parameters.AddWithValue("@Email", email);
+
                 int count = Convert.ToInt32(command.ExecuteScalar());
                 return count > 0;
             }
@@ -480,10 +481,6 @@ namespace ROSE_Login_Manager.Resources.Util
             {
                 Logger.Error(ex, "Error occurred while checking if email exists.");
                 return false; 
-            }
-            finally
-            {
-                _db.Close();
             }
         }
         #endregion
@@ -500,29 +497,7 @@ namespace ROSE_Login_Manager.Resources.Util
         /// </remarks>
         public void Dispose()
         {
-            Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-
-
-        /// <summary>
-        ///     Releases the unmanaged resources used by the DatabaseManager and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">
-        ///     If set to <c>true</c>, the method releases both managed and unmanaged resources. 
-        ///     If set to <c>false</c>, the method releases only unmanaged resources.
-        /// </param>
-        /// <remarks>
-        ///     This method is called by the public <see cref="Dispose()"/> method and the finalizer.
-        ///     When disposing is true, this method disposes of the managed resources (such as the database connection).
-        /// </remarks>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _db.Dispose();
-            }
         }
 
 
@@ -569,13 +544,14 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             const string query = "SELECT ProfileStatus FROM Profiles WHERE ProfileEmail = @Email";
 
-            using SqliteCommand command = _db.CreateCommand();
-            command.CommandText = query;
-            command.Parameters.AddWithValue("@Email", email);
-
             try
             {
-                _db.Open();
+                using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+                connection.Open();
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = query;
+                command.Parameters.AddWithValue("@Email", email);
+
                 object? result = command.ExecuteScalar();
                 return result != null && result != DBNull.Value && Convert.ToBoolean(result);
             }
@@ -583,10 +559,6 @@ namespace ROSE_Login_Manager.Resources.Util
             {
                 Logger.Error(ex, "Error occurred while getting profile status for email.");
                 return false;
-            }
-            finally
-            {
-                _db.Close();
             }
         }
 
@@ -603,13 +575,14 @@ namespace ROSE_Login_Manager.Resources.Util
         {
             const string query = "SELECT COUNT(*) FROM Profiles WHERE ProfileEmail = @Email";
 
-            using SqliteCommand command = _db.CreateCommand();
-            command.CommandText = query;
-            command.Parameters.AddWithValue("@Email", email);
-
             try
             {
-                _db.Open();
+                using SqliteConnection connection = new($"Data Source={_dbFilePath}");
+                connection.Open();
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = query;
+                command.Parameters.AddWithValue("@Email", email);
+
                 int count = Convert.ToInt32(command.ExecuteScalar());
                 return count > 0;
             }
@@ -618,25 +591,10 @@ namespace ROSE_Login_Manager.Resources.Util
                 Logger.Error(ex, "Error occurred while checking if profile exists.");
                 return false;
             }
-            finally
-            {
-                _db.Close();
-            }
         }
 
 
 
-        /// <summary>
-        ///     Finalizer for the DatabaseManager class.
-        /// </summary>
-        /// <remarks>
-        ///     This destructor is called by the garbage collector when the object is being finalized. 
-        ///     It calls the <see cref="Dispose(bool)"/> method with the disposing parameter set to false.
-        /// </remarks>
-        ~DatabaseManager()
-        {
-            Dispose(false);
-        }
         #endregion
     }
 }
