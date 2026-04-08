@@ -54,13 +54,31 @@ namespace ROSE_Login_Manager
         /// <summary>
         ///     Handles unhandled exceptions occurring in the Dispatcher thread.
         ///     Logs the exception using NLog at the Fatal level.
+        ///     Only handles specific recoverable exceptions to prevent continuing in a corrupted state.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">DispatcherUnhandledExceptionEventArgs that contains the event data.</param>
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             Logger.Fatal(e.Exception, "Unhandled Dispatcher Exception occurred.");
-            e.Handled = true; // Mark the exception as handled to prevent application shutdown
+
+            // Only handle specific recoverable exceptions
+            // Allow critical exceptions to crash the app to prevent data corruption
+            if (e.Exception is InvalidOperationException ||
+                e.Exception is System.ComponentModel.Win32Exception ||
+                e.Exception is System.IO.IOException ||
+                e.Exception is TimeoutException)
+            {
+                e.Handled = true; // Mark as handled for recoverable exceptions
+                Logger.Info("Exception was marked as handled and application will continue.");
+            }
+            else
+            {
+                // For critical exceptions (OutOfMemoryException, StackOverflowException, etc.),
+                // let the application crash to prevent continuing in a corrupted state
+                Logger.Fatal("Critical exception detected. Application will terminate.");
+                e.Handled = false;
+            }
         }
 
 
